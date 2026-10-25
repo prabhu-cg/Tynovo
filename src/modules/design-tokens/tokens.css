@@ -1,0 +1,29 @@
+/* Single source of truth for visual tokens. Tailwind v4 reads @theme and generates utilities. */
+@theme {
+  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* Pinned by the brief */
+  --color-accent: #c74504;
+  --color-ink: #444444;
+
+  --color-accent-strong: #a33803; /* hover/pressed; 6.9:1 on white */
+  --color-accent-wash: #fbece4;   /* tint for selected rows, hairlines of emphasis */
+  --color-ink-strong: #262626;    /* headings and specimens */
+  --color-ink-soft: #6b6b6b;      /* secondary text, 5.3:1 on white */
+  --color-paper: #ffffff;
+  --color-sheet: #f6f6f5;         /* app canvas */
+  --color-sheet-deep: #ececea;
+  --color-line: #e3e3e0;
+  --color-line-strong: #c9c9c5;
+  --color-ok: #2f6b3a;
+  --color-warn: #8a5a00;
+  --color-danger: #b3261e;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -12px rgb(0 0 0 / 0.14);
+  --shadow-drawer: -12px 0 32px -16px rgb(0 0 0 / 0.18);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
