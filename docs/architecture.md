@@ -13,9 +13,9 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 | `typography-system` | domain | Modular type-scale maths (roles and font assignment come in later phases) |
 | `font-catalog` | domain | Reserved for Phase 1 (existing-font catalogue); empty |
 | `typeface-engine` | domain | Design DNA, construction kit, glyph recipes, generation, overrides/variants/restore-point operations. See `typeface-engine.md` |
-| `glyph-editor` | domain + UI | Contour geometry, run layout with kerning, SVG specimen and glyph thumbnail components |
-| `font-export` | domain + UI | `FontBuilder` port; Font Flux adapter; OS/2 patcher; download helper; export orchestration; font lab page |
-| `font-validation` | domain | Per-glyph geometry checks, coverage classification (supported / invalid / missing), typeface-level checks, and binary checks (Font Flux `diagnose`) |
+| `glyph-editor` | domain + UI | Contour geometry, outline operations, undo history, editing session, working-copy bridge, viewport maths; text layout (tracking, word spacing, wrapping, kerning); SVG canvas, specimen and thumbnail components. See `glyph-editor.md` |
+| `font-export` | domain + UI | `FontBuilder` port; Font Flux adapter (TTF, OTF); format table and signature guards; sfnt reader; OS/2/head patcher; download helper; export orchestration; background file checks; browser rendering comparison; font lab page |
+| `font-validation` | domain | Per-glyph geometry checks, coverage classification, typeface-level checks, binary checks (Font Flux `diagnose`), read-back comparison of exported bytes with the design, and the quality report (findings with evidence and fixes; no score) |
 | `app-shell` | UI | App layout (responsive nav), dashboard, project workspace (`ProjectLayout` + section pages), `useProjectEditor` autosave hook, storage context |
 | `marketing` | UI | Public website, `content.ts` (single source of capability status), `seo-config.ts` (page metadata shared by client and build) |
 | `shared-ui` | UI | Button, Banner, non-modal Drawer |
@@ -35,6 +35,10 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 
 Edits go to a draft and are saved after a 1.2 s pause using the same compare-and-put as manual saves. States: `saved`, `dirty`, `saving`, `error`, `conflict`, `invalid`. Edits typed during a save are saved by the next round, never dropped. On `conflict` autosave stops (offer: save mine as a copy, or load the latest). On `error` the draft stays on screen and the project file can be downloaded from memory. Navigating away while pending triggers a flush first; the user is only asked if that flush fails. The service validates every project before it reaches storage.
 
+## Unapplied work in the editor
+
+The glyph editor holds a working copy outside the project until **Apply**. While it differs from the project the editor registers a `DraftGuard` with `ProjectLayout`, which owns the router's single blocker (React Router supports one per router). Leaving through navigation, back or reload then shows keep / apply / discard (and the browser's own prompt on tab close); the autosave-then-proceed flow for ordinary pending saves is unchanged.
+
 ## SEO
 
 `seo-config.ts` holds title/description/indexability per public route. At runtime `<Seo>` applies them; at build time `scripts/postbuild.mjs` bakes them into `dist/<route>/index.html`, and writes `sitemap.xml` and `robots.txt` from `VITE_SITE_URL`. A unit test and e2e tests assert both paths agree.
@@ -50,7 +54,7 @@ Edits go to a draft and are saved after a 1.2 s pause using the same compare-and
 
 ## Export pipeline
 
-`CustomTypeface` to `analyzeTypeface` (generate + validate every glyph) to `validateTypeface` (blocks on errors, including glyphs that fail geometry checks) to `FontBuilder.build` (only supported glyphs, Font Flux, lazy-loaded) to `patchOs2` to `validateFontBinary` to download + `ExportRecord` (size, SHA-256) in the project's history.
+`CustomTypeface` to `analyzeTypeface` (generate + validate every glyph) to `validateTypeface` (blocks on errors) to `FontBuilder.build` (format `ttf` | `otf`; only supported glyphs; Font Flux, lazy-loaded; side bearings set per glyph) to `patchOs2` (Windows metrics, x-height, vendor, `fontRevision`, checksums) to `assertBytesAre` to `validateFontBinary` + `verifyFontBytes` (read the file back and compare it with the design) to download + `ExportRecord` (kind `font-ttf` | `font-otf`, size, SHA-256) in the project's history. Any failing stage returns `{ ok: false, stage }`: no file, no record, project untouched. See `font-export-validation.md`.
 
 ## Testing conventions
 

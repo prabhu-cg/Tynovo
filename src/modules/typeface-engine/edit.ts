@@ -1,4 +1,4 @@
-import type { CustomTypeface, Dna, GlyphOverride, GlyphParams, Snapshot, Variant } from '../brand-projects/schema'
+import type { Contour, CustomTypeface, Dna, GlyphOverride, GlyphParams, Snapshot, Variant } from '../brand-projects/schema'
 import { defaultDna, type Family } from './dna'
 import { generateGlyph } from './generate'
 
@@ -111,6 +111,28 @@ export function freezeGlyph(face: CustomTypeface, char: string): CustomTypeface 
   return withOverride(face, char, { ...current, contours: live.glyph.contours, advanceWidth: current?.advanceWidth ?? live.glyph.advanceWidth })
 }
 
+/**
+ * Store a hand-edited outline and its advance width as one unit. The glyph is frozen from then on, so global
+ * shape changes no longer reach it; other overrides (shape parameters, bearings) stay as they were.
+ */
+export function setGlyphOutline(face: CustomTypeface, char: string, contours: Contour[], advanceWidth: number): CustomTypeface {
+  const current = face.overrides[char] ?? {}
+  return withOverride(face, char, { ...current, contours, advanceWidth: Math.max(0, Math.round(advanceWidth)) })
+}
+
+/**
+ * Back to the generated shape: drops the frozen outline and the advance width that went with it.
+ * Shape parameters and side-bearing overrides are kept; use resetGlyph to clear everything.
+ */
+export function resetOutline(face: CustomTypeface, char: string): CustomTypeface {
+  const current = face.overrides[char]
+  if (!current?.contours) return face
+  const { contours: _c, advanceWidth: _a, ...rest } = current
+  void _c
+  void _a
+  return withOverride(face, char, rest)
+}
+
 /** Drop only the frozen outline so the glyph follows the global shape settings again; other overrides stay. */
 export function unfreezeGlyph(face: CustomTypeface, char: string): CustomTypeface {
   const current = face.overrides[char]
@@ -130,6 +152,18 @@ export function resetGlyph(face: CustomTypeface, char: string): CustomTypeface {
 
 export function resetAllOverrides(face: CustomTypeface): CustomTypeface {
   return Object.keys(face.overrides).length === 0 ? face : { ...face, overrides: {} }
+}
+
+/* ---------- kerning ---------- */
+
+export const KERNING_LIMIT = 5000
+
+/** Set the kerning between two characters (replacing any earlier value); 0 removes the pair. */
+export function setKerning(face: CustomTypeface, left: string, right: string, value: number): CustomTypeface {
+  const v = Math.round(value)
+  const others = face.kerning.filter((k) => !(k.left === left && k.right === right))
+  const kerning = v === 0 ? others : [...others, { left, right, value: v }].slice(0, KERNING_LIMIT)
+  return kerning.length === face.kerning.length && kerning.every((k, i) => k === face.kerning[i]) ? face : { ...face, kerning }
 }
 
 /* ---------- variants ---------- */

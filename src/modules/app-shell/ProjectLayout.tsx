@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams } from 'react-router'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams, useSearchParams } from 'react-router'
 import { Banner, Button, ButtonLink } from '@/modules/shared-ui'
 import { AppSeo } from '@/modules/marketing/Seo'
+import type { DraftGuard } from './project'
 import { exportProjectFile } from './projectFile'
 import { SaveStatus } from './SaveStatus'
 import { useStudio } from './studio'
@@ -21,29 +22,54 @@ export function ProjectLayout() {
   const [copyId, setCopyId] = useState<string | null>(null)
   const [copyError, setCopyError] = useState<string | null>(null)
 
+  const [searchParams] = useSearchParams()
+  const wide = searchParams.has('glyph')
+
+  // Unapplied work in the current screen (an outline being edited). It is asked about, never saved or dropped on its own.
+  const guardRef = useRef<DraftGuard | null>(null)
+  const [guard, setGuardState] = useState<DraftGuard | null>(null)
+  const guardDirty = guard !== null
+  const setGuard = useCallback((g: DraftGuard | null) => {
+    guardRef.current = g
+    setGuardState(g)
+  }, [])
+
   const unsafe = state !== 'saved' && copyId === null
-  const blocker = useBlocker(unsafe)
+  const unsafeRef = useRef(unsafe)
+  useEffect(() => {
+    unsafeRef.current = unsafe
+  })
+  const shouldBlock = useCallback(() => guardRef.current !== null || unsafeRef.current, [])
+  const blocker = useBlocker(shouldBlock)
+  const blockedByDraft = blocker.state === 'blocked' && guardDirty
 
   // Leaving while a save is pending: save first, then go. Only stay put if saving fails.
+  // Unapplied outline work is different: wait for the person to choose (see the banner below).
   useEffect(() => {
-    if (blocker.state !== 'blocked') return
+    if (blocker.state !== 'blocked' || blockedByDraft) return
     let live = true
     void editor.flush().then((ok) => live && ok && blocker.proceed())
     return () => {
       live = false
     }
-  }, [blocker, editor.flush]) // eslint-disable-line
+  }, [blocker, blockedByDraft, editor.flush]) // eslint-disable-line
+
+  const leaveAfter = (act: () => void) => {
+    act()
+    setGuard(null)
+    void editor.flush().then((ok) => ok && blocker.state === 'blocked' && blocker.proceed())
+  }
 
   useEffect(() => {
     if (copyId) void navigate(`/app/projects/${copyId}`)
   }, [copyId, navigate])
 
   useEffect(() => {
-    if (state === 'saved') return
+    if (state === 'saved' && !guardDirty) return
     const warn = (e: BeforeUnloadEvent) => e.preventDefault()
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
-  }, [state])
+  }, [state, guardDirty])
 
   if (editor.load === 'loading') {
     return <p className="text-ink-soft" role="status"><AppSeo title="Project" />Opening project…</p>
@@ -69,7 +95,7 @@ export function ProjectLayout() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className={`mx-auto ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
       <AppSeo title={draft.name} />
       <nav aria-label="Breadcrumb" className="text-sm">
         <Link to="/app/projects" className="inline-flex min-h-8 items-center font-semibold text-accent-strong underline-offset-4 hover:underline">Projects</Link>
@@ -128,7 +154,21 @@ export function ProjectLayout() {
           </Banner>
         ) : null}
         {state === 'invalid' ? <Banner tone="warn">{editor.error}</Banner> : null}
-        {blocker.state === 'blocked' && (state === 'error' || state === 'conflict' || state === 'invalid') ? (
+        {blockedByDraft ? (
+          <Banner
+            tone="warn"
+            actions={
+              <>
+                <Button onClick={() => blocker.reset()}>Keep editing</Button>
+                <Button onClick={() => leaveAfter(() => guard?.apply())}>Apply and leave</Button>
+                <Button variant="danger" onClick={() => leaveAfter(() => guard?.discard())}>Discard and leave</Button>
+              </>
+            }
+          >
+            <strong>{guard?.describe() ?? 'You have changes that are not applied.'}</strong> Leaving now would lose them unless you apply them first.
+          </Banner>
+        ) : null}
+        {blocker.state === 'blocked' && !blockedByDraft && (state === 'error' || state === 'conflict' || state === 'invalid') ? (
           <Banner
             tone="warn"
             actions={
@@ -145,7 +185,7 @@ export function ProjectLayout() {
       </div>
 
       <div className="mt-8">
-        <Outlet context={{ draft, editor }} />
+        <Outlet context={{ draft, editor, setGuard }} />
       </div>
     </div>
   )

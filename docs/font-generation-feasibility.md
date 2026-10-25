@@ -39,14 +39,18 @@ Reproduce the file: `npm run spike` writes `spikes/output/ProofSans-Regular.ttf`
 ## Issues found and how they are handled
 
 1. **OS/2 win metrics.** Font Flux derives `usWinAscent/usWinDescent` from glyph bounds (700/0 for caps-only), which cramps line spacing in legacy Windows apps, and sets `achVendID` to `XXXX`. It does not let callers override them, and re-export recomputes them. We patch the exported bytes (`sfntPatch.ts`): win metrics = declared ascender/descender, `sxHeight` = declared x-height, vendor `NONE`, with table and whole-file checksums recomputed. Verified by fontTools strict mode and a checksum test. `USE_TYPO_METRICS` is already set by Font Flux.
-2. **Name table version string** is written as `1.002`, not the conventional `Version 1.002`.
+2. **Name table version string** was written as `1.002`, not the conventional `Version 1.002`, and `head.fontRevision` stayed 1.0. Fixed in Phase 4: the exporter passes `Version x.yyy` and the patcher sets the revision.
 3. **Kerning** is pair-based only. Class kerning, GSUB features (ligatures etc.) exist in the library but are not used yet.
 4. **No TrueType hinting** (instructions). Unhinted fonts render fine on modern systems; very old Windows rasterisers may look rough at small sizes.
 5. **`fsType` is 0** (installable embedding). Embedding permissions are a legal choice and are not yet exposed in the UI.
-6. **Only TTF export is implemented.** OTF/CFF, WOFF, WOFF2 are supported by the library (WOFF2 needs `brotli-wasm`, not wired up) but untested here.
+6. **TTF and OTF are exported (Phase 4).** WOFF and WOFF2 are supported by the library but not offered: not validated here. See `font-export-validation.md`.
 7. **Glyph limits.** Contours are TrueType quadratic only (no cubic); no composite glyphs; no hinting; no variable fonts; no colour fonts. Outer contours must be clockwise and counters counter-clockwise, which `font-validation` checks, along with counters lying inside solid area.
 8. **Bundle cost.** Font Flux is ~416 kB (124 kB gzip) and is lazy-loaded the first time a font is built, so it is not on the critical path of the app shell.
 
+## Found later (Phase 4)
+
+The library writes `hmtx` left side bearings as 0 unless each glyph is given its own, so outlines drawn from `xMin` were shifted by FreeType-based renderers while fontkit, `diagnose` and fontTools all passed the file. Found by comparing the editor preview with the browser's rendering of the exported file; fixed and now checked on every export. Details in `font-export-validation.md`.
+
 ## Licensing of generated fonts
 
-The licence name/URL/copyright you set on a typeface are written to the name table (IDs 0, 13, 14). The app never infers or guarantees a licence: `license.verified` stays `false` until a person sets it, and the export drawer says so.
+The licence name/URL/copyright you set on a typeface are written to the name table (IDs 0, 13, 14). The default placeholder ("Not yet chosen by the project owner") is never written into a font. The app never infers or guarantees a licence: `license.verified` stays `false` until a person sets it, and the export drawer says so.

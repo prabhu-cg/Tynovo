@@ -4,7 +4,7 @@ import * as fontkit from 'fontkit'
 import { createProject, readProjects, saved, writeProjects } from './helpers'
 
 const params = (page: Page) => page.getByLabel('Design parameters')
-const specimenPath = (page: Page) => page.getByRole('img', { name: /^Specimen:/ }).locator('path').first().getAttribute('d')
+const specimenPath = (page: Page) => page.getByRole('img', { name: /^Editor preview:/ }).locator('path').first().getAttribute('d')
 
 async function startTypeface(page: Page, name = 'Face', family: 'Geometric' | 'Rounded' | 'Modular' = 'Geometric') {
   await createProject(page, name, 'Custom Typeface Creator')
@@ -75,12 +75,12 @@ test.describe('custom typeface creator', () => {
     await startTypeface(page)
     await page.getByRole('button', { name: 'Glyphs', exact: true }).click()
     await page.getByRole('button', { name: /^H, supported/ }).click()
-    const panel = page.getByRole('complementary', { name: 'Glyph H' })
-    const width = panel.getByRole('slider', { name: 'Width' })
+    const inspector = page.getByRole('complementary', { name: 'Inspector for H' })
+    const width = inspector.getByRole('slider', { name: 'Width' })
     await width.focus()
     for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowRight')
-    await expect(panel.getByRole('button', { name: /Follow the global value \(1\)/ }).first()).toBeVisible()
-    await panel.getByRole('button', { name: 'Close Glyph H' }).click()
+    await expect(inspector.getByRole('button', { name: /Follow the global value \(1\)/ }).first()).toBeVisible()
+    await page.getByRole('button', { name: 'All glyphs' }).click()
     await expect(page.getByRole('button', { name: 'H, supported, has overrides' })).toBeVisible()
 
     // A global edit does not touch the override.
@@ -98,7 +98,8 @@ test.describe('custom typeface creator', () => {
     expect(stored['customTypeface'].dna.strokeThickness).toBe(98)
 
     await page.getByRole('button', { name: 'H, supported, has overrides' }).click()
-    await page.getByRole('complementary', { name: 'Glyph H' }).getByRole('button', { name: 'Reset all overrides on this glyph' }).click()
+    await page.getByRole('complementary', { name: 'Inspector for H' }).getByRole('button', { name: 'Remove every override on this glyph' }).click()
+    await page.getByRole('button', { name: 'All glyphs' }).click()
     await expect(page.getByRole('button', { name: 'H, supported', exact: true })).toBeVisible()
   })
 
@@ -106,9 +107,9 @@ test.describe('custom typeface creator', () => {
     await startTypeface(page)
     await page.getByRole('button', { name: 'Glyphs', exact: true }).click()
     await page.getByRole('button', { name: '~, missing' }).click()
-    const panel = page.getByRole('complementary', { name: 'Glyph ~' })
-    await expect(panel).toContainText('no design yet')
-    await expect(panel.getByRole('slider')).toHaveCount(0) // nothing to override on a glyph that does not exist
+    await expect(page.getByText(/no design yet/)).toBeVisible()
+    await expect(page.getByRole('slider')).toHaveCount(0) // nothing to override on a glyph that does not exist
+    await expect(page.getByRole('application')).toHaveCount(0)
   })
 
   test('variants are deterministic, can be saved as favourites, applied and undone', async ({ page }) => {
@@ -177,11 +178,11 @@ test.describe('export', () => {
     await expect(page).toHaveURL(/\/export$/)
     await expect(page.getByText('Export history')).toBeVisible()
     await expect(page.getByText('Nothing exported yet')).toBeVisible() // nothing is reported before a file exists
-    await page.getByRole('button', { name: /Validate and export TrueType/ }).click()
+    await page.getByRole('button', { name: /Check and build/ }).click()
     const drawer = page.getByRole('complementary', { name: 'Font export' })
-    await expect(drawer).toContainText('Built a TrueType file')
+    await expect(drawer).toContainText('Built a TrueType (.ttf) file')
     await expect(drawer).toContainText('90 of 95')
-    await expect(drawer).toContainText('has not been confirmed')
+    await expect(drawer.getByRole('link', { name: 'Open the quality report' })).toBeVisible()
     const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: /Download TestDisplay-Regular\.ttf/ }).click()])
     const bytes = readFileSync(await download.path())
     expect(bytes.readUInt32BE(0)).toBe(0x00010000)
@@ -206,19 +207,19 @@ test.describe('export', () => {
     await writeProjects(page, [row!])
     await page.reload()
     await page.getByRole('link', { name: 'Export', exact: true }).first().click()
-    await page.getByRole('button', { name: /Validate and export TrueType/ }).click()
+    await page.getByRole('button', { name: /Check and build/ }).click()
     const drawer = page.getByRole('complementary', { name: 'Font export' })
     await expect(drawer).toContainText('Export blocked')
     await expect(drawer).toContainText('glyph H')
     await expect(drawer.getByRole('button', { name: /Download/ })).toHaveCount(0)
-    await expect(drawer).not.toContainText('Built a TrueType file')
+    await expect(drawer).not.toContainText('Built a TrueType')
   })
 
   test('without a typeface the export page offers nothing to download', async ({ page }) => {
     await createProject(page, 'No face')
     await page.getByRole('link', { name: 'Export', exact: true }).click()
     await expect(page.getByText('This project has no custom typeface yet.')).toBeVisible()
-    await expect(page.getByRole('button', { name: /Validate and export/ })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /Check and build/ })).toHaveCount(0)
   })
 })
 

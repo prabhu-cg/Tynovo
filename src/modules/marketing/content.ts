@@ -85,16 +85,30 @@ export const CAPABILITIES: readonly Capability[] = [
   {
     id: 'ttf',
     mode: 'typeface',
-    title: 'TrueType export',
-    body: 'Validates the typeface and builds a genuine .ttf file from the glyphs that pass validation, with kerning, and records each export in the project history.',
+    title: 'TrueType and OpenType export',
+    body: 'Builds a genuine .ttf (TrueType outlines) or .otf (OpenType with CFF outlines) file from the glyphs that pass validation, with kerning and your names, copyright and licence. The finished file is opened again and compared with the design before it is offered, and each export is recorded in the project history.',
     status: 'available',
   },
   {
     id: 'glyphs',
     mode: 'typeface',
-    title: 'Outline editor',
-    body: 'Edit individual outline points by hand. Today glyph shapes come only from parameters and overrides.',
-    status: 'planned',
+    title: 'Glyph editor',
+    body: 'Select any designed glyph and move, add or delete outline points with the pointer or the keyboard, with metric guides, zoom and pan, undo and redo, and a one-click return to the generated shape. Outlines are straight-segment polygons, so this is a point editor, not a Bézier curve editor.',
+    status: 'early',
+  },
+  {
+    id: 'preview',
+    mode: 'typeface',
+    title: 'Text preview',
+    body: 'Type your own text or use alphabet, numeral and spacing specimens, with size and spacing controls. The editor preview is drawn from the glyph data; next to it your browser draws the real exported file, and a check compares the two.',
+    status: 'early',
+  },
+  {
+    id: 'quality',
+    mode: 'typeface',
+    title: 'Quality checks',
+    body: 'Measured checks for missing glyphs, invalid outlines, alignment, unusual widths, spacing, kerning candidates, missing names and licence, and the exported file itself. Each finding shows its numbers and, where a safe fix exists, offers it. There is no overall score.',
+    status: 'early',
   },
 ]
 
@@ -118,7 +132,7 @@ export const FAQS: readonly Faq[] = [
   { group: 'Fonts and licensing', q: 'Why is the app GPL-3.0?', a: 'The studio bundles Font Flux JS, which is GPL-3.0-only, so the app is distributed under the same licence. Fonts you export are your own work and are not covered by the app’s licence.' },
   { group: 'Fonts and licensing', q: 'Can I use existing fonts in a project?', a: 'Not yet. Choosing existing fonts, with their licences recorded, is in development.' },
   { group: 'Limitations', q: 'Which characters can the generator draw?', a: `Uppercase and lowercase letters, digits and most ASCII punctuation. These symbols are not designed yet: ${[...UNSUPPORTED_SYMBOLS].join(' ')}. Inside the app, the Coverage view lists exactly what is in your font and why anything is missing.` },
-  { group: 'Limitations', q: 'Which file formats can I export?', a: 'TrueType (.ttf) for your generated typeface (only glyphs that pass validation are included), and a project file (.btstudio.json) for any project. OpenType/CFF, WOFF and WOFF2 are not available yet.' },
-  { group: 'Limitations', q: 'Will the exported font work in my design tool?', a: 'The file has been checked with fontTools, fontkit, macOS CoreText and Quick Look, and loaded in Chromium. It has not yet been tested in Figma, Illustrator, Glyphs, Windows applications, Firefox or Safari, so test it in your own tools before relying on it.' },
+  { group: 'Limitations', q: 'Which file formats can I export?', a: 'TrueType (.ttf) and OpenType with CFF outlines (.otf) for your generated typeface (only glyphs that pass validation are included), and a project file for any project. WOFF and WOFF2 are not offered: the font library can write them, but they have not been validated here.' },
+  { group: 'Limitations', q: 'Will the exported font work in my design tool?', a: 'Exported files have been checked with fontTools, fontkit and Font Flux’s own validator, rendered in Chromium and compared with the preview, and opened by macOS CoreText. They have not been tested in Figma, Illustrator, Glyphs, Windows applications, Firefox or Safari, so test the file in your own tools before relying on it.' },
   { group: 'Limitations', q: 'Which browsers are supported?', a: 'Development and automated tests run in Chromium. Other modern browsers are expected to work but are untested.' },
 ]

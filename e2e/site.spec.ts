@@ -206,7 +206,7 @@ test.describe('accessibility (axe, serious and critical only)', () => {
   }
   for (const path of marketingPaths) test(`public ${path}`, ({ page }) => check(page, path))
   for (const path of ['/app/projects', '/app/lab', '/app/settings']) test(`app ${path}`, ({ page }) => check(page, path))
-  test('typeface creator views and glyph panel', async ({ page }) => {
+  test('typeface creator views and glyph editor', async ({ page }) => {
     await createProject(page, 'A11y face', 'Custom Typeface Creator')
     await page.getByRole('button', { name: /Start with Rounded/ }).click()
     await expect(page.getByLabel('Typeface name')).toBeVisible()
@@ -215,18 +215,22 @@ test.describe('accessibility (axe, serious and critical only)', () => {
       const bad = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
       expect(bad.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`), label).toEqual([])
     }
-    for (const view of ['Preview', 'Glyphs', 'Variants', 'Coverage']) {
+    for (const view of ['Preview', 'Glyphs', 'Variants', 'Coverage', 'Quality', 'Font info']) {
       await page.getByRole('button', { name: view, exact: true }).click()
       await page.waitForTimeout(300)
       await scan(view)
     }
     await page.getByRole('button', { name: 'Glyphs', exact: true }).click()
     await page.getByRole('button', { name: /^A, supported/ }).click()
-    const panel = page.getByRole('complementary', { name: 'Glyph A' })
-    await expect(panel).toBeVisible()
-    // The drawer fades in over 260ms; scan once it has settled so contrast is measured on opaque text.
-    await expect.poll(() => panel.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
-    await scan('glyph panel')
+    const canvas = page.getByRole('application', { name: 'Outline of A' })
+    await expect(canvas).toBeVisible()
+    await scan('glyph editor')
+    // With a point selected and an unapplied change, so the inspector, status chip and enabled buttons are scanned too.
+    await canvas.focus()
+    await page.keyboard.press(']')
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByText('Unapplied changes', { exact: true })).toBeVisible()
+    await scan('glyph editor with unapplied changes')
   })
 
   test('project sections', async ({ page }) => {

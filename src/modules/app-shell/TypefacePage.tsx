@@ -6,7 +6,10 @@ import { CoverageTab } from './typeface/CoverageTab'
 import { CreateTypeface } from './typeface/CreateTypeface'
 import { DnaPanel } from './typeface/DnaPanel'
 import { GlyphsTab } from './typeface/GlyphsTab'
+import { GlyphWorkspace } from './typeface/GlyphWorkspace'
+import { InfoTab } from './typeface/InfoTab'
 import { PreviewTab } from './typeface/PreviewTab'
+import { QualityTab } from './typeface/QualityTab'
 import { useTypeface } from './typeface/useTypeface'
 import { VariantsTab } from './typeface/VariantsTab'
 import { useProject } from './project'
@@ -17,6 +20,8 @@ const VIEWS = [
   { id: 'glyphs', label: 'Glyphs' },
   { id: 'variants', label: 'Variants' },
   { id: 'coverage', label: 'Coverage' },
+  { id: 'quality', label: 'Quality' },
+  { id: 'info', label: 'Font info' },
 ] as const
 type ViewId = (typeof VIEWS)[number]['id']
 
@@ -33,6 +38,12 @@ function Creator({ face }: { face: CustomTypeface }) {
   const [paramsOpen, setParamsOpen] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const view = (VIEWS.find((v) => v.id === params.get('view'))?.id ?? 'preview') as ViewId
+  const glyphParam = params.get('glyph')
+  const glyph = view === 'glyphs' && glyphParam && [...glyphParam].length === 1 ? glyphParam : null
+  const goTo = (fix: { view: 'glyphs' | 'info' | 'preview'; glyph?: string }) =>
+    setParams((p) => { const n = new URLSearchParams(p); n.set('view', fix.view); if (fix.view === 'glyphs' && fix.glyph) n.set('glyph', fix.glyph); else n.delete('glyph'); return n })
+  const openGlyph = (char: string | null, replace = false) =>
+    setParams((p) => { const n = new URLSearchParams(p); n.set('view', 'glyphs'); if (char) n.set('glyph', char); else n.delete('glyph'); return n }, { replace })
   const analysis = analyzeTypeface(face)
   const errors = [...analysis.reports.values()].filter((r) => r.status === 'invalid').length
 
@@ -48,8 +59,11 @@ function Creator({ face }: { face: CustomTypeface }) {
           <ButtonLink to="../export" variant="primary">Export…</ButtonLink>
         </div>
       </div>
-      {errors > 0 ? <Banner tone="error">{errors} glyph{errors > 1 ? 's have' : ' has'} errors and will be left out of exported fonts. See the Coverage view.</Banner> : null}
+      {errors > 0 ? <Banner tone="error">{errors} glyph{errors > 1 ? 's have' : ' has'} errors and will be left out of exported fonts, and export is blocked until they are fixed. See the Quality view.</Banner> : null}
 
+      {glyph ? (
+        <GlyphWorkspace handle={handle} char={glyph} onNavigate={(c) => openGlyph(c, c !== null)} />
+      ) : (
       <div className="grid min-w-0 gap-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:items-start">
         <div className="grid gap-3 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:pr-1">
           <Button className="lg:hidden" aria-expanded={paramsOpen} aria-controls="dna-panel" onClick={() => setParamsOpen((o) => !o)}>{paramsOpen ? 'Hide design parameters' : 'Design parameters'}</Button>
@@ -72,14 +86,17 @@ function Creator({ face }: { face: CustomTypeface }) {
           </nav>
           <div className="mt-6 min-w-0">
             {view === 'preview' ? <PreviewTab face={face} /> : null}
-            {view === 'glyphs' ? <GlyphsTab handle={handle} /> : null}
+            {view === 'glyphs' ? <GlyphsTab handle={handle} onOpen={(c) => openGlyph(c)} /> : null}
             {view === 'variants' ? <VariantsTab handle={handle} /> : null}
             {view === 'coverage' ? <CoverageTab face={face} /> : null}
+            {view === 'quality' ? <QualityTab handle={handle} onGo={goTo} /> : null}
+            {view === 'info' ? <InfoTab handle={handle} /> : null}
           </div>
           <p className="mt-8 text-xs text-ink-soft">{describeCoverage(analysis)}</p>
         </div>
       </div>
-      <div className="mt-2 border-t border-line pt-4">
+      )}
+      <div className={glyph ? 'hidden' : 'mt-2 border-t border-line pt-4'}>
         {confirmRemove ? (
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Confirm removing the typeface">
             <span className="text-sm font-semibold text-danger">Remove “{face.familyName}” with its {face.variants.length} saved variants, {Object.keys(face.overrides).length} glyph overrides and restore points?</span>

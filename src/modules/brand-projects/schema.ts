@@ -220,7 +220,7 @@ export type CustomTypeface = z.infer<typeof customTypefaceSchema>
 
 export const exportRecordSchema = z.object({
   id,
-  kind: z.enum(['font-ttf', 'project-json', 'tokens-css', 'tokens-json', 'specimen']),
+  kind: z.enum(['font-ttf', 'font-otf', 'project-json', 'tokens-css', 'tokens-json', 'specimen']),
   at: isoDate,
   filename: z.string().max(255),
   bytes: z.number().int().min(0),

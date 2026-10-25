@@ -4,19 +4,17 @@ import { GlyphThumb } from '@/modules/glyph-editor/GlyphThumb'
 import { GROUPS } from '@/modules/typeface-engine/charset'
 import { deriveMetrics } from '@/modules/typeface-engine/dna'
 import { Segmented } from '@/modules/shared-ui'
-import { GlyphPanel } from './GlyphPanel'
 import type { TypefaceHandle } from './useTypeface'
 
 type Filter = 'all' | 'upper' | 'lower' | 'digits' | 'punctuation'
 
 const STATUS_TEXT = { supported: 'supported', invalid: 'error', missing: 'missing' } as const
 
-export function GlyphsTab({ handle }: { handle: TypefaceHandle }) {
+export function GlyphsTab({ handle, onOpen }: { handle: TypefaceHandle; onOpen: (char: string) => void }) {
   const live = useDeferredValue(handle.face)
   const analysis = analyzeTypeface(live)
   const metrics = deriveMetrics(live.dna)
   const [filter, setFilter] = useState<Filter>('all')
-  const [selected, setSelected] = useState<string | null>(null)
   const chars = GROUPS.filter((g) => g.id !== 'space' && (filter === 'all' || g.id === filter)).flatMap((g) => [...g.chars])
   const overridden = (c: string) => c in live.overrides
 
@@ -37,15 +35,13 @@ export function GlyphsTab({ handle }: { handle: TypefaceHandle }) {
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] gap-2" aria-label="Glyphs">
         {chars.map((c) => {
           const r = analysis.reports.get(c) as GlyphReport
-          const isSel = selected === c
           return (
             <li key={c}>
               <button
                 type="button"
-                aria-pressed={isSel}
                 aria-label={`${c}, ${STATUS_TEXT[r.status]}${overridden(c) ? ', has overrides' : ''}`}
-                onClick={() => setSelected(c)}
-                className={`relative grid aspect-[3/4] w-full cursor-pointer place-items-center rounded-md border p-1 transition-colors ${isSel ? 'border-accent bg-accent-wash' : r.status === 'supported' ? 'border-line bg-paper hover:border-ink' : r.status === 'invalid' ? 'border-danger bg-[#fdeceb]' : 'border-dashed border-line-strong bg-sheet text-ink-soft hover:border-ink'}`}
+                onClick={() => onOpen(c)}
+                className={`relative grid aspect-[3/4] w-full cursor-pointer place-items-center rounded-md border p-1 transition-colors ${r.status === 'supported' ? 'border-line bg-paper hover:border-ink' : r.status === 'invalid' ? 'border-danger bg-[#fdeceb]' : 'border-dashed border-line-strong bg-sheet text-ink-soft hover:border-ink'}`}
               >
                 {r.glyph ? <GlyphThumb glyph={r.glyph} metrics={metrics} tone={r.status === 'invalid' ? 'danger' : 'ink'} /> : <span aria-hidden="true" className="text-xl font-bold">{c}</span>}
                 <span aria-hidden="true" className="absolute bottom-0.5 left-1 text-[0.65rem] font-semibold text-ink-soft">{c}</span>
@@ -56,8 +52,7 @@ export function GlyphsTab({ handle }: { handle: TypefaceHandle }) {
           )
         })}
       </ul>
-      <p className="text-xs text-ink-soft"><span aria-hidden="true" className="mr-1 inline-block size-2 rounded-full bg-accent align-middle" />marks a glyph with overrides. A glyph with errors is left out of exported fonts.</p>
-      <GlyphPanel handle={handle} char={selected} onClose={() => setSelected(null)} />
+      <p className="text-xs text-ink-soft"><span aria-hidden="true" className="mr-1 inline-block size-2 rounded-full bg-accent align-middle" />marks a glyph with overrides. Choose a glyph to edit its outline, shape and spacing. A glyph with errors is left out of exported fonts.</p>
     </div>
   )
 }

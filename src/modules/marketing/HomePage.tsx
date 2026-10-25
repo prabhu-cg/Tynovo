@@ -13,7 +13,7 @@ const PROMISES: Array<{ title: string; body: string; status: Status }> = [
   { title: 'Build a complete brand typography system with existing fonts.', body: 'Roles, a modular type scale and licence notes for each font. The scale exists today; choosing fonts is in development.', status: 'planned' },
   { title: 'Create and customise a procedural display font.', body: 'Adjust parameters and every glyph redraws. Three families draw letters, digits and most punctuation today; hand-editing outlines is in development.', status: 'early' },
   { title: 'Preview typography in realistic contexts.', body: 'Check the system on a web page, a poster or a document before committing to it.', status: 'planned' },
-  { title: 'Export specifications and supported font files.', body: 'TrueType export of your generated typeface works today. Specifications and tokens are in development.', status: 'early' },
+  { title: 'Export specifications and supported font files.', body: 'TrueType and OpenType (CFF) export of your generated typeface works today. Specifications and tokens are in development.', status: 'early' },
 ]
 
 const STEPS = [

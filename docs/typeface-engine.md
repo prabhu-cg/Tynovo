@@ -1,4 +1,4 @@
-# Typeface engine (Phase 3)
+# Typeface engine (Phase 3; editing added in Phase 4)
 
 A deterministic, rule-based generator for **display typefaces**. It turns a small, validated parameter set (the *design DNA*) into glyph outlines, checks every glyph, and hands the ones that pass to the font exporter. It is not a general-purpose type editor: outlines come from parameters and per-glyph overrides, not from hand-placed points.
 
@@ -98,10 +98,10 @@ Measured on the dev machine: generating and validating all 95 characters from sc
 - **Polyline outlines.** Curves are flattened (6–16 segments per quarter) rather than stored as quadratic Béziers: rounded shapes carry more points than hand-drawn curves (rounded family averages 92 points per glyph) and are not as smooth under extreme zoom. A curve-fitting pass is future work.
 - **Round terminals** can leave a tiny spur on the lowercase `e` and `s` at small sizes, and at extreme settings (heavy stroke, near-square bowls) the `s` can collide with itself and is then reported as invalid.
 - Several glyphs are simple constructions (single-storey a and g, a stacked-bowl S, plain 1 and 4, ASCII-only symbols). `#`, `*` and `+` look heavy in the modular family because chamfers eat small features.
-- No kerning is generated; kerning pairs can be stored but there is no UI to edit them yet.
-- Per-glyph overrides cover shape parameters and spacing; there is no point-level outline editor.
-- No hinting, no OpenType features beyond kerning, no variable fonts, TrueType (`.ttf`) output only.
-- Not tested in design applications other than via fontTools / fontkit / CoreText / Chromium (see `font-generation-feasibility.md`).
+- No kerning is generated. Pairs can be added from the Quality view's suggestions (and are written to the font); there is no pair-by-pair kerning editor.
+- Per-glyph overrides cover shape parameters, spacing and (Phase 4) a hand-edited outline: a **point editor** for the polylines, not a Bézier editor (`glyph-editor.md`). A hand-edited glyph is frozen and ignores global shape changes until reset.
+- No hinting, no OpenType features beyond kerning, no variable fonts. Output is TrueType (`.ttf`) or OpenType/CFF (`.otf`); see `font-export-validation.md`.
+- Not tested in design applications other than via fontTools / fontkit / CoreText / Chromium (see `font-export-validation.md` for exactly what was and was not tested).
 
 ## Adding a glyph
 

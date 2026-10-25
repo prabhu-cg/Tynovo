@@ -25,7 +25,7 @@ export function ExportPage() {
         <div>
           {draft.customTypeface ? (
             <>
-              <p className="max-w-xl">Export <strong>{draft.customTypeface.familyName} {draft.customTypeface.styleName}</strong> as a TrueType (.ttf) file. The typeface is checked before and after the file is built.</p>
+              <p className="max-w-xl">Export <strong>{draft.customTypeface.familyName} {draft.customTypeface.styleName}</strong> as a TrueType (.ttf) or OpenType/CFF (.otf) file. The typeface is checked before the file is built, and the finished file is opened again and compared with the design before it is offered.</p>
               <div className="mt-4"><FontExportFlow /></div>
             </>
           ) : (

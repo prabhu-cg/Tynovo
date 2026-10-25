@@ -9,6 +9,8 @@ export interface Os2Patch {
   xHeight: number
   /** Exactly four printable ASCII characters. */
   vendorId: string
+  /** head.fontRevision, e.g. 1.002. The library leaves it at 1.0 whatever version string it is given. */
+  fontRevision?: number
 }
 
 // Offsets inside the OS/2 table (version >= 2).
@@ -51,6 +53,8 @@ export function patchOs2(input: Uint8Array, patch: Os2Patch): Uint8Array {
   view.setUint16(o + OFFSET_WIN_ASCENT, patch.winAscent)
   view.setUint16(o + OFFSET_WIN_DESCENT, patch.winDescent)
   view.setInt16(o + OFFSET_X_HEIGHT, patch.xHeight)
+
+  if (patch.fontRevision !== undefined) view.setUint32(head.offset + 4, Math.round(patch.fontRevision * 65536))
 
   view.setUint32(os2.rec + 4, tableChecksum(bytes, o, os2.length))
   // Directory checksum of `head` is taken with checkSumAdjustment zeroed (spec convention),
