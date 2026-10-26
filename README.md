@@ -1,4 +1,6 @@
-# Brand Typography Studio
+# Tynovo
+
+*Shape your brand’s voice.*
 
 Free-first, browser-based studio with two connected modes: a **brand typography system** and a **custom typeface creator**. No account, backend, database, paid API or AI service. Projects live in your browser (IndexedDB) and can be exported as files.
 

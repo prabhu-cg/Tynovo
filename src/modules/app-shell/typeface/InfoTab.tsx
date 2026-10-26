@@ -81,7 +81,7 @@ export function InfoTab({ handle }: { handle: TypefaceHandle }) {
       <section aria-labelledby="info-legal" className="grid gap-4">
         <div>
           <h2 id="info-legal" className="text-lg font-bold">Copyright and licence</h2>
-          <p className="mt-1 text-sm text-ink-soft">These go into the font file so people who receive it know who made it and what they may do. The studio does not choose for you, check that a licence fits your situation, or give legal advice. The licence of this app is separate from the licence of fonts you make with it.</p>
+          <p className="mt-1 text-sm text-ink-soft">These go into the font file so people who receive it know who made it and what they may do. Tynovo does not choose for you, check that a licence fits your situation, or give legal advice. The licence of this app is separate from the licence of fonts you make with it.</p>
         </div>
         <Field id={ids.copyright} label="Copyright notice" hint="For example “Copyright 2026 Your Name”. Up to 500 characters.">
           <input id={ids.copyright} value={face.copyright} maxLength={500} onChange={(e) => update((f) => ({ ...f, copyright: e.target.value }))} className={`${inputClass} max-w-xl`} />
@@ -143,7 +143,7 @@ export function InfoTab({ handle }: { handle: TypefaceHandle }) {
       <section aria-labelledby="info-file" className="grid gap-3">
         <div>
           <h2 id="info-file" className="text-lg font-bold">What the file will say</h2>
-          <p className="mt-1 text-sm text-ink-soft">The values below are what the name table receives. After export the studio reads the file again and compares these fields with the file.</p>
+          <p className="mt-1 text-sm text-ink-soft">The values below are what the name table receives. After export Tynovo reads the file again and compares these fields with the file.</p>
         </div>
         <dl className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
           {facts.map(([k, v]) => (

@@ -49,7 +49,7 @@ test('brand direction is defined, saved, survives a refresh and reaches the spec
   expect(spec.text).toMatch(/Tone: .*Confident.*Technical|Tone: .*Technical.*Confident/)
   expect(spec.text).toContain('readability High (5 of 5), display use Medium (3 of 5)')
   const tokens = JSON.parse((await download(page, 'Download Design tokens (JSON)')).text)
-  expect(tokens.$extensions['com.brand-typography-studio'].brand).toMatchObject({ name: 'Northwind Labs', useCases: ['saas'], readabilityPriority: 5 })
+  expect(tokens.$extensions['com.tynovo'].brand).toMatchObject({ name: 'Northwind Labs', useCases: ['saas'], readabilityPriority: 5 })
 })
 
 test('the catalog searches, filters and shows weights, styles, source and licence', async ({ page }) => {
@@ -99,7 +99,7 @@ test('catalog fonts load only when needed, from the app itself, and a bounded nu
   await page.getByRole('button', { name: 'Details of Inter' }).click()
   await expect(page.getByTestId('font-sample')).toHaveAttribute('data-state', 'loaded')
   expect(await faces(page, 'Inter')).toEqual(['400/normal/loaded'])
-  await expect(page.getByTestId('font-availability')).toContainText('The 400 file is loaded from the studio')
+  await expect(page.getByTestId('font-availability')).toContainText('The 400 file is loaded from Tynovo')
   await page.getByRole('group', { name: 'Weights' }).getByRole('button', { name: '700', exact: true }).click()
   await expect(page.getByTestId('font-sample')).toHaveAttribute('data-weight', '700')
   await expect(async () => expect(await faces(page, 'Inter')).toContain('700/normal/loaded')).toPass()
@@ -126,7 +126,7 @@ test('a font file that cannot be loaded is reported, not shown as available, and
   await expect(page.getByRole('alert').filter({ hasText: 'The font file could not be loaded' })).toContainText('stand-in')
   await expect(page.getByTestId('font-availability')).toContainText('Not available: the file could not be loaded')
   expect(await faces(page, 'Inter')).toEqual([])
-  // The rest of the studio keeps working while the file is unavailable.
+  // The rest of Tynovo keeps working while the file is unavailable.
   await page.getByLabel('Search by family name').fill('inter')
   await expect(page.getByTestId('catalog-count')).toHaveText('1 of 24 fonts match.')
   await page.unroute('**/*.woff2')
@@ -216,7 +216,7 @@ test('a font that has left the catalog does not crash the project and is not sho
   await tab(page, 'Brand Typography System').click()
   const body = page.getByRole('listitem', { name: 'Body' })
   await expect(body.getByTestId('role-availability')).toHaveAttribute('data-status', 'unavailable')
-  await expect(body.getByTestId('role-availability')).toContainText('no longer in the studio\'s catalog')
+  await expect(body.getByTestId('role-availability')).toContainText('no longer in Tynovo\'s catalog')
   await expect(page.getByTestId('brand-preview')).toBeVisible() // the editor still renders
   await saved(page)
   await page.getByRole('link', { name: 'Export', exact: true }).first().click()
@@ -524,7 +524,7 @@ test('a complete system is built end to end and every export carries the saved s
   const specimen = (await download(page, 'Download HTML specimen')).text
   const project = JSON.parse((await download(page, 'Download Project file (backup)')).text).project
   for (const text of [css, spec, manifest, specimen]) expect(text).toContain(revision)
-  expect(tokens.$extensions['com.brand-typography-studio'].revision).toBe(revision)
+  expect(tokens.$extensions['com.tynovo'].revision).toBe(revision)
   // They agree with each other and with the saved project.
   expect(css).toContain('--font-display: "Lora", serif;')
   expect(css).toContain('--font-body: "Inter", sans-serif;')

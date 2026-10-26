@@ -48,8 +48,8 @@ test('the free experience is complete without payment or registration', async ({
   // Settings says what is true.
   await page.goto('/app/settings')
   const plan = page.getByTestId('plan')
-  await expect(plan).toContainText('Free. Everything in this version of the studio is included.')
-  await expect(plan).toContainText('There is no payment system in the studio')
+  await expect(plan).toContainText('Free. Everything in this version of Tynovo is included.')
+  await expect(plan).toContainText('There is no payment system in Tynovo')
   await expect(page.getByText('None. There is no sign-in and no server.')).toBeVisible()
   await page.getByText('What the Free plan covers').click()
   await expect(page.locator('[data-feature][data-allowed="false"]')).toHaveCount(0)

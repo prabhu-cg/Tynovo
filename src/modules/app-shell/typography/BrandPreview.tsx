@@ -5,6 +5,7 @@ import { brandName } from '@/modules/brand-system/brand'
 import { applicationSlots, APPLICATIONS, effectiveCopy, previewMissing, styleForSlot, styleProps, type ApplicationId, type PreviewCopy, type Slot } from '@/modules/brand-system/preview'
 import { useElementWidth } from '@/modules/glyph-editor/useElementWidth'
 import { Banner, Button, inputClass, Segmented } from '@/modules/shared-ui'
+import { EditGroup } from '../EditGroup'
 import { useProject } from '../project'
 
 const COPY_FIELDS: ReadonlyArray<{ key: keyof PreviewCopy; label: string; rows: number }> = [
@@ -165,6 +166,7 @@ export function BrandPreview() {
 
       <details className="max-w-3xl text-sm" data-testid="copy-editor">
         <summary className="cursor-pointer font-semibold text-ink-strong">Change the sample text</summary>
+        <EditGroup>
         <div className="mt-3 grid gap-3">
           <p className="text-xs text-ink-soft">The brand name is “{brandName(draft)}”, from the brand direction. Your sample text is saved with the project, and the specimen uses it too.</p>
           {COPY_FIELDS.map((f) => (
@@ -173,8 +175,9 @@ export function BrandPreview() {
               <textarea rows={f.rows} maxLength={2000} value={copy[f.key]} onChange={(e) => editor.patch((p) => ({ ...p, brand: { ...p.brand, sampleCopy: { ...p.brand.sampleCopy, [f.key]: e.target.value } } }))} className={`${inputClass} py-2 font-normal`} />
             </label>
           ))}
-          <div><Button disabled={!hasSaved} onClick={() => editor.patch((p) => ({ ...p, brand: { ...p.brand, sampleCopy: {} } }))}>Reset to the studio’s sample text</Button></div>
+          <div><Button disabled={!hasSaved} onClick={() => editor.patch((p) => ({ ...p, brand: { ...p.brand, sampleCopy: {} } }))}>Reset to Tynovo’s sample text</Button></div>
         </div>
+        </EditGroup>
       </details>
     </div>
   )

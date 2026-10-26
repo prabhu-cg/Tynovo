@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams } from 'react-router'
 import { downloadBytes } from '@/modules/font-export/download'
 import { useProjectFont } from '@/modules/font-export/useProjectFont'
-import { Banner, Button, ButtonLink } from '@/modules/shared-ui'
+import { Banner, Button, ButtonLink, LockIcon } from '@/modules/shared-ui'
 import { AppSeo } from '@/modules/marketing/Seo'
 import type { DraftGuard } from './project'
 import { exportProjectFile } from './projectFile'
@@ -27,9 +27,6 @@ export function ProjectLayout() {
   const fonts = useProjectFonts(draft)
   const [copyId, setCopyId] = useState<string | null>(null)
   const [copyError, setCopyError] = useState<string | null>(null)
-
-  const [searchParams] = useSearchParams()
-  const wide = searchParams.has('glyph')
 
   // Unapplied work in the current screen (an outline being edited). It is asked about, never saved or dropped on its own.
   const guardRef = useRef<DraftGuard | null>(null)
@@ -82,13 +79,22 @@ export function ProjectLayout() {
   }
   if (editor.load !== 'ready' || !draft) {
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="max-w-3xl">
         <AppSeo title="Project not available" />
         <Banner tone="error" actions={<ButtonLink to="/app/projects">Back to projects</ButtonLink>}>
           {editor.load === 'missing' ? 'This project does not exist. It may have been deleted, or it was created in another browser.' : editor.loadError}
         </Banner>
       </div>
     )
+  }
+
+  const duplicateSample = async () => {
+    try {
+      const copy = await service.duplicate(draft.id)
+      setCopyId(copy.id)
+    } catch (e) {
+      setCopyError(describeError(e))
+    }
   }
 
   const saveCopy = async () => {
@@ -101,8 +107,9 @@ export function ProjectLayout() {
   }
 
   return (
-    <div className={`mx-auto ${wide ? 'max-w-7xl' : 'max-w-5xl'}`}>
+    <div>
       <AppSeo title={draft.name} />
+      <h1 className="sr-only">{draft.name}</h1>
       <nav aria-label="Breadcrumb" className="text-sm">
         <Link to="/app/projects" className="inline-flex min-h-8 items-center font-semibold text-accent-strong underline-offset-4 hover:underline">Projects</Link>
       </nav>
@@ -115,13 +122,19 @@ export function ProjectLayout() {
               value={draft.name}
               maxLength={120}
               aria-label="Project name"
+              readOnly={editor.readOnly}
+              title={editor.readOnly ? 'The sample project cannot be renamed. Duplicate it to make your own.' : undefined}
               onChange={(e) => editor.patch((p) => ({ ...p, name: e.target.value }))}
-              className="-ml-2 w-[calc(100%+0.5rem)] min-w-0 rounded-md border border-transparent bg-transparent px-2 text-3xl font-extrabold tracking-tight text-ink-strong hover:border-line-strong focus:border-accent"
+              className={`-ml-2 w-[calc(100%+0.5rem)] min-w-0 rounded-md border border-transparent bg-transparent px-2 text-3xl font-extrabold tracking-tight text-ink-strong ${editor.readOnly ? 'cursor-default' : 'hover:border-line-strong focus:border-accent'}`}
             />
           </label>
           <div className="flex flex-wrap items-center gap-3">
-            <SaveStatus state={state} lastSavedAt={editor.lastSavedAt} />
-            {state === 'dirty' || state === 'error' || state === 'invalid' ? <Button onClick={() => void editor.flush()}>Save now</Button> : null}
+            {editor.readOnly ? (
+              <span data-testid="read-only-badge" className="inline-flex items-center gap-2 rounded-full border border-line-strong px-3 py-1 text-sm font-semibold text-ink-strong"><LockIcon />Read-only sample</span>
+            ) : (
+              <SaveStatus state={state} lastSavedAt={editor.lastSavedAt} />
+            )}
+            {!editor.readOnly && (state === 'dirty' || state === 'error' || state === 'invalid') ? <Button onClick={() => void editor.flush()}>Save now</Button> : null}
             <ButtonLink to="export" variant="secondary">Export</ButtonLink>
             <ButtonLink to="settings" variant="ghost">Settings</ButtonLink>
           </div>
@@ -135,6 +148,15 @@ export function ProjectLayout() {
       </header>
 
       <div className="mt-4 grid gap-3 empty:hidden">
+        {editor.readOnly ? (
+          <Banner
+            tone="info"
+            actions={<Button variant="primary" onClick={() => void duplicateSample()}>Duplicate as my own project</Button>}
+          >
+            <strong>This is a read-only sample.</strong> Look around freely: the overview, the font catalog, the typography system, previews, the typeface and every export all work, but nothing here can be changed or saved. Duplicate it to get a copy you can edit.{copyError ? ` ${copyError}` : ''}
+          </Banner>
+        ) : null}
+        {editor.readOnly && editor.rejected > 0 ? <p role="status" data-testid="read-only-refusal" className="text-sm font-semibold text-warn">A change was not applied: the sample is read-only. Duplicate it to edit.</p> : null}
         {editor.migration ? (
           <Banner
             tone="info"
@@ -201,7 +223,7 @@ export function ProjectLayout() {
       </div>
 
       <div className="mt-8">
-        <Outlet context={{ draft, editor, customFont, fonts, setGuard }} />
+        <Outlet context={{ draft, editor, readOnly: editor.readOnly, customFont, fonts, setGuard }} />
       </div>
     </div>
   )

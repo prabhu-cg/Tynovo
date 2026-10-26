@@ -32,7 +32,7 @@ export function FontLabPage() {
   const warnings = built ? built.model.warningCount + built.binary.warningCount : 0
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <AppSeo title="Font lab" />
       <h1 className="text-3xl font-extrabold">Font lab</h1>
       <p className="mt-1 max-w-2xl text-ink-soft">Feasibility check. A design drives the generator, the app builds a genuine TrueType file, reads it back, and the browser renders the text below from that file.</p>

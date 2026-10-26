@@ -58,6 +58,6 @@ describe('project files', () => {
     expect(prepareImport(p, new Set(), clock)).toBe(p)
   })
   it('makes safe filenames', () => {
-    expect(projectFilename(createProject('Héllo / Wörld!', fakeClock()))).toBe('h-llo-w-rld.btstudio.json')
+    expect(projectFilename(createProject('Héllo / Wörld!', fakeClock()))).toBe('h-llo-w-rld.tynovo.json')
   })
 })

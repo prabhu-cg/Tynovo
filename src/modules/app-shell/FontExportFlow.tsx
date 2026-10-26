@@ -76,7 +76,7 @@ export function FontExportFlow() {
 const STAGE_TEXT = {
   design: 'The design has errors, so no file was built. Fix them first; nothing in your project changed.',
   build: 'The file could not be built, so none is offered. Nothing in your project changed. Try again, or export the other format.',
-  file: 'The file was built but failed the studio’s own checks, so it is not offered. Nothing in your project changed.',
+  file: 'The file was built but failed Tynovo’s own checks, so it is not offered. Nothing in your project changed.',
 } as const
 
 function ExportResult({ result, onDownload }: { result: TypefaceExport; onDownload: () => void }) {

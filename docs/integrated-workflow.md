@@ -40,7 +40,7 @@ Everything is built by `buildBundle` from the **saved** project (`editor.saved`)
 | `typography.css` | custom properties, `.type-<role>` classes, `@font-face` for the custom font only |
 | `specimen.html` | self-contained; custom font embedded; no scripts, no network |
 | `SOURCES-AND-LICENSES.md` | per font: source, licence, confirmed?, file included? |
-| `<project>.btstudio.json` | backup |
+| `<project>.tynovo.json` | backup |
 | `<Font>-Regular.ttf` | validated (same checks as the font export flow); OTF via the flow below it |
 | `<project>-typography.zip` | all of the above, `fonts/` layout, stored (uncompressed) |
 
@@ -59,3 +59,11 @@ v2 → v3 (`migrations.ts`): `fontSourceId` becomes `font`, roles get `kind` (in
 - Roles cannot be added or removed; no wider font catalogue; no uploaded font files; no printed-document preview.
 - The CSS/specimen/tokens were checked by tests and in Chromium only, not in design or build tools.
 - Licences of existing fonts are what the user (or the bundled catalogue) says; nothing is verified.
+
+## The read-only sample project
+
+`brand-system/sample.ts` builds "Fieldnote sample": an invented coffee brand with a brand direction, two catalog fonts as a pairing, a typeface drawn in Tynovo on the display role, fluid sizes, saved variants and sample text. It is **code, not stored data**:
+
+- `ProjectService` is given it as a *built-in*. `get`/`open` return a copy; `save`, `rename` and `delete` throw `ReadOnlyError`; it is never in `list()` and never written to IndexedDB (tested, including in the browser). Duplicating or importing an export of it gives an ordinary project with a new id and no export history.
+- `useProjectEditor` reports `readOnly`; its `patch` ignores edits (and counts them, so the layout can say a change was refused). That is the safety net. The visible layer is `EditGroup`, a `<fieldset disabled>` around every control that changes the project, so disabled controls stay readable by assistive technology. Controls that only change what is shown (preview context, surface, width, catalog filters) stay live. The glyph editor is replaced by a read-only glyph viewer.
+- Exports from the sample work (they are the person's own data), but are not recorded in a history.

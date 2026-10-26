@@ -1,8 +1,11 @@
 /**
- * Page metadata for every public route. Pure data and functions with no imports, so the
+ * Page metadata for every public route. Pure data and functions (its only import is the plain-strings identity module), so the
  * post-build script (Node) and the client (Seo component) share exactly one source of truth.
  */
-export const SITE_NAME = 'Brand Typography Studio'
+import { PRODUCT_NAME, TAGLINE } from '../identity/identity.ts'
+
+export const SITE_NAME = PRODUCT_NAME
+export { TAGLINE }
 
 export interface PageMeta {
   path: string
@@ -13,33 +16,33 @@ export interface PageMeta {
   indexable: boolean
 }
 
-export const HOME_TITLE = `${SITE_NAME}: build your brand typography, create your own typeface`
+export const HOME_TITLE = `${SITE_NAME}: ${TAGLINE.charAt(0).toLowerCase()}${TAGLINE.slice(1)} with brand typography and your own typeface`
 
 export const PUBLIC_PAGES: readonly PageMeta[] = [
   {
     path: '/',
     title: '',
     description:
-      'A free, browser-based studio for brand typography systems and original display typefaces. No account. Projects stay on your device.',
+      'Tynovo helps you shape your brand’s voice: build a brand typography system from licensed fonts, or generate an original typeface and export real font files. Free, in your browser, no account.',
     indexable: true,
   },
   {
     path: '/features',
     title: 'Features',
     description:
-      'What Brand Typography Studio does today and what is still in development: type scales, local projects, a procedural typeface generator with three families, and real font export.',
+      'What Tynovo does today and what is not built yet: brand direction, a 24-font licensed catalog, roles, a fluid type scale, previews, a typeface generator with glyph editing, and real exports.',
     indexable: true,
   },
   {
     path: '/how-it-works',
     title: 'How it works',
-    description: 'From a new project to a typography system and a font file: the workflow, step by step, with what is available now marked clearly.',
+    description: 'From a new project to a typography system and font files: brand direction, fonts, roles, scale, your own typeface, previews, checks and exports, with what is available now marked clearly.',
     indexable: true,
   },
   {
     path: '/pricing',
     title: 'Pricing',
-    description: 'The studio is free to use today, with no account. Paid options are undecided; no plans, prices or dates exist yet.',
+    description: 'Tynovo is free today, with no account and no payment system. Paid options are undecided: no plans, prices or dates exist, and exporting your own projects is built never to be restricted.',
     indexable: true,
   },
   {
@@ -51,30 +54,30 @@ export const PUBLIC_PAGES: readonly PageMeta[] = [
   {
     path: '/licensing',
     title: 'Licensing',
-    description: 'How licensing works: the app, the fonts you choose, and the fonts you generate are licensed separately.',
+    description: 'How licensing works: the software, the 24 bundled fonts, the fonts you choose and the fonts you generate are licensed separately, with the licence and copyright of each bundled font.',
     indexable: true,
   },
   {
     path: '/faq',
     title: 'FAQ',
-    description: 'Common questions and honest limitations: storage, privacy, font export, licensing and what is not built yet.',
+    description: 'Common questions and honest limitations: storage, privacy, fonts and licences, exports, plans and what is not built yet.',
     indexable: true,
   },
   {
     path: '/privacy',
-    title: 'Privacy (draft)',
-    description: 'Draft privacy notice. It describes how the app behaves today and must be reviewed before public launch.',
-    indexable: false,
+    title: 'Privacy',
+    description: 'How Tynovo handles data: projects stay in your browser, with no accounts, analytics or cookies; what the hosting provider records; and your rights.',
+    indexable: true,
   },
   {
     path: '/terms',
-    title: 'Terms (draft)',
-    description: 'Draft terms of use. They must be reviewed before public launch.',
-    indexable: false,
+    title: 'Terms of use',
+    description: 'The rules for using Tynovo in plain language: what you keep, what you are responsible for, fonts and licences, and what is not promised.',
+    indexable: true,
   },
 ]
 
-export const APP_DESCRIPTION = 'Brand Typography Studio application.'
+export const APP_DESCRIPTION = `${PRODUCT_NAME}: ${TAGLINE}.`
 
 export function pageTitle(title: string): string {
   return title ? `${title} · ${SITE_NAME}` : HOME_TITLE

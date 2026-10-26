@@ -35,6 +35,14 @@ export class ValidationError extends Error {
   override name = 'ValidationError'
 }
 
+/** A built-in project (the sample) cannot be changed, renamed or deleted. Copy it to get one you own. */
+export class ReadOnlyError extends Error {
+  override name = 'ReadOnlyError'
+  constructor(message = 'This project is a read-only sample. Duplicate it to make a copy you can edit.') {
+    super(message)
+  }
+}
+
 /** Nothing invalid may reach storage: a bad record would later show up as unreadable. */
 function assertValid(project: Project): void {
   const r = parseProject(project)
@@ -45,22 +53,37 @@ function assertValid(project: Project): void {
 export class ProjectService {
   private readonly repo: ProjectRepository
   private readonly clock: Clock
+  private readonly builtIns: ReadonlyMap<string, Project>
 
-  constructor(repo: ProjectRepository, clock: Clock = systemClock) {
+  /** `builtIns` are projects that ship with the app (the sample): readable and copyable, never writable, never in the list. */
+  constructor(repo: ProjectRepository, clock: Clock = systemClock, builtIns: readonly Project[] = []) {
     this.repo = repo
     this.clock = clock
+    this.builtIns = new Map(builtIns.map((p) => [p.id, p]))
+  }
+
+  isReadOnly(id: string): boolean {
+    return this.builtIns.has(id)
+  }
+
+  /** The built-in projects, for screens that show them next to a person's own. */
+  builtInProjects(): Project[] {
+    return [...this.builtIns.values()].map((p) => structuredClone(p))
   }
 
   list() {
     return this.repo.list()
   }
 
-  get(id: string) {
-    return this.repo.get(id)
+  async get(id: string): Promise<Project | null> {
+    const built = this.builtIns.get(id)
+    return built ? structuredClone(built) : this.repo.get(id)
   }
 
   /** Open a project and report whether it had to be upgraded. Null if it does not exist. */
   async open(id: string): Promise<OpenedProject | null> {
+    const built = this.builtIns.get(id)
+    if (built) return { project: structuredClone(built), migratedFrom: null, originalJson: null }
     const raw = await this.repo.getRaw(id)
     if (raw === undefined) return null
     const parsed = parseProject(raw)
@@ -80,6 +103,7 @@ export class ProjectService {
 
   /** Save edits made to a loaded project. Fails with `conflict` rather than overwriting newer data. */
   async save(edited: Project, loadedUpdatedAt: string): Promise<Project> {
+    if (this.builtIns.has(edited.id)) throw new ReadOnlyError()
     const next: Project = { ...edited, updatedAt: this.clock.now().toISOString() }
     assertValid(next)
     await this.repo.save(next, { expectedUpdatedAt: loadedUpdatedAt })
@@ -100,13 +124,15 @@ export class ProjectService {
   }
 
   async rename(id: string, name: string): Promise<Project> {
+    if (this.builtIns.has(id)) throw new ReadOnlyError()
     const source = await this.requireProject(id)
     const renamed = renameProject(source, name, this.clock)
     await this.repo.save(renamed, { expectedUpdatedAt: source.updatedAt })
     return renamed
   }
 
-  delete(id: string) {
+  async delete(id: string): Promise<void> {
+    if (this.builtIns.has(id)) throw new ReadOnlyError()
     return this.repo.delete(id)
   }
 
@@ -115,7 +141,7 @@ export class ProjectService {
     const parsed = parseProjectFile(text)
     if (!parsed.ok) throw new ImportError(parsed.message, parsed.reason === 'invalid' && looksLikeProjectFile(text))
     const { projects } = await this.repo.list()
-    const ids = new Set(projects.map((p) => p.id))
+    const ids = new Set([...projects.map((p) => p.id), ...this.builtIns.keys()])
     const project = prepareImport(parsed.project, ids, this.clock)
     await this.repo.save(project, { expectedUpdatedAt: null })
     return { project, renamedOnClash: project.id !== parsed.project.id }
@@ -150,7 +176,7 @@ export class ProjectService {
   }
 
   private async requireProject(id: string): Promise<Project> {
-    const project = await this.repo.get(id)
+    const project = await this.get(id)
     if (!project) throw new StorageError('not-found', 'Project not found.')
     return project
   }

@@ -33,7 +33,7 @@ describe('seo-config', () => {
 
   it('writes canonical, OG and robots tags into the marked block', () => {
     const html = applyMeta(template, faq, { siteUrl: 'https://a.test', ogImagePath: '/og.png', ogImageAlt: 'Alt "quoted"' })
-    expect(html).toContain('<title>FAQ · Brand Typography Studio</title>')
+    expect(html).toContain('<title>FAQ · Tynovo</title>')
     expect(html).toContain('<link rel="canonical" href="https://a.test/faq" />')
     expect(html).toContain('property="og:url" content="https://a.test/faq"')
     expect(html).toContain('property="og:image" content="https://a.test/og.png"')
@@ -43,7 +43,8 @@ describe('seo-config', () => {
 
   it('omits URLs without a base URL and never canonicalises noindex pages', () => {
     expect(applyMeta(template, faq, { siteUrl: '' })).not.toContain('canonical')
-    const html = applyMeta(template, privacy, { siteUrl: 'https://a.test' })
+    // No public page is hidden from search today, so use a page that is marked not indexable to exercise the rule.
+    const html = applyMeta(template, { ...privacy, indexable: false }, { siteUrl: 'https://a.test' })
     expect(html).toContain('noindex,nofollow')
     expect(html).not.toContain('canonical')
     expect(headTags({ ...home, title: pageTitle('') }, { siteUrl: '' }).some((t) => t.tag === 'link')).toBe(false)
@@ -62,7 +63,8 @@ describe('seo-config', () => {
     const sm = buildSitemap('https://a.test')
     expect(sm).toContain('<loc>https://a.test/</loc>')
     expect(sm).toContain('<loc>https://a.test/faq</loc>')
-    expect(sm).not.toContain('/privacy')
+    expect(sm).toContain('<loc>https://a.test/privacy</loc>') // the legal pages are complete and indexable
+    expect(sm).toContain('<loc>https://a.test/terms</loc>')
     expect(sm).not.toContain('/app')
     expect(buildRobots('https://a.test')).toContain('Sitemap: https://a.test/sitemap.xml')
     expect(buildRobots('')).not.toContain('Sitemap')

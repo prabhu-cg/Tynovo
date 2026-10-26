@@ -7,7 +7,7 @@ const BASELINES = ['monospace', 'serif', 'sans-serif'] as const
  * Is a family installed on this device? A page cannot ask the system directly, so this measures the same text in
  * the family (falling back to each of three generic families) and in the generic family alone: if the family is
  * not installed the two widths are identical for every generic. It can be wrong for a font whose metrics equal
- * a generic's, so the studio calls the answer "detected" or "not detected", never "available".
+ * a generic's, so Tynovo calls the answer "detected" or "not detected", never "available".
  * `measure` takes a CSS font shorthand and returns the width of the probe text; null means no way to measure.
  */
 export function detectWith(measure: ((font: string) => number) | null, family: string): Installed {

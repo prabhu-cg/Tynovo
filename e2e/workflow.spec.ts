@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { createProject, readProjects, saved, writeProjects } from './helpers'
+import { cardAction, createProject, readProjects, saved, writeProjects } from './helpers'
 
 const name = (page: Page) => page.getByRole('main').getByRole('textbox', { name: 'Project name', exact: true })
 const fontOf = (page: Page, role: string) => page.getByLabel(`Font of ${role}`, { exact: true })
@@ -90,11 +90,11 @@ test('one project carries a custom typeface from design to preview to export', a
 
   const tokens = await download(page, 'Download Design tokens (JSON)')
   const t = JSON.parse(tokens.text)
-  expect(t.$extensions['com.brand-typography-studio'].revision).toBe(revision)
+  expect(t.$extensions['com.tynovo'].revision).toBe(revision)
   expect(t.typography.display.$value.fontFamily).toEqual(['Northwind Sans', 'sans-serif'])
   expect(t.typography.display.$value.fontWeight).toBe(400)
-  expect(t.typography.display.$extensions['com.brand-typography-studio'].origin).toBe('custom')
-  expect(t.typography.body.$extensions['com.brand-typography-studio'].origin).toBe('catalog')
+  expect(t.typography.display.$extensions['com.tynovo'].origin).toBe('custom')
+  expect(t.typography.body.$extensions['com.tynovo'].origin).toBe('catalog')
 
   const spec = await download(page, 'Download Typography specification')
   expect(spec.text).toContain(`revision \`${revision}\``)
@@ -268,14 +268,14 @@ test('duplicating and deleting projects leave other projects intact; a backup re
 
   // Delete the copy from the list, taking a backup first; the original and its typeface are untouched.
   await page.goto('/app/projects')
-  await page.getByRole('button', { name: 'Delete Alpha (copy)' }).click()
+  await cardAction(page, 'Alpha (copy)', /^Delete/)
   const panel = page.getByRole('group', { name: 'Confirm deleting Alpha (copy)' })
   await expect(panel).toContainText('cannot be brought back')
   const [backup] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Download a backup first' }).click()])
-  expect(backup.suggestedFilename()).toBe('alpha-copy.btstudio.json')
+  expect(backup.suggestedFilename()).toBe('alpha-copy.tynovo.json')
   const backupPath = await backup.path()
   expect(JSON.parse(readFileSync(backupPath, 'utf8')).project.customTypeface.familyName).toBe('Northwind Sans')
-  await expect(panel).toContainText('Backup saved as alpha-copy.btstudio.json')
+  await expect(panel).toContainText('Backup saved as alpha-copy.tynovo.json')
   await panel.getByRole('button', { name: 'Delete', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Alpha (copy)' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Alpha', exact: true })).toBeVisible()

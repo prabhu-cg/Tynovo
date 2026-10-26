@@ -25,7 +25,7 @@ export function buildManifest(input: ExportInput, files: readonly ManifestFile[]
   const uses = fontsInUse(project)
   const L: string[] = []
   L.push(`# ${mdInline(brandName(project))}: sources and licences`, '')
-  L.push(`Brand Typography Studio, project revision \`${revision}\`, generated ${input.generatedAt}.`, '')
+  L.push(`Tynovo, project revision \`${revision}\`, generated ${input.generatedAt}.`, '')
   L.push('This file records where each font comes from and what its licence is, as far as the project knows. It is not legal advice, and it carries no guarantee: check that a font\'s licence allows your use (website, app, print, logo) before you ship it.', '')
 
   L.push('## Fonts used by roles', '')
@@ -49,7 +49,7 @@ export function buildManifest(input: ExportInput, files: readonly ManifestFile[]
     L.push(`- Licence chosen by the project owner: ${licenseLabel(face.license)}${face.license.url ? `, ${face.license.url}` : ''}`)
     L.push(`- Licence confirmed by the owner: ${face.license.verified ? 'yes' : 'no'}`)
     L.push(`- Copyright line: ${face.copyright ? mdInline(face.copyright) : 'none set'}`)
-    L.push('- The licence of Brand Typography Studio (GPL-3.0-only) is separate from the licence of a font you design with it. The studio does not choose the licence for you.')
+    L.push('- The licence of Tynovo (GPL-3.0-only) is separate from the licence of a font you design with it. Tynovo does not choose the licence for you.')
     L.push(font ? `- Font file: \`${fontPath(font.filename)}\` (${font.format.toUpperCase()}, SHA-256 \`${font.sha256}\`)` : '- Font file: not produced.')
     L.push('')
   }
@@ -60,7 +60,7 @@ export function buildManifest(input: ExportInput, files: readonly ManifestFile[]
     L.push('No file of a font made by someone else is included in this export. Obtain each from its publisher under its own licence and add it where the CSS expects it.', '')
     for (const u of existing) {
       const cat = u.font.source?.kind === 'catalog' ? catalogFontFor(u.font.source.family) : undefined
-      L.push(`- **${mdInline(u.font.family)}**: ${cat ? `distributed as ${cat.distribution} (version ${cat.distributionVersion}), upstream version ${cat.version}; published at ${cat.upstream}; package page ${cat.page}. Copyright: ${mdInline(cat.license.copyright)}. The licence is the one the package metadata declares.` : 'named in the project; the studio has no record of where it comes from.'}${u.font.license?.url ? ` Licence text: ${u.font.license.url}` : ''}`)
+      L.push(`- **${mdInline(u.font.family)}**: ${cat ? `distributed as ${cat.distribution} (version ${cat.distributionVersion}), upstream version ${cat.version}; published at ${cat.upstream}; package page ${cat.page}. Copyright: ${mdInline(cat.license.copyright)}. The licence is the one the package metadata declares.` : 'named in the project; Tynovo has no record of where it comes from.'}${u.font.license?.url ? ` Licence text: ${u.font.license.url}` : ''}`)
     }
     L.push('')
   }

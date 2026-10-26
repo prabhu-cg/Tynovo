@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
 import { AppSeo } from '@/modules/marketing/Seo'
 import { projectFilename, serializeProject } from '@/modules/brand-projects/model'
 import { ImportError } from '@/modules/brand-projects/service'
-import type { ProjectSummary } from '@/modules/brand-projects/schema'
+import { summarize, type ProjectSummary } from '@/modules/brand-projects/schema'
 import { downloadBytes } from '@/modules/font-export/download'
 import type { ProjectListing, UnreadableRecord } from '@/modules/persistence/types'
 import { Banner, Button, Drawer, inputClass } from '@/modules/shared-ui'
-import { DeletePanel } from './DeletePanel'
+import { ProjectCard } from './ProjectCard'
 import { describeError } from './errors'
 import { useStudio } from './studio'
 
-const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 const textBytes = (s: string) => new TextEncoder().encode(s)
+const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-4'
 
 const STARTS = [
-  { value: '', label: 'Overview', hint: 'Name the brand and describe its personality first.' },
-  { value: 'typography', label: 'Brand Typography System', hint: 'Start with the type scale and roles.' },
+  { value: '', label: 'Overview', hint: 'Describe the brand first: its name, tone and use cases.' },
+  { value: 'typography', label: 'Brand Typography System', hint: 'Start with fonts, roles and the type scale.' },
   { value: 'typeface', label: 'Custom Typeface Creator', hint: 'Start with an original typeface.' },
 ] as const
 
@@ -90,9 +90,10 @@ export function DashboardPage() {
   const downloadRaw = (u: UnreadableRecord) => downloadBytes(textBytes(JSON.stringify(u.raw, null, 2)), `unreadable-${u.id}.json`, 'application/json')
 
   const projects = listing?.projects ?? []
+  const samples = useMemo(() => service.builtInProjects().map(summarize), [service])
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div>
       <AppSeo title="Projects" />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -132,70 +133,60 @@ export function DashboardPage() {
       ) : null}
       {loadError ? <div className="mt-6"><Banner tone="error" actions={<Button onClick={() => void refresh()}>Try again</Button>}>Could not load projects: {loadError}</Banner></div> : null}
 
-      <section aria-label="Your projects" aria-busy={listing === null && !loadError} className="mt-8">
+      {samples.length > 0 ? (
+      <section aria-labelledby="sample-h" className="mt-8">
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <h2 id="sample-h" className="text-lg font-bold">Sample project</h2>
+          <p className="text-sm text-ink-soft">A finished example to explore. It cannot be changed or deleted; duplicate it to make your own.</p>
+        </div>
+        <ul aria-label="Sample project" className={GRID}>
+          {samples.map((p) => (
+            <ProjectCard key={p.id} summary={p} sample onDuplicate={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”. It is in your projects below and is yours to edit.` })} onExport={() => void exportOne(p)} />
+          ))}
+        </ul>
+      </section>
+      ) : null}
+
+      <section aria-labelledby="own-h" aria-busy={listing === null && !loadError} className="mt-8">
+        <h2 id="own-h" className="mb-4 text-lg font-bold">Your projects{listing && projects.length > 0 ? <span className="tnum ml-2 text-sm font-normal text-ink-soft">{projects.length}</span> : null}</h2>
         {listing === null && !loadError ? (
-          <ul aria-label="Loading projects" className="divide-y divide-line overflow-hidden rounded-md border border-line bg-paper">
+          <ul aria-label="Loading projects" className={GRID}>
             {[0, 1, 2].map((n) => (
-              <li key={n} className="flex animate-pulse items-center gap-4 px-4 py-4" aria-hidden="true">
-                <div className="grid flex-1 gap-2"><div className="h-4 w-1/3 rounded bg-sheet-deep" /><div className="h-3 w-1/4 rounded bg-sheet" /></div>
-                <div className="h-8 w-40 rounded bg-sheet" />
+              <li key={n} className="grid animate-pulse gap-4 rounded-md border border-line bg-paper p-5" aria-hidden="true">
+                <div className="h-5 w-2/3 rounded bg-sheet-deep" />
+                <div className="h-3 w-full rounded bg-sheet" />
+                <div className="grid grid-cols-2 gap-3 border-t border-line pt-4"><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /></div>
               </li>
             ))}
           </ul>
         ) : listing && projects.length === 0 ? (
           <div className="rounded-md border border-dashed border-line-strong bg-paper px-6 py-12 text-center">
-            <h2 className="text-xl font-extrabold">No projects yet</h2>
-            <p className="mx-auto mt-2 max-w-md text-ink-soft">A project holds a brand’s type scale and roles and, optionally, an original typeface. Everything stays in this browser.</p>
+            <h3 className="text-xl font-extrabold">No projects yet</h3>
+            <p className="mx-auto mt-2 max-w-md text-ink-soft">A project holds a brand’s direction, fonts, type scale and roles and, optionally, an original typeface. Everything stays in this browser. Not sure where to start? Open the sample above.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               <Button variant="primary" onClick={() => setNewOpen(true)}>Create your first project</Button>
               <Button onClick={() => fileRef.current?.click()}>Import a project file</Button>
             </div>
           </div>
         ) : listing ? (
-          <ul className="divide-y divide-line overflow-hidden rounded-md border border-line bg-paper">
+          <ul aria-label="Projects" className={GRID}>
             {projects.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
-                <div className="min-w-48 flex-1">
-                  {renaming?.id === p.id ? (
-                    <form
-                      className="flex flex-wrap gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        void run(async () => {
-                          await service.rename(p.id, renaming.name)
-                          setRenaming(null)
-                        })
-                      }}
-                    >
-                      <input autoFocus aria-label={`New name for ${p.name}`} value={renaming.name} onChange={(e) => setRenaming({ id: p.id, name: e.target.value })} onKeyDown={(e) => e.key === 'Escape' && setRenaming(null)} maxLength={120} className={`${inputClass} min-w-0 flex-1`} />
-                      <Button type="submit" variant="primary">Save</Button>
-                      <Button variant="ghost" onClick={() => setRenaming(null)}>Cancel</Button>
-                    </form>
-                  ) : (
-                    <>
-                      <Link to={`/app/projects/${p.id}`} className="inline-flex min-h-8 items-center text-base font-bold text-ink-strong underline-offset-4 hover:text-accent hover:underline">{p.name}</Link>
-                      <p className="tnum text-xs text-ink-soft">Edited {fmt.format(new Date(p.updatedAt))}{p.hasCustomTypeface ? ' · custom typeface' : ''}</p>
-                    </>
-                  )}
-                </div>
-                {confirmDelete === p.id ? (
-                  <div className="basis-full md:basis-auto md:max-w-lg">
-                    <DeletePanel
-                      name={p.name}
-                      onBackup={() => backupOne(p.id)}
-                      onConfirm={() => void run(async () => { await service.delete(p.id); setConfirmDelete(null); return `Deleted “${p.name}”.` })}
-                      onCancel={() => setConfirmDelete(null)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-1">
-                    <Button variant="ghost" onClick={() => setRenaming({ id: p.id, name: p.name })} aria-label={`Rename ${p.name}`}>Rename</Button>
-                    <Button variant="ghost" onClick={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”.` })} aria-label={`Duplicate ${p.name}`}>Duplicate</Button>
-                    <Button variant="ghost" onClick={() => void exportOne(p)} aria-label={`Export ${p.name}`}>Export</Button>
-                    <Button variant="ghost" onClick={() => setConfirmDelete(p.id)} aria-label={`Delete ${p.name}`}>Delete</Button>
-                  </div>
-                )}
-              </li>
+              <ProjectCard
+                key={p.id}
+                summary={p}
+                renaming={renaming?.id === p.id ? renaming.name : undefined}
+                confirmingDelete={confirmDelete === p.id}
+                onRenameStart={() => setRenaming({ id: p.id, name: p.name })}
+                onRenameChange={(name) => setRenaming({ id: p.id, name })}
+                onRenameSubmit={() => void run(async () => { if (renaming) await service.rename(p.id, renaming.name); setRenaming(null) })}
+                onRenameCancel={() => setRenaming(null)}
+                onDuplicate={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”.` })}
+                onExport={() => void exportOne(p)}
+                onDeleteStart={() => setConfirmDelete(p.id)}
+                onDeleteBackup={() => backupOne(p.id)}
+                onDeleteConfirm={() => void run(async () => { await service.delete(p.id); setConfirmDelete(null); return `Deleted “${p.name}”.` })}
+                onDeleteCancel={() => setConfirmDelete(null)}
+              />
             ))}
           </ul>
         ) : null}

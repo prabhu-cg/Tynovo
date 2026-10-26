@@ -64,7 +64,7 @@ export function buildSpecimen(input: ExportInput): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="Brand Typography Studio, project revision ${revision}">
+<meta name="generator" content="Tynovo, project revision ${revision}">
 <title>${escapeHtml(brandName(project))} - typography specimen</title>
 <style>
 ${css}

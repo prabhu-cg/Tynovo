@@ -163,7 +163,7 @@ export function RolesEditor() {
                       ))}
                     </ul>
                   )}
-                  <p className="text-xs text-ink-soft">Fixed rules over the studio’s own tags and the fonts’ weights, not an AI model and not a legibility test.</p>
+                  <p className="text-xs text-ink-soft">Fixed rules over Tynovo’s own tags and the fonts’ weights, not an AI model and not a legibility test.</p>
                 </div>
               </details>
 

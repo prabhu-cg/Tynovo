@@ -52,12 +52,12 @@ export function PageHeader({ eyebrow, title, lead, children }: { eyebrow?: strin
   )
 }
 
-export function Section({ id, title, intro, children, tone = 'plain' }: { id?: string; title: string; intro?: ReactNode; children: ReactNode; tone?: 'plain' | 'sheet' }) {
+export function Section({ id, title, intro, children, tone = 'plain', centered = false }: { id?: string; title: string; intro?: ReactNode; children: ReactNode; tone?: 'plain' | 'sheet'; /** Centre the heading over a centred column. */ centered?: boolean }) {
   return (
     <section id={id} aria-labelledby={id ? `${id}-h` : undefined} className={tone === 'sheet' ? 'border-y border-line bg-sheet' : ''}>
       <Container className="py-14 md:py-20">
-        <h2 id={id ? `${id}-h` : undefined} className="max-w-2xl text-3xl font-extrabold md:text-4xl">{title}</h2>
-        {intro ? <p className="mt-4 max-w-2xl text-lg">{intro}</p> : null}
+        <h2 id={id ? `${id}-h` : undefined} className={`text-3xl font-extrabold md:text-4xl ${centered ? 'mx-auto max-w-3xl text-center' : 'max-w-2xl'}`}>{title}</h2>
+        {intro ? <p className={`mt-4 max-w-2xl text-lg ${centered ? 'mx-auto text-center' : ''}`}>{intro}</p> : null}
         <div className="mt-10">{children}</div>
       </Container>
     </section>

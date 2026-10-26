@@ -3,7 +3,7 @@ import { catalogFontById } from './catalog'
 /**
  * Loads catalog font files on demand and keeps the number of registered fonts bounded.
  *
- * The files are the studio's own (bundled assets, never a third-party server). Nothing is fetched until a font is
+ * The files are Tynovo's own (bundled assets, never a third-party server). Nothing is fetched until a font is
  * needed: fonts that roles use are "pinned" and stay; fonts being previewed in the catalog are "loose", and only
  * the most recent few are kept, the rest are unregistered. A file that cannot be loaded is reported as failed,
  * never as available, and can be retried.
@@ -82,7 +82,7 @@ export class FontLoader {
     const key = specKey(spec)
     const font = catalogFontById(spec.id)
     if (!font) {
-      this.set(key, 'failed', `${spec.id} is not in the studio's catalog.`)
+      this.set(key, 'failed', `${spec.id} is not in Tynovo's catalog.`)
       return Promise.resolve('failed')
     }
     const current = this.states.get(key)?.state
@@ -151,7 +151,7 @@ export const bundledFileKey = (s: FontSpec) => `/node_modules/@fontsource/${s.id
 const browserEnv: LoaderEnv = {
   async resolveUrl(s) {
     const load = (s.style === 'italic' ? italics : files)[bundledFileKey(s)]
-    if (!load) throw new Error(`The studio has no ${s.weight} ${s.style} file for this font.`)
+    if (!load) throw new Error(`Tynovo has no ${s.weight} ${s.style} file for this font.`)
     return load()
   },
   async register(family, s, url) {

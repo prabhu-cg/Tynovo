@@ -55,7 +55,7 @@ export function addNamedFont(p: Project, family: string, fallback: FontSource['f
   return { project: { ...p, fontSources: [...p.fontSources, source] }, sourceId: source.id }
 }
 
-/** Record what the user knows about an existing font's licence. The studio never infers it. */
+/** Record what the user knows about an existing font's licence. Tynovo never infers it. */
 export function setSourceLicense(p: Project, sourceId: string, license: FontSource['license']): Project {
   return { ...p, fontSources: p.fontSources.map((s) => (s.id === sourceId ? { ...s, license } : s)) }
 }

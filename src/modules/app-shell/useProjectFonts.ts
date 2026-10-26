@@ -27,7 +27,7 @@ function specsFor(project: Project): Map<string, FontSpec[]> {
 
 /**
  * Loads the catalog fonts the project uses (and only those), detects the named fonts installed on this device,
- * and reports what is really available. Catalog files load on demand from the studio itself; a failure is
+ * and reports what is really available. Catalog files load on demand from Tynovo itself; a failure is
  * reported, never hidden, and nothing is shown as available until it is.
  */
 export function useProjectFonts(project: Project | null): ProjectFonts {

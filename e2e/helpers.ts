@@ -45,3 +45,9 @@ export function writeProjects(page: Page, rows: Array<Record<string, unknown>>) 
     rows,
   )
 }
+
+/** Open a project card's "More actions" menu and choose an action. */
+export async function cardAction(page: Page, project: string, action: string | RegExp) {
+  await page.getByRole('button', { name: `More actions for ${project}`, exact: true }).click()
+  await page.getByRole('menu', { name: `More actions for ${project}` }).getByRole('menuitem', { name: action }).click()
+}

@@ -9,6 +9,7 @@ import { fontLoader, nearestWeight, type FontSpec } from '@/modules/font-catalog
 import { filterCatalog, hasBrandSignals, NO_FILTER, RECOMMENDATION_NOTE, scoreFont, type CatalogFilter } from '@/modules/font-catalog/recommend'
 import { AppSeo } from '@/modules/marketing/Seo'
 import { AlertIcon, Banner, Button, CheckIcon, Chip, Drawer, inputClass, Segmented } from '@/modules/shared-ui'
+import { EditGroup } from './EditGroup'
 import { useProject } from './project'
 
 const toggle = <T,>(list: readonly T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -16,7 +17,7 @@ const KINDS: { kind: RoleKind; label: string }[] = [{ kind: 'display', label: 'D
 
 /** Browse the bundled, properly licensed fonts: search, filter, see weights, styles and licence, and add them to the project. */
 export function FontCatalogPage() {
-  const { draft, editor } = useProject()
+  const { draft, editor, readOnly } = useProject()
   const [filter, setFilter] = useState<CatalogFilter>(NO_FILTER)
   const [sort, setSort] = useState<'az' | 'match'>('az')
   const [openId, setOpenId] = useState<string | null>(null)
@@ -39,9 +40,9 @@ export function FontCatalogPage() {
       <header className="grid max-w-3xl gap-2">
         <h2 className="text-xl font-extrabold">Font catalog</h2>
         <p className="text-ink">
-          {CATALOG.length} fonts, all under the SIL Open Font License 1.1, which allows use and redistribution. The files ship with the studio and load from it only when a font is previewed or used by a role: nothing comes from a third-party server, and nothing loads until it is needed.
+          {CATALOG.length} fonts, all under the SIL Open Font License 1.1, which allows use and redistribution. The files ship with Tynovo and load from it only when a font is previewed or used by a role: nothing comes from a third-party server, and nothing loads until it is needed.
         </p>
-        <p className="text-sm text-ink-soft">Category, weights, styles and licence come from each font’s own package. The tone and use-case tags are the studio’s own judgement, used only to order and filter. Need a font that is installed on your device instead? <Link to="../typography#fonts" className="font-semibold text-accent-strong underline underline-offset-4">Add it by name on the typography page</Link>.</p>
+        <p className="text-sm text-ink-soft">Category, weights, styles and licence come from each font’s own package. The tone and use-case tags are Tynovo’s own judgement, used only to order and filter. Need a font that is installed on your device instead? <Link to="../typography#fonts" className="font-semibold text-accent-strong underline underline-offset-4">Add it by name on the typography page</Link>.</p>
       </header>
 
       <section aria-label="Search and filters" className="grid gap-4 rounded-md border border-line bg-paper p-4">
@@ -99,7 +100,7 @@ export function FontCatalogPage() {
                 {inProject.has(f.id) ? (
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ok"><CheckIcon />In this project</span>
                 ) : (
-                  <Button aria-label={`Add ${f.family} to project`} onClick={() => editor.patch((p) => addCatalogFont(p, f.id)?.project ?? p)}>Add to project</Button>
+                  <Button aria-label={`Add ${f.family} to project`} disabled={readOnly} title={readOnly ? 'The sample project cannot be changed' : undefined} onClick={() => editor.patch((p) => addCatalogFont(p, f.id)?.project ?? p)}>Add to project</Button>
                 )}
               </li>
             ))}
@@ -156,7 +157,7 @@ function FontDetail({ font }: { font: CatalogFont }) {
         >
           {text || ' '}
         </p>
-        {state === 'loading' || state === 'idle' ? <p role="status" className="text-xs text-ink-soft">Loading {font.family} {spec.weight} from the studio…</p> : null}
+        {state === 'loading' || state === 'idle' ? <p role="status" className="text-xs text-ink-soft">Loading {font.family} {spec.weight} from Tynovo…</p> : null}
         {state === 'failed' ? (
           <Banner tone="error" actions={<Button onClick={() => void fontLoader.retry(spec)}>Try again</Button>}>
             <span className="inline-flex items-center gap-1.5 font-semibold"><AlertIcon />The font file could not be loaded.</span> {fontLoader.error(spec)} The sample shows a stand-in ({font.fallback}), not {font.family}.
@@ -173,7 +174,7 @@ function FontDetail({ font }: { font: CatalogFont }) {
           {font.italic ? <button type="button" aria-pressed={italic} onClick={() => setItalic(true)} className="min-h-11 cursor-pointer rounded-md border border-line-strong px-3 text-sm font-semibold italic aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-white md:min-h-9">400 italic</button> : null}
         </div>
         <p className="text-xs text-ink-soft">
-          The family has {font.styles.includes('italic') ? 'normal and italic styles' : 'a normal style only'}. The studio bundles the Latin subset of {font.weights.length} upright weight{font.weights.length === 1 ? '' : 's'}{font.italic ? ' and the regular italic' : ''}. Other weights, styles and scripts are not available here.
+          The family has {font.styles.includes('italic') ? 'normal and italic styles' : 'a normal style only'}. Tynovo bundles the Latin subset of {font.weights.length} upright weight{font.weights.length === 1 ? '' : 's'}{font.italic ? ' and the regular italic' : ''}. Other weights, styles and scripts are not available here.
         </p>
       </section>
 
@@ -192,7 +193,7 @@ function FontDetail({ font }: { font: CatalogFont }) {
       <section aria-label="How it is loaded" className="grid gap-1 text-sm">
         <h3 className="text-sm font-bold text-ink-strong">Availability</h3>
         <p data-testid="font-availability" className="text-ink">
-          {state === 'loaded' ? `The ${spec.weight}${italic ? ' italic' : ''} file is loaded from the studio.` : state === 'failed' ? 'Not available: the file could not be loaded.' : 'Not loaded yet. It loads from the studio when previewed or used, not from a third party.'}
+          {state === 'loaded' ? `The ${spec.weight}${italic ? ' italic' : ''} file is loaded from Tynovo.` : state === 'failed' ? 'Not available: the file could not be loaded.' : 'Not loaded yet. It loads from Tynovo when previewed or used, not from a third party.'}
         </p>
       </section>
 
@@ -221,7 +222,8 @@ function FontDetail({ font }: { font: CatalogFont }) {
         <p className="text-xs text-ink-soft">{RECOMMENDATION_NOTE}</p>
       </section>
 
-      <div className="flex flex-wrap gap-2 border-t border-line pt-4">
+      <EditGroup className="border-t border-line pt-4">
+      <div className="flex flex-wrap gap-2">
         {sourceId ? (
           <span className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-ok"><CheckIcon />In this project</span>
         ) : (
@@ -230,6 +232,7 @@ function FontDetail({ font }: { font: CatalogFont }) {
         <Button onClick={() => addAnd((p, id) => setPairing(p, 'primary', { kind: 'source', sourceId: id }))}>Use as primary font</Button>
         <Button onClick={() => addAnd((p, id) => setPairing(p, 'secondary', { kind: 'source', sourceId: id }))}>Use as secondary font</Button>
       </div>
+      </EditGroup>
       <p className="text-xs text-ink-soft">Primary and secondary set the project’s pairing. Apply it to roles on the <Link to="../typography#pairing" className="font-semibold text-accent-strong underline underline-offset-4">typography page</Link>.</p>
     </div>
   )

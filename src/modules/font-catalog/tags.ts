@@ -1,7 +1,7 @@
 import type { Tone, UseCase } from '@/modules/brand-projects/schema'
 
 /**
- * The studio's own editorial tags for each catalogued font. These are judgements made by the people who built the
+ * Tynovo's own editorial tags for each catalogued font. These are judgements made by the people who built the
  * studio, NOT measurements and NOT font metadata: they exist to order suggestions and filters, and the UI says so.
  * Category, weights, styles and licences come from the font packages themselves (see catalog.data.ts).
  */

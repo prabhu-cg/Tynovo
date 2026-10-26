@@ -2,12 +2,12 @@ import type { Brand, RoleKind } from '@/modules/brand-projects/schema'
 import { CATALOG, type CatalogFont } from './catalog'
 
 /**
- * Suggestions are a transparent scoring of the studio's own tags and the font packages' metadata against the brand
+ * Suggestions are a transparent scoring of Tynovo's own tags and the font packages' metadata against the brand
  * direction. They are fixed rules, not a model, and they say nothing about accessibility or quality: every point
  * is shown with its reason so the reasoning can be checked and disagreed with.
  */
 export const RECOMMENDATION_NOTE =
-  'Suggestions come from fixed rules that compare the studio’s own tags (our judgement) and each font’s weights and styles with the tone, use cases and priorities you set. They are not an AI model and not a legibility or accessibility test.'
+  'Suggestions come from fixed rules that compare Tynovo’s own tags (our judgement) and each font’s weights and styles with the tone, use cases and priorities you set. They are not an AI model and not a legibility or accessibility test.'
 
 export interface Reason {
   text: string

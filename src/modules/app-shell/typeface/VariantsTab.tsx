@@ -6,6 +6,7 @@ import { describeDifference, exploreVariants } from '@/modules/typeface-engine/v
 import { Button, inputClass, NumberField, RangeField } from '@/modules/shared-ui'
 import { COMMERCE } from '@/modules/entitlements'
 import { useCapabilities, useFeature } from '../entitlements'
+import { useProject } from '../project'
 import { newStamp, type TypefaceHandle } from './useTypeface'
 
 const SAMPLE = 'Hamburg'
@@ -30,10 +31,11 @@ function Sample({ face, dna, label }: { face: CustomTypeface; dna: Dna; label: s
 export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
   const { face, update, edit } = handle
   const caps = useCapabilities()
+  const { readOnly } = useProject()
   const explore = useFeature('typeface.variants.explore')
   const max = caps.limit('typeface.variants.maxSaved')
   const atLimit = face.variants.length >= max
-  const canSave = explore.allowed && !atLimit
+  const canSave = explore.allowed && !atLimit && !readOnly
   const [seed, setSeed] = useState(1)
   const [spread, setSpread] = useState(0.3)
   const [compare, setCompare] = useState<string[]>([])
@@ -120,13 +122,13 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
               <li key={v.id} className="flex min-w-0 flex-col rounded-md border border-line bg-paper p-3">
                 <Sample face={face} dna={v.dna} label={`${v.name} sample`} />
                 <label className="mt-2 grid gap-0.5 text-xs text-ink-soft">Name
-                  <input defaultValue={v.name} maxLength={60} onBlur={(e) => e.target.value.trim() !== v.name && update((f) => renameVariant(f, v.id, e.target.value))} className={`${inputClass} font-semibold text-ink-strong`} />
+                  <input defaultValue={v.name} readOnly={readOnly} maxLength={60} onBlur={(e) => e.target.value.trim() !== v.name && update((f) => renameVariant(f, v.id, e.target.value))} className={`${inputClass} font-semibold text-ink-strong`} />
                 </label>
                 <p className="tnum mt-1 text-xs text-ink-soft">{v.origin ? `Seed ${v.origin.seed}, spread ${v.origin.spread}, #${v.origin.index + 1}` : 'Saved by you'} · {when.format(new Date(v.createdAt))}</p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  <Button aria-pressed={v.favourite} onClick={() => update((f) => toggleFavourite(f, v.id))} aria-label={`${v.favourite ? 'Remove' : 'Mark'} ${v.name} as favourite`}>{v.favourite ? '★ Favourite' : '☆ Favourite'}</Button>
-                  <Button variant="primary" onClick={() => edit((f) => applyVariant(f, v.id, newStamp()))}>Apply</Button>
-                  <Button variant="ghost" onClick={() => update((f) => deleteVariant(f, v.id))} aria-label={`Delete ${v.name}`}>Delete</Button>
+                  <Button disabled={readOnly} aria-pressed={v.favourite} onClick={() => update((f) => toggleFavourite(f, v.id))} aria-label={`${v.favourite ? 'Remove' : 'Mark'} ${v.name} as favourite`}>{v.favourite ? '★ Favourite' : '☆ Favourite'}</Button>
+                  <Button variant="primary" disabled={readOnly} onClick={() => edit((f) => applyVariant(f, v.id, newStamp()))}>Apply</Button>
+                  <Button variant="ghost" disabled={readOnly} onClick={() => update((f) => deleteVariant(f, v.id))} aria-label={`Delete ${v.name}`}>Delete</Button>
                   <label className="flex min-h-11 items-center gap-1.5 px-2 text-sm font-semibold md:min-h-9"><input type="checkbox" className="size-4 accent-accent" checked={compare.includes(v.id)} onChange={() => toggleCompare(v.id)} />Compare</label>
                 </div>
               </li>
@@ -147,7 +149,7 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
               return (
                 <li key={h.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
                   <div className="min-w-48 flex-1"><p className="font-semibold text-ink-strong">{h.label}</p><p className="tnum text-xs text-ink-soft">{when.format(new Date(h.at))} · {diff.length === 0 ? 'same as now' : `${diff.length} difference${diff.length > 1 ? 's' : ''} from now`}</p></div>
-                  <Button disabled={diff.length === 0} onClick={() => edit((f) => restoreSnapshot(f, h.id, newStamp()))}>Restore</Button>
+                  <Button disabled={diff.length === 0 || readOnly} onClick={() => edit((f) => restoreSnapshot(f, h.id, newStamp()))}>Restore</Button>
                 </li>
               )
             })}

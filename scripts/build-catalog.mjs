@@ -11,7 +11,7 @@ const IDS = [
   'bebas-neue', 'abril-fatface',
   'caveat',
 ]
-/** Weights the studio bundles (latin subset, upright), where the family has them. Regular italic is bundled where it exists. */
+/** Weights Tynovo bundles (latin subset, upright), where the family has them. Regular italic is bundled where it exists. */
 const WEIGHTS = [300, 400, 500, 600, 700, 800, 900]
 const OFL_URL = 'https://openfontlicense.org/open-font-license-official-text/'
 

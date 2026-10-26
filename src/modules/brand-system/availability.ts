@@ -25,12 +25,12 @@ export interface AvailabilityInput {
 
 export function sourceAvailability(source: FontSource, input: AvailabilityInput): Availability {
   if (source.kind === 'catalog') {
-    if (!catalogFontFor(source.family)) return { status: 'unavailable', message: `${source.family} is no longer in the studio's catalog, so it cannot be loaded.` }
+    if (!catalogFontFor(source.family)) return { status: 'unavailable', message: `${source.family} is no longer in Tynovo's catalog, so it cannot be loaded.` }
     if (input.load === 'loaded') return { status: 'loaded' }
     if (input.load === 'failed') return { status: 'failed', message: input.loadError ?? 'The font file could not be loaded.' }
     return { status: 'loading' }
   }
-  if (source.kind === 'uploaded') return { status: 'unavailable', message: 'Uploaded fonts are not stored by the studio, so this one cannot be loaded.' }
+  if (source.kind === 'uploaded') return { status: 'unavailable', message: 'Uploaded fonts are not stored by Tynovo, so this one cannot be loaded.' }
   return input.installed === 'installed' ? { status: 'installed' } : input.installed === 'not-detected' ? { status: 'not-detected' } : { status: 'unknown' }
 }
 
