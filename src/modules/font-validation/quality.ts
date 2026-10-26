@@ -61,6 +61,11 @@ export interface CheckInfo {
   name: string
   measures: string
   limits: string
+  /**
+   * core: always runs; it guards the correctness of an exported file.
+   * extended: advice about metrics, widths and spacing. It never blocks an export, so a plan may leave it out.
+   */
+  tier: 'core' | 'extended'
 }
 
 export interface QualityReport {
@@ -69,6 +74,8 @@ export interface QualityReport {
   checks: CheckInfo[]
   /** True when results of building and re-reading the file were supplied. */
   fileChecked: boolean
+  /** Checks that were not run because the plan does not include them. Empty when everything ran. */
+  skipped: CheckInfo[]
 }
 
 /* ---------- context ---------- */
@@ -649,16 +656,16 @@ interface Check {
 }
 
 export const CHECKS: Check[] = [
-  { info: { id: 'coverage', category: 'coverage', name: 'Missing glyphs', measures: 'Which of the 95 target ASCII characters have a glyph that passes validation.', limits: 'Only the target set is checked. Accents and other scripts are out of scope.' }, run: coverage },
-  { info: { id: 'geometry', category: 'outlines', name: 'Empty or invalid paths', measures: 'Every contour: point count, whole-unit coordinates, area, crossing edges, direction, counters inside shapes, ink inside the vertical metrics, bearings against the advance, stray specks and stacked points.', limits: 'Geometry only. It cannot tell whether a shape looks good or is legible.' }, run: geometry },
-  { info: { id: 'mapping', category: 'mapping', name: 'Duplicate or invalid glyph mappings', measures: 'Unique code points, unique and valid glyph names, valid Unicode scalar values.', limits: 'Checked on the design. The exported file is compared again in the file checks.' }, run: mapping },
-  { info: { id: 'alignment', category: 'metrics', name: 'Metric consistency', measures: 'Baseline, cap height, x-height and ascender alignment of letters and digits, and whether the declared x-height and cap height match the letters.', limits: 'Reference shapes are fixed lists of Latin letters; unusual designs may trip them. Allowed overshoot comes from your design settings.' }, run: (c) => [...alignment(c), ...parameters(c)] },
-  { info: { id: 'widths', category: 'widths', name: 'Unusual advance widths', measures: 'Each glyph’s advance against the median of its group (uppercase, lowercase, digits), with allowances for narrow and wide letters, and the space against lowercase.', limits: 'A statistical outlier is a prompt to look, not a mistake: some designs are deliberately uneven.' }, run: widths },
-  { info: { id: 'spacing', category: 'spacing', name: 'Suspicious spacing', measures: 'Side bearings of overridden glyphs against automatic spacing, the closest approach and the average gap in about 40 letter pairs (sampled every 8 units of height), compared with the gap between straight stems.', limits: 'Gaps are measured, not seen: optical spacing depends on weight, size and taste. Kerning suggestions are a starting point to check in the preview.' }, run: spacing },
-  { info: { id: 'metadata', category: 'metadata', name: 'Missing metadata', measures: 'Family and style names, copyright and licence fields.', limits: 'The studio checks that fields exist and are consistent. It cannot judge whether a licence or copyright statement is legally right.' }, run: metadata },
+  { info: { tier: 'core', id: 'coverage', category: 'coverage', name: 'Missing glyphs', measures: 'Which of the 95 target ASCII characters have a glyph that passes validation.', limits: 'Only the target set is checked. Accents and other scripts are out of scope.' }, run: coverage },
+  { info: { tier: 'core', id: 'geometry', category: 'outlines', name: 'Empty or invalid paths', measures: 'Every contour: point count, whole-unit coordinates, area, crossing edges, direction, counters inside shapes, ink inside the vertical metrics, bearings against the advance, stray specks and stacked points.', limits: 'Geometry only. It cannot tell whether a shape looks good or is legible.' }, run: geometry },
+  { info: { tier: 'core', id: 'mapping', category: 'mapping', name: 'Duplicate or invalid glyph mappings', measures: 'Unique code points, unique and valid glyph names, valid Unicode scalar values.', limits: 'Checked on the design. The exported file is compared again in the file checks.' }, run: mapping },
+  { info: { tier: 'extended', id: 'alignment', category: 'metrics', name: 'Metric consistency', measures: 'Baseline, cap height, x-height and ascender alignment of letters and digits, and whether the declared x-height and cap height match the letters.', limits: 'Reference shapes are fixed lists of Latin letters; unusual designs may trip them. Allowed overshoot comes from your design settings.' }, run: (c) => [...alignment(c), ...parameters(c)] },
+  { info: { tier: 'extended', id: 'widths', category: 'widths', name: 'Unusual advance widths', measures: 'Each glyph’s advance against the median of its group (uppercase, lowercase, digits), with allowances for narrow and wide letters, and the space against lowercase.', limits: 'A statistical outlier is a prompt to look, not a mistake: some designs are deliberately uneven.' }, run: widths },
+  { info: { tier: 'extended', id: 'spacing', category: 'spacing', name: 'Suspicious spacing', measures: 'Side bearings of overridden glyphs against automatic spacing, the closest approach and the average gap in about 40 letter pairs (sampled every 8 units of height), compared with the gap between straight stems.', limits: 'Gaps are measured, not seen: optical spacing depends on weight, size and taste. Kerning suggestions are a starting point to check in the preview.' }, run: spacing },
+  { info: { tier: 'core', id: 'metadata', category: 'metadata', name: 'Missing metadata', measures: 'Family and style names, copyright and licence fields.', limits: 'The studio checks that fields exist and are consistent. It cannot judge whether a licence or copyright statement is legally right.' }, run: metadata },
 ]
 
-const FILE_CHECK: CheckInfo = { id: 'file', category: 'file', name: 'Exported file checks', measures: 'The finished file is built, opened again and compared with the design: signature, tables, checksums, every character mapping, advance widths, outline bounds, metrics, names and kerning, plus the exporter library’s own validator.', limits: 'Run on this browser’s build of the file. Other programs may still behave differently; see the validation notes for what was tested where.' }
+const FILE_CHECK: CheckInfo = { tier: 'core', id: 'file', category: 'file', name: 'Exported file checks', measures: 'The finished file is built, opened again and compared with the design: signature, tables, checksums, every character mapping, advance widths, outline bounds, metrics, names and kerning, plus the exporter library’s own validator.', limits: 'Run on this browser’s build of the file. Other programs may still behave differently; see the validation notes for what was tested where.' }
 
 export interface FileCheckInput {
   issues: ValidationIssue[]
@@ -667,9 +674,16 @@ export interface FileCheckInput {
 
 const SEVERITY_ORDER: Record<QualitySeverity, number> = { blocking: 0, warning: 1, recommendation: 2 }
 
-export function runQualityChecks(face: CustomTypeface, file?: FileCheckInput): QualityReport {
+export interface QualityOptions {
+  /** Run the extended checks too. Defaults to true; a plan can turn it off (core checks always run). */
+  extended?: boolean
+}
+
+export function runQualityChecks(face: CustomTypeface, file?: FileCheckInput, options: QualityOptions = {}): QualityReport {
   const ctx = buildContext(face)
-  const findings = CHECKS.flatMap((c) => c.run(ctx))
+  const extended = options.extended ?? true
+  const active = CHECKS.filter((c) => extended || c.info.tier === 'core')
+  const findings = active.flatMap((c) => c.run(ctx))
   if (file) {
     for (const i of file.issues) {
       if (i.severity === 'info') continue
@@ -689,5 +703,5 @@ export function runQualityChecks(face: CustomTypeface, file?: FileCheckInput): Q
   findings.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity])
   const counts: Record<QualitySeverity, number> = { blocking: 0, warning: 0, recommendation: 0 }
   for (const f of findings) counts[f.severity] += 1
-  return { findings, counts, checks: [...CHECKS.map((c) => c.info), FILE_CHECK], fileChecked: !!file }
+  return { findings, counts, checks: [...active.map((c) => c.info), FILE_CHECK], fileChecked: !!file, skipped: CHECKS.filter((c) => !active.includes(c)).map((c) => c.info) }
 }

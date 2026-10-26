@@ -18,6 +18,7 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 | `glyph-editor` | domain + UI | Contour geometry, outline operations, undo history, editing session, working-copy bridge, viewport maths; text layout (tracking, word spacing, wrapping, kerning); SVG canvas, specimen and thumbnail components. See `glyph-editor.md` |
 | `font-export` | domain + UI | `FontBuilder` port; Font Flux adapter (TTF, OTF); format table and signature guards; sfnt reader; OS/2/head patcher; download helper; export orchestration; background file checks; browser rendering comparison; font lab page |
 | `font-validation` | domain | Per-glyph geometry checks, coverage classification, typeface-level checks, binary checks (Font Flux `diagnose`), read-back comparison of exported bytes with the design, and the quality report (findings with evidence and fixes; no score) |
+| `entitlements` | domain | Feature registry, tier configuration (data, validated), capability resolution with a trust rule, presentation of locked features. No payment, account or server. See `monetisation-architecture.md` |
 | `app-shell` | UI | App layout (responsive nav), dashboard, project workspace (`ProjectLayout` + section pages), `useProjectEditor` autosave hook, storage context |
 | `marketing` | UI | Public website, `content.ts` (single source of capability status), `seo-config.ts` (page metadata shared by client and build) |
 | `shared-ui` | UI | Button, Banner, non-modal Drawer |

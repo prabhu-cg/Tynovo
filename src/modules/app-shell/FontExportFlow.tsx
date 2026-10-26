@@ -5,6 +5,8 @@ import { contentRevision } from '@/modules/brand-system/revision'
 import { exportTypeface, type TypefaceExport } from '@/modules/font-export/typefaceExport'
 import { runQualityChecks } from '@/modules/font-validation/quality'
 import { AlertIcon, Banner, Button, ButtonLink, CheckIcon, Drawer, Segmented } from '@/modules/shared-ui'
+import { COMMERCE, viewOf, type FeatureId } from '@/modules/entitlements'
+import { useCapabilities } from './entitlements'
 import { useProject } from './project'
 
 const NOTES: Record<FontFormatId, string> = {
@@ -15,6 +17,10 @@ const NOTES: Record<FontFormatId, string> = {
 /** Validate, build, re-open and compare a font file, then offer it for download. Failed files are never offered. */
 export function FontExportFlow() {
   const { editor } = useProject()
+  const caps = useCapabilities()
+  const FORMAT_FEATURE: Record<FontFormatId, FeatureId> = { ttf: 'export.font.ttf', otf: 'export.font.otf' }
+  const formats = FORMAT_IDS.filter((f) => viewOf(FORMAT_FEATURE[f], caps).allowed)
+  const lockedFormats = FORMAT_IDS.filter((f) => !formats.includes(f) && viewOf(FORMAT_FEATURE[f], caps).visible)
   // Files are built from what is saved, never from an unsaved draft, so they always match what a reload shows.
   const saved = editor.saved
   const settled = editor.state === 'saved'
@@ -40,13 +46,14 @@ export function FontExportFlow() {
     }
   }
 
-  const quality = saved?.customTypeface ? runQualityChecks(saved.customTypeface).counts : null
+  const quality = saved?.customTypeface ? runQualityChecks(saved.customTypeface, undefined, { extended: caps.allows('quality.extended') }).counts : null
 
   return (
     <>
       <div className="grid max-w-xl gap-3">
-        <Segmented label="File format" value={format} options={FORMAT_IDS.map((f) => ({ value: f, label: FORMATS[f].label }))} onChange={(f) => { setFormat(f); setResult(null) }} />
+        <Segmented label="File format" value={format} options={formats.map((f) => ({ value: f, label: FORMATS[f].label }))} onChange={(f) => { setFormat(f); setResult(null) }} />
         <p className="text-xs text-ink-soft">{NOTES[format]} WOFF and WOFF2 are not offered: they have not been validated here.</p>
+        {lockedFormats.length > 0 ? <p data-testid="locked" className="text-xs text-ink-soft">Not included in the {caps.label} plan: {lockedFormats.map((f) => FORMATS[f].label).join(', ')}.{COMMERCE.paymentsAvailable ? '' : ' Paid plans are not available yet.'}</p> : null}
         <div><Button variant="primary" disabled={busy || !settled} onClick={() => void run()}>{busy ? 'Building and checking…' : `Check and build ${spec.extension}…`}</Button></div>
         {!settled ? <p role="status" className="text-xs text-ink-soft">Waiting for your latest changes to be saved, so the file matches the saved project.</p> : null}
         {quality ? (

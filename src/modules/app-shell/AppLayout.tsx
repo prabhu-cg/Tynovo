@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
 import { Banner } from '@/modules/shared-ui'
+import { useCapabilities } from './entitlements'
 import { StudioProvider } from './StudioContext'
 import { useStudio } from './studio'
 
@@ -26,6 +27,7 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
 
 function Shell() {
   const { storageWarning, storageKind } = useStudio()
+  const caps = useCapabilities()
   const [open, setOpen] = useState(false)
   return (
     <div className="min-h-dvh bg-sheet md:grid md:grid-cols-[14rem_minmax(0,1fr)]">
@@ -49,6 +51,7 @@ function Shell() {
 
       <main id="app-main" tabIndex={-1} className="min-w-0 px-4 py-6 outline-none md:px-10 md:py-10">
         {storageWarning ? <div className="mb-6"><Banner tone="warn">{storageWarning}</Banner></div> : null}
+        {import.meta.env.DEV && caps.grant.preview ? <div className="mb-6"><Banner tone="info"><strong>Development preview of the “{caps.label}” plan.</strong> This is not a purchase and not proof of one: it exists only while the studio is being built, and a production build ignores it.</Banner></div> : null}
         <Outlet />
       </main>
     </div>

@@ -4,6 +4,8 @@ import { SpecimenSvg } from '@/modules/glyph-editor/SpecimenSvg'
 import { applyVariant, deleteVariant, renameVariant, restoreSnapshot, saveVariant, toggleFavourite } from '@/modules/typeface-engine/edit'
 import { describeDifference, exploreVariants } from '@/modules/typeface-engine/variants'
 import { Button, inputClass, NumberField, RangeField } from '@/modules/shared-ui'
+import { COMMERCE } from '@/modules/entitlements'
+import { useCapabilities, useFeature } from '../entitlements'
 import { newStamp, type TypefaceHandle } from './useTypeface'
 
 const SAMPLE = 'Hamburg'
@@ -27,6 +29,11 @@ function Sample({ face, dna, label }: { face: CustomTypeface; dna: Dna; label: s
 
 export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
   const { face, update, edit } = handle
+  const caps = useCapabilities()
+  const explore = useFeature('typeface.variants.explore')
+  const max = caps.limit('typeface.variants.maxSaved')
+  const atLimit = face.variants.length >= max
+  const canSave = explore.allowed && !atLimit
   const [seed, setSeed] = useState(1)
   const [spread, setSpread] = useState(0.3)
   const [compare, setCompare] = useState<string[]>([])
@@ -44,10 +51,16 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
   const compared = compare.map((k) => entries.find((e) => e.key === k)).filter((e): e is Entry => !!e)
 
   const save = (c: (typeof candidates)[number], favourite: boolean) =>
-    update((f) => saveVariant(f, { name: `Seed ${c.origin.seed} · ${c.origin.index + 1}`, dna: c.dna, origin: c.origin, favourite }, newStamp()))
+    canSave && update((f) => saveVariant(f, { name: `Seed ${c.origin.seed} · ${c.origin.index + 1}`, dna: c.dna, origin: c.origin, favourite }, newStamp(), max))
 
   return (
     <div className="grid min-w-0 gap-10">
+      {!explore.visible ? null : !explore.allowed ? (
+        <section aria-labelledby="explore-h" className="grid gap-2">
+          <h2 id="explore-h" className="text-lg font-bold">Explore variations</h2>
+          <p data-testid="locked" className="text-sm text-ink-soft">{explore.message} Variants you have already saved stay below, and can still be applied, compared and deleted.</p>
+        </section>
+      ) : (
       <section aria-labelledby="explore-h" className="grid gap-4">
         <div>
           <h2 id="explore-h" className="text-lg font-bold">Explore variations</h2>
@@ -72,8 +85,8 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
                 <p className="mt-2 text-sm font-bold text-ink-strong">Candidate {c.origin.index + 1}</p>
                 <p className="tnum min-h-10 grow text-xs text-ink-soft">{diff.length === 0 ? 'Same as the current design.' : diff.slice(0, 3).join(' · ') + (diff.length > 3 ? ` · +${diff.length - 3} more` : '')}</p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  <Button onClick={() => save(c, false)}>Save</Button>
-                  <Button onClick={() => save(c, true)} aria-label={`Save candidate ${c.origin.index + 1} as favourite`}>★ Favourite</Button>
+                  <Button disabled={!canSave} onClick={() => save(c, false)}>Save</Button>
+                  <Button disabled={!canSave} onClick={() => save(c, true)} aria-label={`Save candidate ${c.origin.index + 1} as favourite`}>★ Favourite</Button>
                   <label className="flex min-h-11 items-center gap-1.5 px-2 text-sm font-semibold md:min-h-9"><input type="checkbox" className="size-4 accent-accent" checked={compare.includes(key)} onChange={() => toggleCompare(key)} />Compare</label>
                 </div>
               </li>
@@ -81,6 +94,7 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
           })}
         </ul>
       </section>
+      )}
 
       {compared.length > 0 ? (
         <section aria-labelledby="cmp-h" className="grid gap-3">
@@ -99,6 +113,7 @@ export function VariantsTab({ handle }: { handle: TypefaceHandle }) {
 
       <section aria-labelledby="saved-h" className="grid gap-3">
         <h2 id="saved-h" className="text-lg font-bold">Saved variants</h2>
+        <p data-testid="variant-count" className="tnum text-sm text-ink-soft">{face.variants.length} of {max} saved.{atLimit && explore.allowed ? ` You are at the limit of the ${caps.label} plan${face.variants.length > max ? ' and over it' : ''}: delete a variant to save another. Nothing you have saved is removed.${COMMERCE.paymentsAvailable ? '' : ' Paid plans are not available yet.'}` : ''}</p>
         {saved.length === 0 ? <p className="text-ink-soft">Nothing saved yet. Save a candidate to keep it.</p> : (
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Saved variants">
             {saved.map((v) => (

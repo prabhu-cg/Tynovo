@@ -46,7 +46,7 @@ describe('a fresh typeface (what the checks say about the generator’s own outp
   })
 
   it('never produces a score', () => {
-    expect(Object.keys(run(base()))).toEqual(['findings', 'counts', 'checks', 'fileChecked'])
+    expect(Object.keys(run(base()))).toEqual(['findings', 'counts', 'checks', 'fileChecked', 'skipped'])
   })
 
   it('describes every check with what it measures and what it cannot tell you', () => {

@@ -14,6 +14,8 @@ import { deriveMetrics } from '@/modules/typeface-engine/dna'
 import { freezeGlyph, resetGlyph, setGlyphOutline, setGlyphParams, setGlyphSpacing } from '@/modules/typeface-engine/edit'
 import { Banner, Button, ChevronLeftIcon, ChevronRightIcon } from '@/modules/shared-ui'
 import { useProject } from '../project'
+import { lockedMessage, whenLocked } from '@/modules/entitlements'
+import { useCapabilities } from '../entitlements'
 import { GlyphInspector } from './GlyphInspector'
 import { GlyphToolbar } from './GlyphToolbar'
 import type { TypefaceHandle } from './useTypeface'
@@ -130,7 +132,17 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
     if (s.px < margin || s.px > size.w - margin || s.py < margin || s.py > size.h - margin) viewport.pan(size.w / 2 - s.px, size.h / 2 - s.py)
   }
 
+  // Capability and presentation are separate: `can*` decides whether an edit may happen (every route to it checks), `*Hidden` only decides whether its control is drawn.
+  const caps = useCapabilities()
+  const canStructure = caps.allows('glyph.edit.structure')
+  const canShape = caps.allows('glyph.edit.shape-params')
+  const structureNote = canStructure ? undefined : lockedMessage('glyph.edit.structure', caps)
+  const shapeNote = canShape ? undefined : lockedMessage('glyph.edit.shape-params', caps)
+  const structureHidden = !canStructure && whenLocked('glyph.edit.structure') === 'hide'
+  const shapeHidden = !canShape && whenLocked('glyph.edit.shape-params') === 'hide'
+
   const run = (cmd: CanvasCommand) => {
+    if ((cmd.type === 'insert' || cmd.type === 'delete') && !canStructure) return setNote(structureNote ?? '')
     switch (cmd.type) {
       case 'nudge':
         if (selection.size === 0) viewport.pan(-cmd.dx * 40, cmd.dy * 40)
@@ -265,8 +277,10 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
             canRedo={session.history.future.length > 0}
             onUndo={() => run({ type: 'undo' })}
             onRedo={() => run({ type: 'redo' })}
-            canInsert={selection.size === 1}
-            canDelete={selection.size > 0}
+            canInsert={selection.size === 1 && canStructure}
+            canDelete={selection.size > 0 && canStructure}
+            structureNote={structureNote}
+            structureHidden={structureHidden}
             onInsert={() => run({ type: 'insert' })}
             onDelete={() => run({ type: 'delete' })}
             zoom={viewport.view ? zoomPercent(viewport.view) : 100}
@@ -298,6 +312,7 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
               onLive={(contours) => dispatch({ type: 'live', draft: withContours(contours) })}
               onGestureEnd={(base) => dispatch({ type: 'endGesture', base: { contours: base, advanceWidth: draft.advanceWidth }, now: Date.now() })}
               onInsertAt={(c, p, x, y) => {
+                if (!canStructure) return setNote(structureNote ?? '')
                 const r = insertPointAt(draft.contours, c, p, x, y)
                 if (!r.ok) return setNote(r.reason)
                 commit(withContours(r.contours), { selection: r.selection })
@@ -367,7 +382,11 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
               update((f) => resetGlyph(f, char))
               setNote('Every override on this glyph was removed.')
             }}
-            onParam={(key, value) => update((f) => setGlyphParams(f, char, { [key]: value }))}
+            onParam={(key, value) => canShape && update((f) => setGlyphParams(f, char, { [key]: value }))}
+            structureNote={structureNote}
+            structureHidden={structureHidden}
+            shapeNote={shapeNote}
+            shapeHidden={shapeHidden}
           />
         </aside>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { ProjectService } from '@/modules/brand-projects/service'
 import { openRepository } from '@/modules/persistence/repositories'
 
+import { EntitlementsProvider } from './EntitlementsProvider'
 import { StudioCtx, type Studio } from './studio'
 
 /** Opens browser storage once and exposes the project service. Falls back to memory with a visible warning. */
@@ -17,5 +18,9 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     }
   }, [])
   if (!studio) return <p className="p-8 text-sm text-ink-soft" role="status">Opening your local workspace…</p>
-  return <StudioCtx.Provider value={studio}>{children}</StudioCtx.Provider>
+  return (
+    <StudioCtx.Provider value={studio}>
+      <EntitlementsProvider>{children}</EntitlementsProvider>
+    </StudioCtx.Provider>
+  )
 }

@@ -3,6 +3,8 @@ import { FORMATS, FORMAT_IDS, type FontFormatId } from '@/modules/font-export/fo
 import { useFileChecks } from '@/modules/font-export/useFileChecks'
 import { CATEGORY_LABEL, runQualityChecks, type QualityFinding, type QualityFix, type QualitySeverity } from '@/modules/font-validation/quality'
 import { AlertIcon, Banner, Button, CheckIcon, InfoIcon, Segmented } from '@/modules/shared-ui'
+import { COMMERCE } from '@/modules/entitlements'
+import { useCapabilities } from '../entitlements'
 import type { TypefaceHandle } from './useTypeface'
 
 type Filter = 'all' | QualitySeverity
@@ -17,13 +19,15 @@ const show = (c: string) => (c === ' ' ? 'space' : c)
 
 export function QualityTab({ handle, onGo }: { handle: TypefaceHandle; onGo: (fix: Extract<QualityFix, { kind: 'go' }>) => void }) {
   const live = useDeferredValue(handle.face)
+  const caps = useCapabilities()
+  const extended = caps.allows('quality.extended')
   const [format, setFormat] = useState<FontFormatId>('ttf')
   const [filter, setFilter] = useState<Filter>('all')
   const [applied, setApplied] = useState('')
   const file = useFileChecks(live, format)
   const report = useMemo(
-    () => runQualityChecks(live, file.status === 'done' ? { issues: file.issues, format: FORMATS[format].label } : undefined),
-    [live, file, format],
+    () => runQualityChecks(live, file.status === 'done' ? { issues: file.issues, format: FORMATS[format].label } : undefined, { extended }),
+    [live, file, format, extended],
   )
   const findings = report.findings.filter((f) => filter === 'all' || f.severity === filter)
 
@@ -49,6 +53,9 @@ export function QualityTab({ handle, onGo }: { handle: TypefaceHandle; onGo: (fi
           <Segmented label="Show" value={filter} options={[{ value: 'all', label: 'All' }, { value: 'blocking', label: 'Blocking' }, { value: 'warning', label: 'Warnings' }, { value: 'recommendation', label: 'Tips' }]} onChange={setFilter} />
           <Segmented label="Exported file checked as" value={format} options={FORMAT_IDS.map((f) => ({ value: f, label: FORMATS[f].extension }))} onChange={setFormat} />
         </div>
+        {report.skipped.length > 0 ? (
+          <p data-testid="locked" className="max-w-2xl text-sm text-ink-soft">Not run in the {caps.label} plan: {report.skipped.map((c) => c.name).join(', ')}. They only give advice. The checks that decide whether a font file can be exported always run.{COMMERCE.paymentsAvailable ? '' : ' Paid plans are not available yet.'}</p>
+        ) : null}
         <p role="status" aria-live="polite" className="min-h-5 text-sm text-ok">{applied}</p>
       </section>
 

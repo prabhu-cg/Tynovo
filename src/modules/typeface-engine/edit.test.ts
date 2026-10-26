@@ -132,3 +132,38 @@ describe('variants', () => {
     expect(customTypefaceSchema.safeParse(f).success).toBe(true)
   })
 })
+
+describe('saving variants under a limit', () => {
+  const candidate = () => exploreVariants(createTypeface('t').dna, 1, 1, 0.3)[0]!
+  const make = (n: number, limit?: number) => {
+    let f = createTypeface('t')
+    const c = candidate()
+    for (let i = 0; i < n; i++) f = saveVariant(f, { name: `v${i}`, dna: c.dna, origin: null }, stamp(), limit)
+    return f
+  }
+
+  it('refuses to save past the limit, and never drops a variant already kept', () => {
+    const f = make(3, 3)
+    expect(f.variants.map((v) => v.name)).toEqual(['v2', 'v1', 'v0'])
+    const again = saveVariant(f, { name: 'extra', dna: candidate().dna, origin: null }, stamp(), 3)
+    expect(again).toBe(f)
+    expect(again.variants.map((v) => v.name)).toEqual(['v2', 'v1', 'v0'])
+  })
+
+  it('a favourite kept earlier survives hitting the limit', () => {
+    let f = saveVariant(createTypeface('t'), { name: 'keeper', dna: candidate().dna, origin: null, favourite: true }, stamp(), 2)
+    f = saveVariant(f, { name: 'b', dna: candidate().dna, origin: null }, stamp(), 2)
+    f = saveVariant(f, { name: 'c', dna: candidate().dna, origin: null }, stamp(), 2)
+    expect(f.variants.map((v) => v.name).sort()).toEqual(['b', 'keeper'])
+  })
+
+  it('a project over a newly lowered limit keeps all its variants; it just cannot add more', () => {
+    const f = make(5)
+    expect(f.variants).toHaveLength(5)
+    expect(saveVariant(f, { name: 'x', dna: candidate().dna, origin: null }, stamp(), 2)).toBe(f)
+  })
+
+  it('can never exceed the product ceiling whatever limit is passed', () => {
+    expect(make(VARIANT_LIMIT + 5, 5000).variants).toHaveLength(VARIANT_LIMIT)
+  })
+})

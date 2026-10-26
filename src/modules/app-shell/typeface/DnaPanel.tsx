@@ -2,6 +2,8 @@ import { CORNER_STYLES, TERMINALS, type Dna } from '@/modules/brand-projects/sch
 import { checkpoint, patchDna, resetDna, switchFamily } from '@/modules/typeface-engine/edit'
 import { defaultDna, DNA_CONTROLS, FAMILY_LABELS, type DnaControl, type Family } from '@/modules/typeface-engine/dna'
 import { Button, RangeField, Segmented } from '@/modules/shared-ui'
+import { COMMERCE, viewOf, type FeatureId } from '@/modules/entitlements'
+import { useCapabilities } from '../entitlements'
 import { newStamp, type TypefaceHandle } from './useTypeface'
 
 const GROUPS: DnaControl['group'][] = ['Proportions', 'Strokes', 'Construction', 'Corners', 'Spacing']
@@ -12,7 +14,11 @@ const fmt = (c: DnaControl) => (v: number) => (c.step < 1 ? v.toFixed(2) : Strin
 /** All design parameters. Every control edits the shared DNA, so every glyph that uses the idea updates. */
 export function DnaPanel({ handle }: { handle: TypefaceHandle }) {
   const { face, edit } = handle
+  const caps = useCapabilities()
   const dna = face.dna
+  // Only families the plan includes can be switched to. The family a typeface already has is always shown, so nothing a person made is hidden.
+  const families = FAMILIES.filter((f) => f === dna.family || viewOf(`typeface.family.${f}` as FeatureId, caps).allowed)
+  const lockedFamilies = FAMILIES.filter((f) => !families.includes(f) && viewOf(`typeface.family.${f}` as FeatureId, caps).visible)
   const base = defaultDna(dna.family)
   const set = (patch: Partial<Dna>) => edit((f) => patchDna(f, patch))
 
@@ -21,10 +27,11 @@ export function DnaPanel({ handle }: { handle: TypefaceHandle }) {
       <Segmented
         label="Family"
         value={dna.family}
-        options={FAMILIES.map((f) => ({ value: f, label: FAMILY_LABELS[f].name.replace(' geometric', '') }))}
+        options={families.map((f) => ({ value: f, label: FAMILY_LABELS[f].name.replace(' geometric', '') }))}
         onChange={(f) => edit((t) => switchFamily(t, f, newStamp()))}
       />
       <p className="-mt-3 text-xs text-ink-soft">{FAMILY_LABELS[dna.family].blurb} Switching family loads its defaults, saves a restore point and keeps your glyph overrides.</p>
+      {lockedFamilies.length > 0 ? <p data-testid="locked" className="-mt-3 text-xs text-ink-soft">Not included in the {caps.label} plan: {lockedFamilies.map((f) => FAMILY_LABELS[f].name).join(', ')}.{COMMERCE.paymentsAvailable ? '' : ' Paid plans are not available yet.'}</p> : null}
 
       {GROUPS.map((group) => (
         <details key={group} open={group === 'Proportions' || group === 'Strokes'} className="group rounded-md border border-line bg-paper">

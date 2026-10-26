@@ -5,9 +5,9 @@ import type { Tool } from '@/modules/glyph-editor/GlyphCanvas'
 const btn =
   'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-sheet-deep disabled:pointer-events-none disabled:opacity-40 aria-pressed:bg-accent-wash aria-pressed:text-accent-strong md:min-h-9 md:min-w-9'
 
-function ToolButton({ label, icon, text, pressed, disabled, onClick, shortcut }: { label: string; icon: ReactNode; text?: string; pressed?: boolean; disabled?: boolean; onClick: () => void; shortcut?: string }) {
+function ToolButton({ label, icon, text, pressed, disabled, onClick, shortcut, note }: { label: string; icon: ReactNode; text?: string; pressed?: boolean; disabled?: boolean; onClick: () => void; shortcut?: string; note?: string | undefined }) {
   return (
-    <button type="button" aria-label={label} title={shortcut ? `${label} (${shortcut})` : label} aria-pressed={pressed} aria-keyshortcuts={shortcut} disabled={disabled} onClick={onClick} className={btn}>
+    <button type="button" aria-label={label} title={note ?? (shortcut ? `${label} (${shortcut})` : label)} aria-pressed={pressed} aria-keyshortcuts={shortcut} disabled={disabled} onClick={onClick} className={btn}>
       {icon}
       {text ? <span className="hidden sm:inline">{text}</span> : null}
     </button>
@@ -38,6 +38,9 @@ export interface GlyphToolbarProps {
   ghost: boolean
   ghostAvailable: boolean
   onGhost: (v: boolean) => void
+  /** Why adding and deleting points is unavailable, when the plan leaves it out. */
+  structureNote?: string | undefined
+  structureHidden?: boolean
 }
 
 /** Every canvas action is a button here as well as a key, so nothing depends on a mouse or on remembering a shortcut. */
@@ -50,9 +53,13 @@ export function GlyphToolbar(p: GlyphToolbarProps) {
       <ToolButton label="Undo" icon={<UndoIcon />} disabled={!p.canUndo} onClick={p.onUndo} shortcut="Control+Z" />
       <ToolButton label="Redo" icon={<RedoIcon />} disabled={!p.canRedo} onClick={p.onRedo} shortcut="Control+Shift+Z" />
       <Divider />
-      <ToolButton label="Insert a point after the selected point" icon={<AddPointIcon />} disabled={!p.canInsert} onClick={p.onInsert} shortcut="I" />
-      <ToolButton label="Delete the selected points" icon={<DeletePointIcon />} disabled={!p.canDelete} onClick={p.onDelete} shortcut="Delete" />
-      <Divider />
+      {p.structureHidden ? null : (
+        <>
+          <ToolButton label="Insert a point after the selected point" icon={<AddPointIcon />} disabled={!p.canInsert || !!p.structureNote} onClick={p.onInsert} shortcut="I" note={p.structureNote} />
+          <ToolButton label="Delete the selected points" icon={<DeletePointIcon />} disabled={!p.canDelete || !!p.structureNote} onClick={p.onDelete} shortcut="Delete" note={p.structureNote} />
+          <Divider />
+        </>
+      )}
       <ToolButton label="Zoom out" icon={<ZoomOutIcon />} onClick={p.onZoomOut} shortcut="-" />
       <output aria-label="Zoom" className="tnum min-w-12 text-center text-xs font-semibold text-ink-soft">{p.zoom}%</output>
       <ToolButton label="Zoom in" icon={<ZoomInIcon />} onClick={p.onZoomIn} shortcut="+" />

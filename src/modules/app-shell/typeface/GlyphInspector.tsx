@@ -54,6 +54,11 @@ export interface InspectorProps {
   hasOverrides: boolean
   onResetAll: () => void
   onParam: (key: keyof GlyphParams, value: number | undefined) => void
+  /** Set when the plan leaves out adding and deleting points, or per-glyph shape settings. */
+  structureNote?: string | undefined
+  structureHidden?: boolean
+  shapeNote?: string | undefined
+  shapeHidden?: boolean
 }
 
 export function GlyphInspector(p: InspectorProps) {
@@ -105,9 +110,10 @@ export function GlyphInspector(p: InspectorProps) {
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => p.onStepPoint(-1)}>Previous point</Button>
           <Button onClick={() => p.onStepPoint(1)}>Next point</Button>
-          <Button disabled={keys.length !== 1} onClick={p.onInsert}>Insert point after</Button>
-          <Button disabled={keys.length === 0} onClick={p.onDelete}>Delete {keys.length > 1 ? 'points' : 'point'}</Button>
+          {p.structureHidden ? null : <Button disabled={keys.length !== 1 || !!p.structureNote} onClick={p.onInsert}>Insert point after</Button>}
+          {p.structureHidden ? null : <Button disabled={keys.length === 0 || !!p.structureNote} onClick={p.onDelete}>Delete {keys.length > 1 ? 'points' : 'point'}</Button>}
         </div>
+        {p.structureNote && !p.structureHidden ? <p data-testid="locked" className="text-xs text-ink-soft">{p.structureNote}</p> : null}
       </Section>
 
       <Section id="gi-spacing" title="Spacing">
@@ -125,8 +131,11 @@ export function GlyphInspector(p: InspectorProps) {
         )}
       </Section>
 
+      {p.shapeHidden ? null : (
       <Section id="gi-shape" title="Shape settings for this glyph">
-        {shapeLocked ? (
+        {p.shapeNote ? (
+          <p data-testid="locked" className="flex items-start gap-2 text-sm text-ink-soft"><span className="mt-0.5"><InfoIcon /></span>{p.shapeNote}{o?.params ? ' The settings already on this glyph are kept and still apply.' : ''}</p>
+        ) : shapeLocked ? (
           <p className="flex items-start gap-2 text-sm text-ink-soft"><span className="mt-0.5"><InfoIcon /></span>{p.dirty ? 'Apply or discard your outline changes to use shape settings again.' : 'This outline is hand-edited, so shape settings do not apply. Reset it to the generated shape to use them.'}</p>
         ) : (
           <div className="grid gap-4">
@@ -143,6 +152,7 @@ export function GlyphInspector(p: InspectorProps) {
           </div>
         )}
       </Section>
+      )}
 
       <Section id="gi-outline" title="Outline">
         <p className="text-sm text-ink-soft">{p.frozen ? 'Hand-edited outline. Global shape changes no longer reach this glyph.' : 'Generated from the design. Editing a point makes it a hand-edited outline.'}</p>

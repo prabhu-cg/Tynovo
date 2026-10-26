@@ -4,6 +4,9 @@ import { assessProject } from '@/modules/brand-system/readiness'
 import { downloadBytes } from '@/modules/font-export/download'
 import type { ExportFile } from '@/modules/export-centre/types'
 import { Banner, Button, ButtonLink } from '@/modules/shared-ui'
+import { viewOf } from '@/modules/entitlements'
+import { useCapabilities } from './entitlements'
+import { EXPORT_FEATURE } from './export/exportFeatures'
 import { FileRow } from './export/FileRow'
 import { ReadinessList } from './export/ReadinessList'
 import { useBundle } from './export/useBundle'
@@ -16,6 +19,7 @@ const time = new Intl.DateTimeFormat(undefined, { timeStyle: 'short' })
 /** The export centre: everything the shared project can produce, built from the saved state, with the checks beside it. */
 export function ExportPage() {
   const { editor, fonts } = useProject()
+  const caps = useCapabilities()
   const saved = editor.saved
   const state = useBundle(saved)
   const [done, setDone] = useState<string | null>(null)
@@ -30,7 +34,7 @@ export function ExportPage() {
   const canDownload = settled && ready !== null
 
   const download = (file: ExportFile) => {
-    if (!ready) return
+    if (!ready || !viewOf(EXPORT_FEATURE[file.id], caps).allowed) return // the button is also disabled; every route checks
     downloadBytes(file.bytes, file.path, file.mimeType)
     editor.patch((p) => ({
       ...p,
@@ -39,7 +43,8 @@ export function ExportPage() {
     setDone(file.path)
   }
   const file = (id: ExportFile['id']) => ready?.files[id]
-  const rows = ready ? ready.order.filter((id) => id !== 'package' && id !== 'font').map((id) => ready.files[id]) : []
+  const view = (id: ExportFile['id']) => viewOf(EXPORT_FEATURE[id], caps)
+  const rows = ready ? ready.order.filter((id) => id !== 'package' && id !== 'font' && view(id).visible).map((id) => ready.files[id]) : []
 
   return (
     <div className="grid gap-10">
@@ -70,11 +75,11 @@ export function ExportPage() {
           {state.status === 'building' ? <p className="text-sm text-ink-soft">Preparing…</p> : null}
           {ready ? (
             <ul aria-label="Export files" className="divide-y divide-line overflow-hidden rounded-md border border-line bg-paper">
-              <FileRow file={file('package')!} disabled={!canDownload} onDownload={download}>
+              {view('package').visible ? <FileRow file={file('package')!} disabled={!canDownload} locked={view('package').message} onDownload={download}>
                 <p className="text-xs text-ink-soft">Contains every file below in a layout where the CSS finds your font at <code>fonts/</code>.</p>
-              </FileRow>
+              </FileRow> : null}
               {rows.map((f) => (
-                <FileRow key={f.id} file={f} disabled={!canDownload} onDownload={download}>
+                <FileRow key={f.id} file={f} disabled={!canDownload} locked={view(f.id).message} onDownload={download}>
                   {f.id === 'css' && external.length > 0 ? (
                     <p data-testid="external-font-note" className="rounded-md bg-sheet px-3 py-2 text-sm">
                       <strong>Font files for {external.map((u) => u.font.family).join(', ')} are not included.</strong> The CSS names {external.length === 1 ? 'this font' : 'these fonts'}; the file may need to be supplied separately (or installed where the page runs). The CSS says where each comes from, and the sources and licences file records its licence.
@@ -82,7 +87,7 @@ export function ExportPage() {
                   ) : null}
                 </FileRow>
               ))}
-              <FileRow file={file('font')!} disabled={!canDownload} onDownload={download} />
+              {view('font').visible ? <FileRow file={file('font')!} disabled={!canDownload} locked={view('font').message} onDownload={download} /> : null}
             </ul>
           ) : null}
           {ready ? <p role="status" aria-live="polite" className="text-sm text-ok">{done ? `Downloaded ${done}. It is recorded in the history below.` : ''}</p> : null}

@@ -16,7 +16,7 @@ function preview(file: ExportFile): string {
 const kb = (n: number) => (n < 1024 ? `${n} bytes` : `${(n / 1024).toFixed(1)} KB`)
 
 /** One export: what it is, what it is called, a way to read it, and a way to take it. */
-export function FileRow({ file, disabled, onDownload, children }: { file: ExportFile; disabled: boolean; onDownload: (f: ExportFile) => void; children?: React.ReactNode }) {
+export function FileRow({ file, disabled, locked, onDownload, children }: { file: ExportFile; disabled: boolean; /** Why the plan leaves this export out, when it does. */ locked?: string | null | undefined; onDownload: (f: ExportFile) => void; children?: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const canRead = file.available && TEXT.test(file.mimeType)
   return (
@@ -29,9 +29,10 @@ export function FileRow({ file, disabled, onDownload, children }: { file: Export
         </div>
         <div className="flex flex-wrap gap-2">
           {canRead ? <Button variant="ghost" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{open ? 'Hide contents' : 'Show contents'}</Button> : null}
-          <Button variant={file.id === 'package' ? 'primary' : 'secondary'} disabled={disabled || !file.available} aria-label={`Download ${file.title}`} onClick={() => onDownload(file)}><DownloadIcon />Download</Button>
+          <Button variant={file.id === 'package' ? 'primary' : 'secondary'} disabled={disabled || !file.available || !!locked} aria-label={`Download ${file.title}`} onClick={() => onDownload(file)}><DownloadIcon />Download</Button>
         </div>
       </div>
+      {locked ? <p role="note" data-testid="locked" className="text-sm text-ink-soft">{locked}</p> : null}
       {!file.available ? <p role="note" className="text-sm text-danger">{file.unavailableReason}</p> : null}
       {children}
       {open ? <pre tabIndex={0} aria-label={`Contents of ${file.path}`} className="max-h-96 overflow-auto rounded-md border border-line bg-sheet p-3 text-xs leading-relaxed whitespace-pre-wrap break-words">{preview(file)}</pre> : null}

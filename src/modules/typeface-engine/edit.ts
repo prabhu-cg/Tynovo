@@ -168,7 +168,12 @@ export function setKerning(face: CustomTypeface, left: string, right: string, va
 
 /* ---------- variants ---------- */
 
-export function saveVariant(face: CustomTypeface, v: { name: string; dna: Dna; origin: Variant['origin']; favourite?: boolean }, stamp: Stamp): CustomTypeface {
+/**
+ * Keep a variant. At the limit nothing is saved and nothing is removed: variants a person already has are never
+ * dropped to make room (`limit` comes from the plan, see entitlements; it can never exceed VARIANT_LIMIT).
+ */
+export function saveVariant(face: CustomTypeface, v: { name: string; dna: Dna; origin: Variant['origin']; favourite?: boolean }, stamp: Stamp, limit: number = VARIANT_LIMIT): CustomTypeface {
+  if (face.variants.length >= Math.min(limit, VARIANT_LIMIT)) return face
   const variant: Variant = { id: stamp.id, name: v.name.trim().slice(0, 60) || 'Variant', dna: v.dna, favourite: v.favourite ?? false, origin: v.origin, createdAt: stamp.at }
   return { ...face, variants: [variant, ...face.variants].slice(0, VARIANT_LIMIT) }
 }
