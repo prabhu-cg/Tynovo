@@ -36,6 +36,8 @@ export interface ProjectRepository {
   readonly kind: 'indexeddb' | 'memory'
   list(): Promise<ProjectListing>
   get(id: string): Promise<Project | null>
+  /** The stored record exactly as written, before any migration or validation. `undefined` if there is none. */
+  getRaw(id: string): Promise<unknown>
   save(project: Project, options: SaveOptions): Promise<void>
   /** Delete by id. Also the only way to remove an unreadable record, on explicit user request. */
   delete(id: string): Promise<void>

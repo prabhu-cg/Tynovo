@@ -2,10 +2,12 @@ import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 
 import { Link, useNavigate } from 'react-router'
 import { AppSeo } from '@/modules/marketing/Seo'
 import { projectFilename, serializeProject } from '@/modules/brand-projects/model'
+import { ImportError } from '@/modules/brand-projects/service'
 import type { ProjectSummary } from '@/modules/brand-projects/schema'
 import { downloadBytes } from '@/modules/font-export/download'
 import type { ProjectListing, UnreadableRecord } from '@/modules/persistence/types'
 import { Banner, Button, Drawer, inputClass } from '@/modules/shared-ui'
+import { DeletePanel } from './DeletePanel'
 import { describeError } from './errors'
 import { useStudio } from './studio'
 
@@ -23,7 +25,8 @@ export function DashboardPage() {
   const navigate = useNavigate()
   const [listing, setListing] = useState<ProjectListing | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
+  const [notice, setNotice] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string; details?: string[] } | null>(null)
+  const [recoverable, setRecoverable] = useState<{ name: string; text: string; message: string } | null>(null)
   const [newOpen, setNewOpen] = useState(false)
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -39,14 +42,21 @@ export function DashboardPage() {
   }, [service])
   useEffect(() => void refresh(), [refresh])
 
-  const run = async (fn: () => Promise<string | void>) => {
+  const run = async (fn: () => Promise<string | { warn: string; details: string[] } | void>) => {
     try {
       const msg = await fn()
-      setNotice(msg ? { tone: 'ok', text: msg } : null)
+      setNotice(!msg ? null : typeof msg === 'string' ? { tone: 'ok', text: msg } : { tone: 'warn', text: msg.warn, details: msg.details })
     } catch (e) {
       setNotice({ tone: 'error', text: describeError(e) })
     }
     await refresh()
+  }
+
+  const backupOne = async (id: string): Promise<string> => {
+    const project = await service.get(id)
+    if (!project) throw new Error('Project not found.')
+    downloadBytes(textBytes(serializeProject(project)), projectFilename(project), 'application/json')
+    return projectFilename(project)
   }
 
   const exportOne = (p: ProjectSummary) =>
@@ -61,12 +71,20 @@ export function DashboardPage() {
     run(async () => {
       if (!files?.length) return
       const msgs: string[] = []
+      setRecoverable(null)
       for (const file of files) {
-        const { project, renamedOnClash } = await service.importFile(await file.text())
-        msgs.push(renamedOnClash ? `Imported as a copy: “${project.name}”` : `Imported “${project.name}”`)
+        const text = await file.text()
+        try {
+          const { project, renamedOnClash } = await service.importFile(text)
+          msgs.push(renamedOnClash ? `Imported as a copy: “${project.name}”` : `Imported “${project.name}”`)
+        } catch (e) {
+          // A project file with damaged parts can be partly recovered, but only if the person chooses to.
+          if (e instanceof ImportError && e.recoverable) setRecoverable({ name: file.name, text, message: e.message })
+          else throw e
+        }
       }
       if (fileRef.current) fileRef.current.value = ''
-      return msgs.join('. ') + '.'
+      return msgs.length ? msgs.join('. ') + '.' : undefined
     })
 
   const downloadRaw = (u: UnreadableRecord) => downloadBytes(textBytes(JSON.stringify(u.raw, null, 2)), `unreadable-${u.id}.json`, 'application/json')
@@ -89,7 +107,29 @@ export function DashboardPage() {
       </header>
 
       {storageKind === 'memory' ? <div className="mt-6"><Banner tone="warn">Browser storage is unavailable, so projects here are kept in memory and will be gone when you close this tab. Export a project file to keep your work.</Banner></div> : null}
-      {notice ? <div className="mt-6"><Banner tone={notice.tone}>{notice.text}</Banner></div> : null}
+      {notice ? (
+        <div className="mt-6">
+          <Banner tone={notice.tone}>
+            {notice.text}
+            {notice.details ? <ul className="mt-2 grid list-disc gap-0.5 pl-5">{notice.details.map((d) => <li key={d}>{d}</li>)}</ul> : null}
+          </Banner>
+        </div>
+      ) : null}
+      {recoverable ? (
+        <div className="mt-6">
+          <Banner
+            tone="warn"
+            actions={
+              <>
+                <Button onClick={() => void run(async () => { const r = await service.recoverFile(recoverable.text); setRecoverable(null); return { warn: `Recovered “${r.project.name}” from ${recoverable.name}. Some parts could not be read:`, details: r.losses } })}>Recover what can be read</Button>
+                <Button variant="ghost" onClick={() => setRecoverable(null)}>Dismiss</Button>
+              </>
+            }
+          >
+            <strong>{recoverable.name} is a project file, but parts of it are damaged or from an incompatible version.</strong> {recoverable.message} Nothing was imported. Recovery makes a new project from the readable parts and lists what was lost.
+          </Banner>
+        </div>
+      ) : null}
       {loadError ? <div className="mt-6"><Banner tone="error" actions={<Button onClick={() => void refresh()}>Try again</Button>}>Could not load projects: {loadError}</Banner></div> : null}
 
       <section aria-label="Your projects" aria-busy={listing === null && !loadError} className="mt-8">
@@ -139,10 +179,13 @@ export function DashboardPage() {
                   )}
                 </div>
                 {confirmDelete === p.id ? (
-                  <div className="flex flex-wrap items-center gap-2" role="group" aria-label={`Confirm deleting ${p.name}`}>
-                    <span className="text-sm font-semibold text-danger">Delete permanently?</span>
-                    <Button variant="danger" onClick={() => void run(async () => { await service.delete(p.id); setConfirmDelete(null); return `Deleted “${p.name}”.` })}>Delete</Button>
-                    <Button variant="ghost" onClick={() => setConfirmDelete(null)}>Keep</Button>
+                  <div className="basis-full md:basis-auto md:max-w-lg">
+                    <DeletePanel
+                      name={p.name}
+                      onBackup={() => backupOne(p.id)}
+                      onConfirm={() => void run(async () => { await service.delete(p.id); setConfirmDelete(null); return `Deleted “${p.name}”.` })}
+                      onCancel={() => setConfirmDelete(null)}
+                    />
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-1">
@@ -161,11 +204,12 @@ export function DashboardPage() {
       {listing && listing.unreadable.length > 0 ? (
         <section aria-label="Unreadable records" className="mt-10">
           <h2 className="text-lg font-bold">Records that could not be opened</h2>
-          <p className="mt-1 text-sm text-ink-soft">These are kept untouched. Download the raw data to recover it, or remove it yourself.</p>
+          <p className="mt-1 text-sm text-ink-soft">These are kept untouched. Recovery builds a new project from the readable parts and lists what was lost; the damaged record stays until you remove it.</p>
           <ul className="mt-3 divide-y divide-line rounded-md border border-line bg-paper">
             {listing.unreadable.map((u) => (
               <li key={u.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-48 flex-1"><p className="font-semibold text-ink-strong">{u.id}</p><p className="text-sm text-danger">{u.reason}</p></div>
+                <Button variant="ghost" onClick={() => void run(async () => { const r = await service.recoverRecord(u.id); return { warn: `Recovered “${r.project.name}” as a new project. The damaged record is still listed below; remove it when you are happy. Some parts could not be read:`, details: r.losses } })}>Recover what can be read</Button>
                 <Button variant="ghost" onClick={() => downloadRaw(u)}>Download raw data</Button>
                 <Button variant="ghost" onClick={() => void run(async () => { await service.delete(u.id); return 'Removed unreadable record.' })}>Remove</Button>
               </li>

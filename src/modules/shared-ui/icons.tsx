@@ -26,3 +26,9 @@ export const ResetIcon = () => <Icon><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="
 export const CheckIcon = () => <Icon><path d="m4 10.5 4 4 8-9" /></Icon>
 export const AlertIcon = () => <Icon><path d="M10 3 2.5 16.5h15z" /><path d="M10 8.5v3.5M10 14.3v.2" /></Icon>
 export const InfoIcon = () => <Icon><circle cx="10" cy="10" r="7.5" /><path d="M10 9v5M10 6.3v.2" /></Icon>
+/** A drawn letter with a pen point: the project's own typeface. */
+export const CustomFontIcon = () => <Icon><path d="M3.5 16 8 4.5 12.5 16M5.2 12h5.6" /><path d="m14 8 3 3-4.5 4.5-3.2.5.5-3.2z" /></Icon>
+/** A shelf of books: a font made by someone else. */
+export const ExistingFontIcon = () => <Icon><path d="M4 3.5h3v13H4zM8.5 3.5h3v13h-3z" /><path d="m13 5 2.8-.7 2.7 11.2-2.8.7z" /></Icon>
+export const DownloadIcon = () => <Icon><path d="M10 3.5v9M6.2 9 10 12.8 13.8 9M4 16.5h12" /></Icon>
+export const SaveIcon = () => <Icon><path d="M4 3.5h9l3 3v10H4zM7 3.5v4h5v-4M7 16.5v-5h6v5" /></Icon>

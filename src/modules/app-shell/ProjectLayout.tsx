@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams, useSearchParams } from 'react-router'
+import { downloadBytes } from '@/modules/font-export/download'
+import { useProjectFont } from '@/modules/font-export/useProjectFont'
 import { Banner, Button, ButtonLink } from '@/modules/shared-ui'
 import { AppSeo } from '@/modules/marketing/Seo'
 import type { DraftGuard } from './project'
 import { exportProjectFile } from './projectFile'
 import { SaveStatus } from './SaveStatus'
+import { useProjectFonts } from './useProjectFonts'
 import { useStudio } from './studio'
 import { useProjectEditor } from './useProjectEditor'
 import { describeError } from './errors'
@@ -19,6 +22,9 @@ export function ProjectLayout() {
   const navigate = useNavigate()
   const editor = useProjectEditor(service, projectId)
   const { draft, state } = editor
+  // Registered once for the whole project, so Typography, Export and the typeface views all see the same font.
+  const customFont = useProjectFont(draft?.customTypeface ?? null)
+  const fonts = useProjectFonts(draft)
   const [copyId, setCopyId] = useState<string | null>(null)
   const [copyError, setCopyError] = useState<string | null>(null)
 
@@ -115,18 +121,28 @@ export function ProjectLayout() {
           </label>
           <div className="flex flex-wrap items-center gap-3">
             <SaveStatus state={state} lastSavedAt={editor.lastSavedAt} />
+            {state === 'dirty' || state === 'error' || state === 'invalid' ? <Button onClick={() => void editor.flush()}>Save now</Button> : null}
             <ButtonLink to="export" variant="secondary">Export</ButtonLink>
             <ButtonLink to="settings" variant="ghost">Settings</ButtonLink>
           </div>
         </div>
         <nav aria-label="Project sections" className="-mb-px flex gap-5 overflow-x-auto border-b border-line">
           <NavLink to="." end className={tab}>Overview</NavLink>
+          <NavLink to="fonts" className={tab}>Font catalog</NavLink>
           <NavLink to="typography" className={tab}><span className="sr-only md:not-sr-only">Brand Typography System</span><span aria-hidden="true" className="md:hidden">Typography</span></NavLink>
           <NavLink to="typeface" className={tab}><span className="sr-only md:not-sr-only">Custom Typeface Creator</span><span aria-hidden="true" className="md:hidden">Typeface</span></NavLink>
         </nav>
       </header>
 
       <div className="mt-4 grid gap-3 empty:hidden">
+        {editor.migration ? (
+          <Banner
+            tone="info"
+            actions={<Button onClick={() => downloadBytes(new TextEncoder().encode(editor.migration!.originalJson), `${draft.id}.before-upgrade.json`, 'application/json')}>Download the original</Button>}
+          >
+            <strong>This project was saved in an older format (version {editor.migration.from}) and was upgraded to version {draft.schemaVersion} when it opened.</strong> The stored copy is replaced by the upgraded one the first time you save. Keep the original if you may want it.
+          </Banner>
+        ) : null}
         {state === 'error' ? (
           <Banner
             tone="error"
@@ -185,7 +201,7 @@ export function ProjectLayout() {
       </div>
 
       <div className="mt-8">
-        <Outlet context={{ draft, editor, setGuard }} />
+        <Outlet context={{ draft, editor, customFont, fonts, setGuard }} />
       </div>
     </div>
   )

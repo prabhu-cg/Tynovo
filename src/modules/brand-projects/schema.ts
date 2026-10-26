@@ -5,7 +5,7 @@ import { z } from 'zod'
  * Bump CURRENT_SCHEMA_VERSION and register a step in migrations.ts for any
  * change that old data cannot satisfy.
  */
-export const CURRENT_SCHEMA_VERSION = 2
+export const CURRENT_SCHEMA_VERSION = 4
 
 const isoDate = z.iso.datetime()
 const id = z.string().min(1).max(64)
@@ -21,24 +21,51 @@ export const licenseSchema = z.object({
 })
 export type License = z.infer<typeof licenseSchema>
 
+/** Where a CSS stack falls back to when a font is not available. */
+export const FALLBACK_STACKS = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive'] as const
+
+/**
+ * An existing font (made by someone else) that the project uses. The project's own generated typeface is NOT a
+ * font source: it lives in `customTypeface` only, and roles link to it by id, so nothing is stored twice.
+ */
 export const fontSourceSchema = z.object({
   id,
   family: z.string().min(1).max(200),
-  kind: z.enum(['catalog', 'system', 'uploaded', 'generated']),
+  /** catalog: bundled with the studio. system: a family installed on the viewer's device, named by the user. uploaded: reserved. */
+  kind: z.enum(['catalog', 'system', 'uploaded']),
   /** Licence of the font itself. Never inferred from the app or from libraries used to build it. */
   license: licenseSchema,
   /** Variable-font axes or static weights that the project has chosen to use. */
   weights: z.array(z.number().int().min(1).max(1000)).max(20),
+  /** Generic family the CSS stack ends with. */
+  fallback: z.enum(FALLBACK_STACKS),
+  /** Families tried after this font and before the generic one, e.g. "Helvetica Neue", "Arial". */
+  fallbackFamilies: z.array(z.string().trim().min(1).max(200)).max(8),
 })
 export type FontSource = z.infer<typeof fontSourceSchema>
 
 /* ---------- Typography system ---------- */
 
+export const ROLE_KINDS = ['display', 'heading', 'body', 'ui', 'caption'] as const
+export type RoleKind = (typeof ROLE_KINDS)[number]
+
+/**
+ * Which font a role uses. The two shapes are different on purpose, so an existing font and the project's
+ * own typeface can never be mistaken for one another.
+ */
+export const roleFontSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('source'), sourceId: id }),
+  z.object({ kind: z.literal('custom'), typefaceId: id }),
+])
+export type RoleFont = z.infer<typeof roleFontSchema>
+
 export const typographyRoleSchema = z.object({
   id,
   /** Display name, e.g. "Heading". */
   name: z.string().min(1).max(60),
-  fontSourceId: id.nullable(),
+  /** What the role is for. Decides which characters and readability a custom typeface must satisfy. */
+  kind: z.enum(ROLE_KINDS),
+  font: roleFontSchema.nullable(),
   weight: z.number().int().min(1).max(1000),
   /** Index into the type scale (0 = base). Negative steps are smaller. */
   scaleStep: z.number().int().min(-6).max(12),
@@ -220,16 +247,97 @@ export type CustomTypeface = z.infer<typeof customTypefaceSchema>
 
 export const exportRecordSchema = z.object({
   id,
-  kind: z.enum(['font-ttf', 'font-otf', 'project-json', 'tokens-css', 'tokens-json', 'specimen']),
+  kind: z.enum(['font-ttf', 'font-otf', 'project-json', 'tokens-css', 'tokens-json', 'specimen', 'spec-md', 'manifest', 'package']),
   at: isoDate,
   filename: z.string().max(255),
   bytes: z.number().int().min(0),
   /** SHA-256 of the exact bytes handed to the user, hex-encoded. */
   sha256: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  /** Revision of the saved project content this file was built from (see brand-system/revision.ts). */
+  sourceRevision: z.string().regex(/^[0-9a-f]{12}$/).optional(),
 })
 export type ExportRecord = z.infer<typeof exportRecordSchema>
 
 /* ---------- Project ---------- */
+
+/* ---------- Brand direction ---------- */
+
+export const USE_CASES = ['saas', 'editorial', 'consumer', 'campaign', 'corporate'] as const
+export type UseCase = (typeof USE_CASES)[number]
+export const TONES = ['confident', 'friendly', 'technical', 'elegant', 'playful', 'serious'] as const
+export type Tone = (typeof TONES)[number]
+
+const sampleText = z.string().max(2000)
+/** Sample copy used by previews and the specimen. Missing keys fall back to the studio's defaults. */
+export const sampleCopySchema = z
+  .object({ headline: sampleText, subhead: sampleText, body: sampleText, caption: sampleText, action: sampleText, longform: sampleText })
+  .partial()
+  .strict()
+export type SampleCopy = z.infer<typeof sampleCopySchema>
+
+export const brandSchema = z.object({
+  /** The brand's own name. Falls back to the project name where one is needed. */
+  name: z.string().trim().max(120),
+  description: z.string().max(1000),
+  personality: z.array(z.string().trim().min(1).max(40)).max(12),
+  useCases: z.array(z.enum(USE_CASES)).max(USE_CASES.length),
+  tones: z.array(z.enum(TONES)).max(TONES.length),
+  /** 1 (low) to 5 (high): how much the type must carry long, small text. */
+  readabilityPriority: z.number().int().min(1).max(5),
+  /** 1 (low) to 5 (high): how much the type must carry large, expressive text. */
+  displayPriority: z.number().int().min(1).max(5),
+  notes: z.string().max(5000),
+  sampleCopy: sampleCopySchema,
+})
+export type Brand = z.infer<typeof brandSchema>
+
+/* ---------- Typography settings beyond roles and the scale ---------- */
+
+const stepInt = z.number().int().min(-6).max(12)
+
+/** Heading sizes (H1 to H6) and the two other body sizes, as steps on the type scale. */
+export const sizesSchema = z.object({
+  headings: z.tuple([stepInt, stepInt, stepInt, stepInt, stepInt, stepInt]),
+  bodyLarge: stepInt,
+  bodySmall: stepInt,
+})
+export type Sizes = z.infer<typeof sizesSchema>
+
+/**
+ * Fluid type: below `minViewportPx` sizes use the small scale (minBaseSizePx, minRatio); above `maxViewportPx`
+ * they use the main scale; in between they interpolate (CSS clamp()). Off by default.
+ */
+export const responsiveSchema = z
+  .object({
+    enabled: z.boolean(),
+    minViewportPx: z.number().int().min(240).max(900),
+    maxViewportPx: z.number().int().min(600).max(3000),
+    minBaseSizePx: z.number().min(8).max(64),
+    minRatio: z.number().min(1).max(3),
+  })
+  .refine((r) => r.minViewportPx < r.maxViewportPx, { message: 'The small viewport must be narrower than the large one', path: ['minViewportPx'] })
+export type Responsive = z.infer<typeof responsiveSchema>
+
+/** Primary (headings and display) and secondary (body and interface) fonts. Roles can still differ individually. */
+export const pairingSchema = z.object({ primary: roleFontSchema.nullable(), secondary: roleFontSchema.nullable() })
+export type Pairing = z.infer<typeof pairingSchema>
+
+export const fallbackStackSchema = z.object({
+  families: z.array(z.string().trim().min(1).max(200)).max(8),
+  generic: z.enum(FALLBACK_STACKS),
+})
+export type FallbackStack = z.infer<typeof fallbackStackSchema>
+
+export const typographySchema = z.object({
+  scale: typeScaleSchema,
+  roles: z.array(typographyRoleSchema).max(30),
+  sizes: sizesSchema,
+  responsive: responsiveSchema,
+  pairing: pairingSchema,
+  /** Fallback stack of the project's own typeface (existing fonts keep theirs on the font entry). */
+  customFallback: fallbackStackSchema,
+})
+export type Typography = z.infer<typeof typographySchema>
 
 export const projectSchema = z.object({
   schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
@@ -237,14 +345,8 @@ export const projectSchema = z.object({
   name: z.string().trim().min(1).max(120),
   createdAt: isoDate,
   updatedAt: isoDate,
-  brand: z.object({
-    personality: z.array(z.string().trim().min(1).max(40)).max(12),
-    notes: z.string().max(5000),
-  }),
-  typography: z.object({
-    scale: typeScaleSchema,
-    roles: z.array(typographyRoleSchema).max(30),
-  }),
+  brand: brandSchema,
+  typography: typographySchema,
   fontSources: z.array(fontSourceSchema).max(50),
   customTypeface: customTypefaceSchema.nullable(),
   exportHistory: z.array(exportRecordSchema).max(500),

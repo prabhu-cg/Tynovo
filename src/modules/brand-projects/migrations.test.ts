@@ -2,7 +2,7 @@ import type { ZodType } from 'zod'
 import { fakeClock } from '@/modules/testing/factories'
 import { parseProject, type MigrationStep } from './migrations'
 import { createProject } from './model'
-import type { Project } from './schema'
+import { CURRENT_SCHEMA_VERSION, type Project } from './schema'
 
 const valid = () => createProject('P', fakeClock())
 
@@ -79,7 +79,7 @@ describe('v1 → v2 migration (Phase-0 proof typeface to design DNA)', () => {
     expect(r.ok).toBe(true)
     if (r.ok) {
       expect(r.migratedFrom).toBe(1)
-      expect(r.project.schemaVersion).toBe(2)
+      expect(r.project.schemaVersion).toBe(CURRENT_SCHEMA_VERSION)
       expect(r.project.customTypeface).toBeNull()
     }
   })
@@ -114,8 +114,8 @@ describe('v1 → v2 migration (Phase-0 proof typeface to design DNA)', () => {
     expect(a.supportedCount).toBeGreaterThan(80)
   })
 
-  it('still refuses a v3 project and a v1 project with a broken typeface', () => {
-    expect(parseProject({ ...valid(), schemaVersion: 3 })).toMatchObject({ ok: false, reason: 'newer-version' })
+  it('still refuses a newer project and a v1 project with a broken typeface', () => {
+    expect(parseProject({ ...valid(), schemaVersion: CURRENT_SCHEMA_VERSION + 1 })).toMatchObject({ ok: false, reason: 'newer-version' })
     expect(parseProject(v1({ id: 'x' }))).toMatchObject({ ok: false, reason: 'invalid' })
   })
 })

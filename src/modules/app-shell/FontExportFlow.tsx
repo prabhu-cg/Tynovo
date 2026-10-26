@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { downloadBytes } from '@/modules/font-export/download'
 import { FORMATS, FORMAT_IDS, type FontFormatId } from '@/modules/font-export/formats'
+import { contentRevision } from '@/modules/brand-system/revision'
 import { exportTypeface, type TypefaceExport } from '@/modules/font-export/typefaceExport'
 import { runQualityChecks } from '@/modules/font-validation/quality'
 import { AlertIcon, Banner, Button, ButtonLink, CheckIcon, Drawer, Segmented } from '@/modules/shared-ui'
@@ -13,7 +14,10 @@ const NOTES: Record<FontFormatId, string> = {
 
 /** Validate, build, re-open and compare a font file, then offer it for download. Failed files are never offered. */
 export function FontExportFlow() {
-  const { draft, editor } = useProject()
+  const { editor } = useProject()
+  // Files are built from what is saved, never from an unsaved draft, so they always match what a reload shows.
+  const saved = editor.saved
+  const settled = editor.state === 'saved'
   const [format, setFormat] = useState<FontFormatId>('ttf')
   const [result, setResult] = useState<TypefaceExport | null>(null)
   const [busy, setBusy] = useState(false)
@@ -25,7 +29,9 @@ export function FontExportFlow() {
     setBusy(true)
     setFailure(null)
     try {
-      setResult(await exportTypeface(draft, () => crypto.randomUUID(), () => new Date(), format))
+      if (!saved) throw new Error('The project has not been loaded.')
+      // The font's timestamps are the project's creation time, so the same design always gives the same file.
+      setResult(await exportTypeface(saved, () => crypto.randomUUID(), () => new Date(saved.createdAt), format, await contentRevision(saved)))
       setOpen(true)
     } catch (e) {
       setFailure(e instanceof Error ? e.message : 'The font could not be built.')
@@ -34,14 +40,15 @@ export function FontExportFlow() {
     }
   }
 
-  const quality = draft.customTypeface ? runQualityChecks(draft.customTypeface).counts : null
+  const quality = saved?.customTypeface ? runQualityChecks(saved.customTypeface).counts : null
 
   return (
     <>
       <div className="grid max-w-xl gap-3">
         <Segmented label="File format" value={format} options={FORMAT_IDS.map((f) => ({ value: f, label: FORMATS[f].label }))} onChange={(f) => { setFormat(f); setResult(null) }} />
         <p className="text-xs text-ink-soft">{NOTES[format]} WOFF and WOFF2 are not offered: they have not been validated here.</p>
-        <div><Button variant="primary" disabled={busy} onClick={() => void run()}>{busy ? 'Building and checking…' : `Check and build ${spec.extension}…`}</Button></div>
+        <div><Button variant="primary" disabled={busy || !settled} onClick={() => void run()}>{busy ? 'Building and checking…' : `Check and build ${spec.extension}…`}</Button></div>
+        {!settled ? <p role="status" className="text-xs text-ink-soft">Waiting for your latest changes to be saved, so the file matches the saved project.</p> : null}
         {quality ? (
           <p className="tnum text-sm text-ink-soft">Quality report: {quality.blocking} blocking, {quality.warning} warning{quality.warning === 1 ? '' : 's'}, {quality.recommendation} recommendation{quality.recommendation === 1 ? '' : 's'}. <ButtonLink variant="ghost" to="../typeface?view=quality" className="!min-h-8 !px-1.5 underline underline-offset-4">Open the report</ButtonLink></p>
         ) : null}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Banner, Button } from '@/modules/shared-ui'
+import { DeletePanel } from './DeletePanel'
 import { describeError } from './errors'
 import { useProject } from './project'
 import { exportProjectFile } from './projectFile'
@@ -64,12 +65,10 @@ export function ProjectSettingsPage() {
       <section aria-labelledby="del-h" className="grid grid-cols-[minmax(0,1fr)] gap-4 border-t border-line pt-8 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6">
         <h2 id="del-h" className="text-lg font-bold text-danger">Delete</h2>
         <div>
-          <p className="max-w-xl">Deleting removes this project from this browser. It cannot be undone, so download a project file first if you may want it back.</p>
+          <p className="max-w-xl">Deleting removes this project from this browser. It cannot be undone. You will be offered a backup file first.</p>
           {confirming ? (
-            <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Confirm deletion">
-              <span className="font-semibold text-danger">Delete “{draft.name}” permanently?</span>
-              <Button variant="danger" onClick={() => void remove()}>Delete project</Button>
-              <Button variant="ghost" onClick={() => setConfirming(false)}>Keep it</Button>
+            <div className="mt-4 max-w-xl">
+              <DeletePanel name={draft.name} confirmLabel="Delete project" cancelLabel="Keep it" onBackup={async () => exportProjectFile(draft)} onConfirm={() => void remove()} onCancel={() => setConfirming(false)} />
             </div>
           ) : (
             <Button className="mt-4" onClick={() => setConfirming(true)}>Delete this project…</Button>

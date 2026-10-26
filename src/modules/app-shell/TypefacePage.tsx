@@ -14,6 +14,9 @@ import { useTypeface } from './typeface/useTypeface'
 import { VariantsTab } from './typeface/VariantsTab'
 import { useProject } from './project'
 import type { CustomTypeface } from '@/modules/brand-projects/schema'
+import { rolesUsingCustom } from '@/modules/brand-system/fonts'
+import { removeCustomTypeface } from '@/modules/brand-system/ops'
+import { Link } from 'react-router'
 
 const VIEWS = [
   { id: 'preview', label: 'Preview' },
@@ -33,7 +36,8 @@ export function TypefacePage() {
 
 function Creator({ face }: { face: CustomTypeface }) {
   const handle = useTypeface(face)
-  const { editor } = useProject()
+  const { draft, editor } = useProject()
+  const usedBy = rolesUsingCustom(draft)
   const [params, setParams] = useSearchParams()
   const [paramsOpen, setParamsOpen] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
@@ -59,6 +63,10 @@ function Creator({ face }: { face: CustomTypeface }) {
           <ButtonLink to="../export" variant="primary">Export…</ButtonLink>
         </div>
       </div>
+      <p data-testid="typeface-usage" className="text-sm text-ink-soft">
+        {usedBy.length > 0 ? <>Used in {usedBy.map((r) => r.name).join(', ')}. Changes you apply here show in the brand previews and exports. </> : <>Not used by any role yet. </>}
+        <Link to="../typography#previews" className="font-semibold text-accent-strong underline underline-offset-4">{usedBy.length > 0 ? 'See it in the brand previews' : 'Choose it in a role'}</Link>
+      </p>
       {errors > 0 ? <Banner tone="error">{errors} glyph{errors > 1 ? 's have' : ' has'} errors and will be left out of exported fonts, and export is blocked until they are fixed. See the Quality view.</Banner> : null}
 
       {glyph ? (
@@ -99,8 +107,8 @@ function Creator({ face }: { face: CustomTypeface }) {
       <div className={glyph ? 'hidden' : 'mt-2 border-t border-line pt-4'}>
         {confirmRemove ? (
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Confirm removing the typeface">
-            <span className="text-sm font-semibold text-danger">Remove “{face.familyName}” with its {face.variants.length} saved variants, {Object.keys(face.overrides).length} glyph overrides and restore points?</span>
-            <Button variant="danger" onClick={() => editor.patch((p) => ({ ...p, customTypeface: null }))}>Remove typeface</Button>
+            <span className="text-sm font-semibold text-danger">Remove “{face.familyName}” with its {face.variants.length} saved variants, {Object.keys(face.overrides).length} glyph overrides and restore points?{usedBy.length > 0 ? ` ${usedBy.map((r) => r.name).join(', ')} will have no font assigned.` : ''}</span>
+            <Button variant="danger" onClick={() => editor.patch(removeCustomTypeface)}>Remove typeface</Button>
             <Button variant="ghost" onClick={() => setConfirmRemove(false)}>Keep it</Button>
           </div>
         ) : (

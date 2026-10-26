@@ -435,7 +435,7 @@ test.describe('font export formats', () => {
     await saved(page)
     await page.getByRole('link', { name: 'Export…' }).click()
     await page.getByRole('button', { name: /Check and build/ }).click()
-    await expect(page.getByRole('alert').filter({ hasText: 'digest unavailable' })).toContainText('Your project is unchanged')
+    await expect(page.getByRole('region', { name: 'Font file formats' }).getByRole('alert')).toContainText('Your project is unchanged')
     await expect(page.getByRole('button', { name: /^Download .*\.(ttf|otf)$/ })).toHaveCount(0)
     expect((await readProjects(page))[0]!['exportHistory']).toEqual([])
     expect((await readProjects(page))[0]!['customTypeface']).not.toBeNull()

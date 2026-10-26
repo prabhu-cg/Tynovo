@@ -23,7 +23,7 @@ const summary = (issues: ValidationIssue[]): ValidationSummary => {
  * prepare the history entry. No file is offered when the design has errors, when building throws, or when the
  * produced file fails any check; the project is never touched.
  */
-export async function exportTypeface(project: Project, newId: () => string, now: () => Date, format: FontFormatId = 'ttf'): Promise<TypefaceExport> {
+export async function exportTypeface(project: Project, newId: () => string, now: () => Date, format: FontFormatId = 'ttf', sourceRevision?: string): Promise<TypefaceExport> {
   const face = project.customTypeface
   if (!face) throw new Error('Project has no custom typeface.')
   const model = validateTypeface(face)
@@ -57,6 +57,7 @@ export async function exportTypeface(project: Project, newId: () => string, now:
     filename: build.filename,
     bytes: build.bytes.byteLength,
     sha256: await sha256Hex(build.bytes),
+    ...(sourceRevision ? { sourceRevision } : {}),
   }
   return { ok: true, format, build, model, binary, passed, record }
 }

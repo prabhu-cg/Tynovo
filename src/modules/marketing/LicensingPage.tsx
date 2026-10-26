@@ -18,7 +18,7 @@ const BLOCKS = [
     title: 'Fonts made by others',
     body: (
       <>
-        <p>Existing fonts keep their own licences, whatever the studio is licensed under. Selecting existing fonts is not built yet. When it is, the studio will record the licence you say a font has; it will not verify it.</p>
+        <p>Existing fonts keep their own licences, whatever the studio is licensed under. The 24 fonts in the catalog are all under the SIL Open Font License 1.1, read from each font’s package metadata rather than from a legal review. For a font you name yourself, the studio records the licence you say it has and does not verify it. Exports never include the file of a font made by someone else, and the sources and licences file says so for each one.</p>
         <p className="mt-3">Check a font’s licence yourself before using it commercially, in an app, on a website or in a logo. Licences differ on exactly those uses.</p>
       </>
     ),

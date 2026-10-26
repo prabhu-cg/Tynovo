@@ -101,6 +101,14 @@ export class IndexedDbProjectRepository implements ProjectRepository {
     }
   }
 
+  async getRaw(id: string): Promise<unknown> {
+    try {
+      return await this.db.get(STORE, id)
+    } catch (e) {
+      throw mapError(e)
+    }
+  }
+
   async save(project: Project, options: SaveOptions): Promise<void> {
     try {
       // Compare-and-put inside one readwrite transaction so two tabs cannot interleave.
@@ -141,6 +149,10 @@ export class MemoryProjectRepository implements ProjectRepository {
     const parsed = parseProject(raw)
     if (!parsed.ok) throw new StorageError('unknown', parsed.message)
     return parsed.project
+  }
+  async getRaw(id: string): Promise<unknown> {
+    const raw = this.rows.get(id)
+    return raw === undefined ? undefined : structuredClone(raw)
   }
   async save(project: Project, options: SaveOptions): Promise<void> {
     checkConflict(this.rows.get(project.id), options)

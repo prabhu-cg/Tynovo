@@ -10,10 +10,10 @@ const ExampleFamilies = lazy(() => import('./ExampleFamilies').then((m) => ({ de
 const page = PUBLIC_PAGES[0]!
 
 const PROMISES: Array<{ title: string; body: string; status: Status }> = [
-  { title: 'Build a complete brand typography system with existing fonts.', body: 'Roles, a modular type scale and licence notes for each font. The scale exists today; choosing fonts is in development.', status: 'planned' },
+  { title: 'Build a complete brand typography system with existing fonts.', body: 'Describe the brand, browse 24 licensed fonts with their sources, set roles, a pairing and a fluid type scale, and keep licence notes for each font. The catalog is small and fixed; fonts you name are checked, never assumed.', status: 'early' },
   { title: 'Create and customise a procedural display font.', body: 'Adjust parameters and every glyph redraws. Three families draw letters, digits and most punctuation today; hand-editing outlines is in development.', status: 'early' },
-  { title: 'Preview typography in realistic contexts.', body: 'Check the system on a web page, a poster or a document before committing to it.', status: 'planned' },
-  { title: 'Export specifications and supported font files.', body: 'TrueType and OpenType (CFF) export of your generated typeface works today. Specifications and tokens are in development.', status: 'early' },
+  { title: 'Preview typography in realistic contexts.', body: 'Check the system on a website, an editorial page, a product screen and a poster, light or dark, at phone to desktop width. A document layout is not built yet.', status: 'early' },
+  { title: 'Export specifications and supported font files.', body: 'TrueType and OpenType (CFF) export of your generated typeface, plus a Markdown specification, CSS, JSON tokens, an HTML specimen and a sources and licences file.', status: 'early' },
 ]
 
 const STEPS = [

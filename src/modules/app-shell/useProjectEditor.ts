@@ -16,6 +16,10 @@ export interface ProjectEditor {
   load: LoadState
   loadError: string | null
   draft: Project | null
+  /** The project as last stored. Exports are built from this, never from an unsaved draft. */
+  saved: Project | null
+  /** Set when the stored copy was in an older format and was upgraded in memory on opening. */
+  migration: { from: number; originalJson: string } | null
   state: SaveState
   error: string | null
   lastSavedAt: Date | null
@@ -36,6 +40,8 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
   const [load, setLoad] = useState<LoadState>('loading')
   const [loadError, setLoadError] = useState<string | null>(null)
   const [draft, setDraft] = useState<Project | null>(null)
+  const [saved, setSaved] = useState<Project | null>(null)
+  const [migration, setMigration] = useState<{ from: number; originalJson: string } | null>(null)
   const [state, setState] = useState<SaveState>('saved')
   const [error, setError] = useState<string | null>(null)
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
@@ -54,15 +60,18 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
   const reload = useCallback(async () => {
     clearTimer()
     try {
-      const p = await service.get(projectId)
+      const opened = await service.open(projectId)
       if (!alive.current) return
-      if (!p) {
+      if (!opened) {
         setLoad('missing')
         return
       }
+      const p = opened.project
       savedRef.current = p
       draftRef.current = p
       setDraft(p)
+      setSaved(p)
+      setMigration(opened.migratedFrom !== null && opened.originalJson !== null ? { from: opened.migratedFrom, originalJson: opened.originalJson } : null)
       setState('saved')
       setError(null)
       setLoadError(null)
@@ -95,6 +104,7 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
         const next = await service.save(d, s.updatedAt)
         savedRef.current = next
         if (alive.current) {
+          setSaved(next)
           setLastSavedAt(new Date())
           setError(null)
         }
@@ -158,5 +168,5 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
     return () => document.removeEventListener('visibilitychange', onHide)
   }, [flush])
 
-  return { load, loadError, draft, state, error, lastSavedAt, patch, flush, reload }
+  return { load, loadError, draft, saved, migration, state, error, lastSavedAt, patch, flush, reload }
 }

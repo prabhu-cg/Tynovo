@@ -187,7 +187,7 @@ test('no horizontal scroll at phone width on any route', async ({ page }) => {
   for (const path of [...marketingPaths, '/app/projects', '/app/lab', '/app/settings']) await noOverflow(page, path)
   await createProject(page, 'Phone')
   const base = page.url()
-  for (const section of ['', '/typography', '/typeface', '/export', '/settings']) await noOverflow(page, base + section)
+  for (const section of ['', '/fonts', '/typography', '/typeface', '/export', '/settings']) await noOverflow(page, base + section)
   await page.goto(`${base}/typeface`)
   await page.getByRole('button', { name: /Start with Geometric/ }).click()
   await expect(page.getByLabel('Typeface name')).toBeVisible()

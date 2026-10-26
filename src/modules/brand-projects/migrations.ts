@@ -67,6 +67,82 @@ function migrateV1toV2(raw: Record<string, unknown>): Record<string, unknown> {
   }
 }
 
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** Role kind for a v2 role, which had none: from its name, else from how large it is on the scale. */
+export function inferRoleKind(name: unknown, scaleStep: unknown): 'display' | 'heading' | 'body' | 'ui' {
+  const n = typeof name === 'string' ? name.toLowerCase() : ''
+  if (/display|hero|title/.test(n)) return 'display'
+  if (/head/.test(n)) return 'heading'
+  if (/caption|label|button|ui|nav|small/.test(n)) return 'ui'
+  if (/body|text|paragraph/.test(n)) return 'body'
+  const step = typeof scaleStep === 'number' ? scaleStep : 0
+  return step >= 4 ? 'display' : step >= 1 ? 'heading' : step < 0 ? 'ui' : 'body'
+}
+
+/**
+ * v2 -> v3 (Phase 5): roles get a `kind` and a typed `font` link instead of `fontSourceId`; font sources get a
+ * CSS `fallback`; the never-used 'generated' font-source kind goes away because the project's own typeface is
+ * linked by id instead of being copied into the font list.
+ */
+function migrateV2toV3(raw: Record<string, unknown>): Record<string, unknown> {
+  const typeface = isRecord(raw['customTypeface']) ? raw['customTypeface'] : null
+  const typefaceId = typeface && typeof typeface['id'] === 'string' ? typeface['id'] : null
+  const sources = Array.isArray(raw['fontSources']) ? raw['fontSources'] : []
+  const generatedIds = new Set<unknown>()
+  const keptSources: unknown[] = []
+  for (const s of sources) {
+    if (isRecord(s) && s['kind'] === 'generated') generatedIds.add(s['id'])
+    else keptSources.push(isRecord(s) ? { fallback: 'sans-serif', ...s } : s)
+  }
+  const typography = isRecord(raw['typography']) ? raw['typography'] : {}
+  const roles = Array.isArray(typography['roles']) ? typography['roles'] : []
+  const migratedRoles = roles.map((r) => {
+    if (!isRecord(r)) return r
+    const { fontSourceId, ...rest } = r
+    let font: unknown = null
+    if (typeof fontSourceId === 'string') {
+      if (generatedIds.has(fontSourceId)) font = typefaceId ? { kind: 'custom', typefaceId } : null
+      else font = { kind: 'source', sourceId: fontSourceId }
+    }
+    return { ...rest, kind: inferRoleKind(r['name'], r['scaleStep']), font }
+  })
+  return { ...raw, fontSources: keptSources, typography: { ...typography, roles: migratedRoles } }
+}
+
+/**
+ * v3 -> v4 (the brand typography system): the brand gains a name, description, use cases, tones, priorities and
+ * saved sample copy; typography gains heading and body sizes, responsive settings, a pairing and a fallback
+ * stack for the custom typeface; font sources gain fallback families; roles may be of the new 'caption' kind.
+ * A role named like a caption or label that was a 'ui' role becomes a caption, and a UI role is added if that
+ * leaves none, so every project has a role for interface text.
+ */
+function migrateV3toV4(raw: Record<string, unknown>): Record<string, unknown> {
+  const brand = isRecord(raw['brand']) ? raw['brand'] : {}
+  const typography = isRecord(raw['typography']) ? raw['typography'] : {}
+  const roles = Array.isArray(typography['roles']) ? typography['roles'] : []
+  let migrated = roles.map((r) => (isRecord(r) && r['kind'] === 'ui' && /caption|label/i.test(String(r['name'])) ? { ...r, kind: 'caption' } : r))
+  const hasUi = migrated.some((r) => isRecord(r) && r['kind'] === 'ui')
+  if (!hasUi && migrated.length > 0 && migrated.length < 30) {
+    const base = typeof raw['id'] === 'string' ? raw['id'].slice(0, 50) : 'project'
+    migrated = [...migrated, { id: `${base}-ui-role`, name: 'UI', kind: 'ui', font: null, weight: 500, scaleStep: 0, lineHeight: 1.3, letterSpacingEm: 0 }]
+  }
+  const sources = Array.isArray(raw['fontSources']) ? raw['fontSources'] : []
+  return {
+    ...raw,
+    brand: { name: '', description: '', useCases: [], tones: [], readabilityPriority: 3, displayPriority: 3, sampleCopy: {}, ...brand },
+    typography: {
+      ...typography,
+      roles: migrated,
+      sizes: { headings: [5, 4, 3, 2, 1, 0], bodyLarge: 1, bodySmall: -1 },
+      responsive: { enabled: false, minViewportPx: 320, maxViewportPx: 1280, minBaseSizePx: 14, minRatio: 1.125 },
+      pairing: { primary: null, secondary: null },
+      customFallback: { families: [], generic: 'sans-serif' },
+    },
+    fontSources: sources.map((s) => (isRecord(s) ? { fallbackFamilies: [], ...s } : s)),
+  }
+}
+
 /** A step upgrades a raw record from version N to N + 1. Steps must be pure. */
 export type MigrationStep = (raw: Record<string, unknown>) => Record<string, unknown>
 
@@ -74,7 +150,7 @@ export type MigrationStep = (raw: Record<string, unknown>) => Record<string, unk
  * Registry keyed by the version a step migrates FROM.
  * Add `n: migrateVnToVn+1` whenever CURRENT_SCHEMA_VERSION is bumped.
  */
-export const MIGRATIONS: Readonly<Record<number, MigrationStep>> = { 1: migrateV1toV2 }
+export const MIGRATIONS: Readonly<Record<number, MigrationStep>> = { 1: migrateV1toV2, 2: migrateV2toV3, 3: migrateV3toV4 }
 
 export type ParseResult =
   | { ok: true; project: Project; migratedFrom: number | null }
@@ -92,6 +168,26 @@ export function parseProject(
     schema = projectSchema,
   }: { migrations?: Readonly<Record<number, MigrationStep>>; target?: number; schema?: ZodType<Project> } = {},
 ): ParseResult {
+  const moved = migrateRaw(raw, { migrations, target })
+  if (!moved.ok) return moved
+  const parsed = schema.safeParse(moved.record)
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    const where = first ? first.path.join('.') || '(root)' : '(root)'
+    return { ok: false, reason: 'invalid', message: `Invalid project data at ${where}: ${first?.message ?? 'unknown'}` }
+  }
+  return { ok: true, project: parsed.data, migratedFrom: moved.from === target ? null : moved.from }
+}
+
+export type MigrateResult =
+  | { ok: true; record: Record<string, unknown>; from: number }
+  | Extract<ParseResult, { ok: false }>
+
+/** Run the migration chain without validating the result. Used by parseProject and by data recovery. */
+export function migrateRaw(
+  raw: unknown,
+  { migrations = MIGRATIONS, target = CURRENT_SCHEMA_VERSION }: { migrations?: Readonly<Record<number, MigrationStep>>; target?: number } = {},
+): MigrateResult {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     return { ok: false, reason: 'not-an-object', message: 'Project data is not an object.' }
   }
@@ -113,14 +209,12 @@ export function parseProject(
     if (!step) {
       return { ok: false, reason: 'no-migration', message: `No migration from schema ${current}.` }
     }
-    record = { ...step(record), schemaVersion: current + 1 }
+    try {
+      record = { ...step(record), schemaVersion: current + 1 }
+    } catch (e) {
+      return { ok: false, reason: 'invalid', message: `Upgrading from schema ${current} failed: ${e instanceof Error ? e.message : 'unknown error'}` }
+    }
     current += 1
   }
-  const parsed = schema.safeParse(record)
-  if (!parsed.success) {
-    const first = parsed.error.issues[0]
-    const where = first ? first.path.join('.') || '(root)' : '(root)'
-    return { ok: false, reason: 'invalid', message: `Invalid project data at ${where}: ${first?.message ?? 'unknown'}` }
-  }
-  return { ok: true, project: parsed.data, migratedFrom: version === target ? null : version }
+  return { ok: true, record, from: version }
 }

@@ -1,5 +1,6 @@
 export { Banner } from './Banner'
 export { Button, ButtonLink } from './Button'
+export { Chip } from './Chip'
 export { Drawer } from './Drawer'
 export { inputClass } from './fields'
 export { NumberField } from './NumberField'

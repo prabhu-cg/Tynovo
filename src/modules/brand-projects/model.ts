@@ -1,5 +1,5 @@
 import { parseProject, type ParseResult } from './migrations'
-import { CURRENT_SCHEMA_VERSION, type Project, type TypographyRole, type TypeScale } from './schema'
+import { CURRENT_SCHEMA_VERSION, type Brand, type Project, type Responsive, type Sizes, type Typography, type TypographyRole, type TypeScale } from './schema'
 
 /** Pure project operations. Time and id generation are injectable for deterministic tests. */
 export interface Clock {
@@ -13,20 +13,34 @@ export const systemClock: Clock = {
 }
 
 export const DEFAULT_SCALE: TypeScale = { baseSizePx: 16, ratio: 1.25, stepsDown: 2, stepsUp: 6 }
+export const DEFAULT_SIZES: Sizes = { headings: [5, 4, 3, 2, 1, 0], bodyLarge: 1, bodySmall: -1 }
+export const DEFAULT_RESPONSIVE: Responsive = { enabled: false, minViewportPx: 320, maxViewportPx: 1280, minBaseSizePx: 14, minRatio: 1.125 }
+export const DEFAULT_BRAND: Brand = { name: '', description: '', personality: [], useCases: [], tones: [], readabilityPriority: 3, displayPriority: 3, notes: '', sampleCopy: {} }
+
+export const defaultTypography = (roles: TypographyRole[]): Typography => ({
+  scale: { ...DEFAULT_SCALE },
+  roles,
+  sizes: structuredClone(DEFAULT_SIZES),
+  responsive: { ...DEFAULT_RESPONSIVE },
+  pairing: { primary: null, secondary: null },
+  customFallback: { families: [], generic: 'sans-serif' },
+})
 
 function defaultRoles(clock: Clock): TypographyRole[] {
   const role = (
     name: string,
+    kind: TypographyRole['kind'],
     weight: number,
     scaleStep: number,
     lineHeight: number,
     letterSpacingEm: number,
-  ): TypographyRole => ({ id: clock.newId(), name, fontSourceId: null, weight, scaleStep, lineHeight, letterSpacingEm })
+  ): TypographyRole => ({ id: clock.newId(), name, kind, font: null, weight, scaleStep, lineHeight, letterSpacingEm })
   return [
-    role('Display', 700, 6, 1.05, -0.02),
-    role('Heading', 600, 3, 1.2, -0.01),
-    role('Body', 400, 0, 1.55, 0),
-    role('Caption', 400, -1, 1.4, 0.01),
+    role('Display', 'display', 700, 6, 1.05, -0.02),
+    role('Heading', 'heading', 600, 3, 1.2, -0.01),
+    role('Body', 'body', 400, 0, 1.55, 0),
+    role('UI', 'ui', 500, 0, 1.3, 0),
+    role('Caption', 'caption', 400, -1, 1.4, 0.01),
   ]
 }
 
@@ -38,8 +52,8 @@ export function createProject(name: string, clock: Clock = systemClock): Project
     name: name.trim() || 'Untitled project',
     createdAt: at,
     updatedAt: at,
-    brand: { personality: [], notes: '' },
-    typography: { scale: { ...DEFAULT_SCALE }, roles: defaultRoles(clock) },
+    brand: structuredClone(DEFAULT_BRAND),
+    typography: defaultTypography(defaultRoles(clock)),
     fontSources: [],
     customTypeface: null,
     exportHistory: [],

@@ -8,7 +8,7 @@ describe('createProject', () => {
     const p = createProject('  Acme  ', fakeClock())
     expect(p.name).toBe('Acme')
     expect(p.schemaVersion).toBe(CURRENT_SCHEMA_VERSION)
-    expect(p.typography.roles.map((r) => r.name)).toEqual(['Display', 'Heading', 'Body', 'Caption'])
+    expect(p.typography.roles.map((r) => r.name)).toEqual(['Display', 'Heading', 'Body', 'UI', 'Caption'])
     expect(parseProject(p).ok).toBe(true)
   })
   it('falls back to a placeholder name', () => {

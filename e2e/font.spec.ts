@@ -266,7 +266,7 @@ test('a Phase-0/1 project (schema v1) opens, is migrated and generates a full ty
   await page.keyboard.press('ArrowRight')
   await saved(page)
   const stored = (await readProjects(page)).find((p) => p['id'] === 'legacy-1')!
-  expect(stored['schemaVersion']).toBe(2)
+  expect(stored['schemaVersion']).toBe(4)
   expect(stored['customTypeface'].license).toEqual({ name: 'OFL-1.1', verified: true })
   expect(stored['customTypeface'].glyphs).toBeUndefined()
 })

@@ -39,6 +39,7 @@ describe('useProjectEditor', () => {
       kind: repo.kind,
       list: () => repo.list(),
       get: (id) => repo.get(id),
+      getRaw: (id) => repo.getRaw(id),
       delete: (id) => repo.delete(id),
       save: (p: Project, o: SaveOptions) => (fail ? Promise.reject(new StorageError('quota', 'Browser storage is full.')) : repo.save(p, o)),
     }
@@ -78,6 +79,7 @@ describe('useProjectEditor', () => {
       kind: repo.kind,
       list: () => repo.list(),
       get: (id) => repo.get(id),
+      getRaw: (id) => repo.getRaw(id),
       delete: (id) => repo.delete(id),
       save: async (p, o) => {
         if (gate) await gate

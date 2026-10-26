@@ -35,6 +35,7 @@ export const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import('@/modules/app-shell/ProjectLayout')).ProjectLayout }),
         children: [
           { index: true, ...lazyPage(() => import('@/modules/app-shell/OverviewPage'), 'OverviewPage') },
+          { path: 'fonts', ...lazyPage(() => import('@/modules/app-shell/FontCatalogPage'), 'FontCatalogPage') },
           { path: 'typography', ...lazyPage(() => import('@/modules/app-shell/TypographyPage'), 'TypographyPage') },
           { path: 'typeface', ...lazyPage(() => import('@/modules/app-shell/TypefacePage'), 'TypefacePage') },
           { path: 'export', ...lazyPage(() => import('@/modules/app-shell/ExportPage'), 'ExportPage') },

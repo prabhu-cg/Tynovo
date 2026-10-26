@@ -10,8 +10,10 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 |---|---|---|
 | `brand-projects` | domain | Versioned project schema (Zod), validation + migration (`parseProject`), pure operations (create/duplicate/rename), project file format, `ProjectService` use-cases |
 | `persistence` | domain | `ProjectRepository` port; IndexedDB adapter (via `idb`) with compare-and-put conflict detection; in-memory fallback |
-| `typography-system` | domain | Modular type-scale maths (roles and font assignment come in later phases) |
-| `font-catalog` | domain | Reserved for Phase 1 (existing-font catalogue); empty |
+| `typography-system` | domain | Type-scale maths including fluid sizes (`sizeAt`/`cssSize`), the shared `typeStyles` description used by previews and exports, and value validation |
+| `font-catalog` | domain | The bundled catalog generated from font-package metadata (24 OFL-1.1 fonts), studio tags, on-demand bounded loader, installed-font detection, search/filter, rule-based recommendations. See `brand-typography-system.md` |
+| `brand-system` | domain | The link between the two modes: role-font resolution, custom-typeface fit, project operations, preview text and missing characters, readiness checks, workflow status, content revision, text escaping. See `integrated-workflow.md` |
+| `export-centre` | domain | Pure generators for CSS, tokens, specification, specimen, manifest, zip, and `buildBundle` |
 | `typeface-engine` | domain | Design DNA, construction kit, glyph recipes, generation, overrides/variants/restore-point operations. See `typeface-engine.md` |
 | `glyph-editor` | domain + UI | Contour geometry, outline operations, undo history, editing session, working-copy bridge, viewport maths; text layout (tracking, word spacing, wrapping, kerning); SVG canvas, specimen and thumbnail components. See `glyph-editor.md` |
 | `font-export` | domain + UI | `FontBuilder` port; Font Flux adapter (TTF, OTF); format table and signature guards; sfnt reader; OS/2/head patcher; download helper; export orchestration; background file checks; browser rendering comparison; font lab page |
@@ -22,13 +24,13 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 | `design-tokens` | styling | `tokens.css` (Tailwind `@theme`): Manrope, `#C74504`, `#444444`, neutrals, radii, shadows |
 | `testing` | support | Vitest setup (jsdom, fake-indexeddb), deterministic clock |
 
-## Project model (schema version 2)
+## Project model (schema version 4)
 
-`Project { schemaVersion, id, name, createdAt, updatedAt, brand{personality[], notes}, typography{scale, roles[]}, fontSources[], customTypeface | null, exportHistory[] }`.
+`Project { schemaVersion, id, name, createdAt, updatedAt, brand{personality[], notes}, typography{scale, roles[]{kind, font: custom-link | source-link | null, …}}, fontSources[], customTypeface | null, exportHistory[] }`. Roles link to the typeface by id; see `integrated-workflow.md`.
 `CustomTypeface` holds the design DNA, engine version, per-glyph overrides, kerning, saved variants, restore points, licence and copyright. Glyph outlines are **derived** from the DNA on demand and never stored (except frozen outlines inside overrides), so stored data stays small and always matches the current design.
 
 - **Validation:** every read from storage or file goes through `parseProject` (never throws, never mutates input).
-- **Migration:** `MIGRATIONS[n]` upgrades n to n+1. v1 → v2 (Phase-0 proof typeface to design DNA) is implemented and tested, including an end-to-end browser test with a planted v1 row; the chain, "missing step" and "newer version" paths are tested with injected steps. A project saved by a newer app is refused, not truncated.
+- **Migration:** `MIGRATIONS[n]` upgrades n to n+1. v1 → v2 (Phase-0 proof typeface to design DNA), v2 → v3 (typed role font links) and v3 → v4 (brand direction, sizes, responsive, pairing, fallbacks, caption kind) are implemented and tested, including an end-to-end browser test with a planted v1 row; the chain, "missing step" and "newer version" paths are tested with injected steps. A project saved by a newer app is refused, not truncated.
 - **Font binaries are never stored.** Fonts are rebuilt from the glyph model on export. Nothing large goes in localStorage; IndexedDB holds project JSON only.
 
 ## Autosave (`useProjectEditor`)
