@@ -13,7 +13,7 @@ Specified by the user: React, TypeScript (strict), Vite, Tailwind CSS, React Rou
 Designers, founders and small teams who need a brand typography system (and optionally an original display typeface) without paying for or learning heavy tooling. (Inferred from the phase brief; not interviewed.)
 
 ## Product Purpose
-Brand Typography Studio is a free-first, browser-based tool with two connected modes: (1) Brand Typography System: pick existing fonts, define roles and type scales, preview brand applications, export documentation and code; (2) Custom Typeface Creator: generate original rule-based display typefaces, refine glyphs, validate quality, export genuine font files.
+Tynovo (tagline: Shape your brand’s voice) is a free-first, browser-based tool with two connected modes: (1) Brand Typography System: pick existing fonts, define roles and type scales, preview brand applications, export documentation and code; (2) Custom Typeface Creator: generate original rule-based display typefaces, refine glyphs, validate quality, export genuine font files.
 
 ## Positioning
 Local-first, no account, no backend, no AI service: projects live in the browser and exports are real files. One shared project model and token set connects system and custom-typeface work.

@@ -42,7 +42,7 @@ export function ProjectSettingsPage() {
         <h2 id="dup-h" className="text-lg font-bold">Duplicate</h2>
         <div>
           <p className="max-w-xl">Make an independent copy with a new name. The export history is not copied.</p>
-          <Button className="mt-4" onClick={() => void duplicate()}>Duplicate this project</Button>
+          <Button className="mt-4" variant={editor.readOnly ? 'primary' : 'secondary'} onClick={() => void duplicate()}>{editor.readOnly ? 'Duplicate as my own project' : 'Duplicate this project'}</Button>
         </div>
       </section>
       <section aria-labelledby="bk-h" className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6">
@@ -58,15 +58,15 @@ export function ProjectSettingsPage() {
           <dt className="text-ink-soft">Created</dt><dd>{fmt.format(new Date(draft.createdAt))}</dd>
           <dt className="text-ink-soft">Last saved</dt><dd>{fmt.format(new Date(draft.updatedAt))}</dd>
           <dt className="text-ink-soft">Schema version</dt><dd>{draft.schemaVersion}</dd>
-          <dt className="text-ink-soft">Stored in</dt><dd>{storageKind === 'indexeddb' ? 'this browser (IndexedDB)' : 'memory only (not saved after you close the tab)'}</dd>
+          <dt className="text-ink-soft">Stored in</dt><dd>{editor.readOnly ? 'nowhere: the sample is built into Tynovo and is the same for everyone' : storageKind === 'indexeddb' ? 'this browser (IndexedDB)' : 'memory only (not saved after you close the tab)'}</dd>
           <dt className="text-ink-soft">Project id</dt><dd className="break-all">{draft.id}</dd>
         </dl>
       </section>
       <section aria-labelledby="del-h" className="grid grid-cols-[minmax(0,1fr)] gap-4 border-t border-line pt-8 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6">
         <h2 id="del-h" className="text-lg font-bold text-danger">Delete</h2>
         <div>
-          <p className="max-w-xl">Deleting removes this project from this browser. It cannot be undone. You will be offered a backup file first.</p>
-          {confirming ? (
+          <p className="max-w-xl">{editor.readOnly ? 'The sample project is built into Tynovo, so there is nothing to delete and it cannot be removed.' : 'Deleting removes this project from this browser. It cannot be undone. You will be offered a backup file first.'}</p>
+          {editor.readOnly ? null : confirming ? (
             <div className="mt-4 max-w-xl">
               <DeletePanel name={draft.name} confirmLabel="Delete project" cancelLabel="Keep it" onBackup={async () => exportProjectFile(draft)} onConfirm={() => void remove()} onCancel={() => setConfirming(false)} />
             </div>

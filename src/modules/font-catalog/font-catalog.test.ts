@@ -113,7 +113,7 @@ describe('FontLoader', () => {
   it('fails cleanly for a font that is not in the catalog', async () => {
     const l = new FontLoader(env().e)
     expect(await l.load(spec('not-a-font'))).toBe('failed')
-    expect(l.error(spec('not-a-font'))).toMatch(/not in the studio's catalog/)
+    expect(l.error(spec('not-a-font'))).toMatch(/not in Tynovo's catalog/)
   })
 
   it('notifies subscribers when a state changes', async () => {

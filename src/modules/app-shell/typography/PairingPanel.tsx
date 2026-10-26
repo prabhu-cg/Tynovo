@@ -61,7 +61,7 @@ export function PairingPanel() {
       <section aria-label="Suggested pairings" className="grid gap-3">
         <h3 className="text-base font-bold">Suggested pairings</h3>
         {!signals ? (
-          <p className="text-sm text-ink-soft">Set a tone or a use case in the <Link to=".." className="font-semibold text-accent-strong underline underline-offset-4">brand direction</Link> and the studio will suggest pairings from the catalog, with the reason for each point.</p>
+          <p className="text-sm text-ink-soft">Set a tone or a use case in the <Link to=".." className="font-semibold text-accent-strong underline underline-offset-4">brand direction</Link> and Tynovo will suggest pairings from the catalog, with the reason for each point.</p>
         ) : suggestions.length === 0 ? (
           <p className="text-sm text-ink-soft">No pairing scores above zero for this brand direction. Try another tone or use case.</p>
         ) : (

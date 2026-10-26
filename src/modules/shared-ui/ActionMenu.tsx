@@ -1,0 +1,117 @@
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
+import { MoreIcon } from './icons'
+
+export interface MenuItem {
+  id: string
+  label: string
+  /** A button item. */
+  onSelect?: () => void
+  /** A link item (navigates instead of acting). */
+  to?: string
+  danger?: boolean
+  /** Extra words for assistive technology only, e.g. which project the item acts on. */
+  srSuffix?: string
+}
+
+const item = 'flex min-h-11 w-full cursor-pointer items-center rounded-sm px-3 text-left text-sm font-semibold whitespace-nowrap hover:bg-sheet-deep focus-visible:bg-sheet-deep md:min-h-9'
+
+/**
+ * A "more actions" menu: a button that opens a short list of actions. Keyboard: Enter, Space or Arrow Down opens it
+ * and focuses the first action; Arrow Up and Down, Home and End move; Escape closes and returns to the button;
+ * Tab leaves. Clicking elsewhere closes it. Every action is also a real button or link, so it works without a mouse.
+ */
+export function ActionMenu({ label, items, icon }: { label: string; items: readonly MenuItem[]; icon?: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const menuId = useId()
+
+  const entries = () => [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+  const focusAt = (i: number) => {
+    const list = entries()
+    list[(i + list.length) % list.length]?.focus()
+  }
+
+  useEffect(() => {
+    if (!open) return
+    focusAt(0)
+    const away = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [open])
+
+  const close = (refocus: boolean) => {
+    setOpen(false)
+    if (refocus) trigger.current?.focus()
+  }
+
+  return (
+    <div ref={root} className="relative" onKeyDown={(e) => {
+      if (e.key === 'Escape' && open) {
+        e.stopPropagation()
+        close(true)
+      }
+    }}>
+      <button
+        ref={trigger}
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown' && !open) {
+            e.preventDefault()
+            setOpen(true)
+          }
+        }}
+        className="inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-ink transition-colors hover:bg-sheet-deep aria-expanded:bg-sheet-deep md:size-9"
+      >
+        {icon ?? <MoreIcon />}
+      </button>
+      {open ? (
+        <div
+          id={menuId}
+          role="menu"
+          aria-label={label}
+          className="absolute top-full right-0 z-20 mt-1 grid min-w-52 gap-0.5 rounded-md border border-line-strong bg-paper p-1 shadow-(--shadow-lift)"
+          onKeyDown={(e) => {
+            const list = entries()
+            const at = list.indexOf(document.activeElement as HTMLElement)
+            if (e.key === 'ArrowDown') (e.preventDefault(), focusAt(at + 1))
+            else if (e.key === 'ArrowUp') (e.preventDefault(), focusAt(at - 1))
+            else if (e.key === 'Home') (e.preventDefault(), focusAt(0))
+            else if (e.key === 'End') (e.preventDefault(), focusAt(list.length - 1))
+            else if (e.key === 'Tab') setOpen(false)
+          }}
+        >
+          {items.map((it) =>
+            it.to ? (
+              <Link key={it.id} role="menuitem" tabIndex={-1} to={it.to} onClick={() => setOpen(false)} className={`${item} ${it.danger ? 'text-danger' : 'text-ink-strong'}`}>
+                {it.label}{it.srSuffix ? <span className="sr-only"> {it.srSuffix}</span> : null}
+              </Link>
+            ) : (
+              <button
+                key={it.id}
+                type="button"
+                role="menuitem"
+                tabIndex={-1}
+                onClick={() => {
+                  close(false)
+                  it.onSelect?.()
+                }}
+                className={`${item} ${it.danger ? 'text-danger' : 'text-ink-strong'}`}
+              >
+                {it.label}{it.srSuffix ? <span className="sr-only"> {it.srSuffix}</span> : null}
+              </button>
+            ),
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}

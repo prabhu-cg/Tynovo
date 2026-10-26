@@ -1,5 +1,5 @@
 {
-  "name": "brand-typography-studio",
+  "name": "tynovo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -15,7 +15,8 @@
     "spike": "WRITE_SPIKE_OUTPUT=1 vitest run src/modules/font-export",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "contact-sheet": "tsx scripts/contact-sheet.ts",
-    "catalog": "node scripts/build-catalog.mjs"
+    "catalog": "node scripts/build-catalog.mjs",
+    "screens": "tsx scripts/make-screens.ts"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

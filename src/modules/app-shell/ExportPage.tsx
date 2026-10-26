@@ -90,7 +90,7 @@ export function ExportPage() {
               {view('font').visible ? <FileRow file={file('font')!} disabled={!canDownload} locked={view('font').message} onDownload={download} /> : null}
             </ul>
           ) : null}
-          {ready ? <p role="status" aria-live="polite" className="text-sm text-ok">{done ? `Downloaded ${done}. It is recorded in the history below.` : ''}</p> : null}
+          {ready ? <p role="status" aria-live="polite" className="text-sm text-ok">{done ? (editor.readOnly ? `Downloaded ${done}.` : `Downloaded ${done}. It is recorded in the history below.`) : ''}</p> : null}
         </div>
       </section>
 

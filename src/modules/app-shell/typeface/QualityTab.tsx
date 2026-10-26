@@ -5,6 +5,7 @@ import { CATEGORY_LABEL, runQualityChecks, type QualityFinding, type QualityFix,
 import { AlertIcon, Banner, Button, CheckIcon, InfoIcon, Segmented } from '@/modules/shared-ui'
 import { COMMERCE } from '@/modules/entitlements'
 import { useCapabilities } from '../entitlements'
+import { useProject } from '../project'
 import type { TypefaceHandle } from './useTypeface'
 
 type Filter = 'all' | QualitySeverity
@@ -20,6 +21,7 @@ const show = (c: string) => (c === ' ' ? 'space' : c)
 export function QualityTab({ handle, onGo }: { handle: TypefaceHandle; onGo: (fix: Extract<QualityFix, { kind: 'go' }>) => void }) {
   const live = useDeferredValue(handle.face)
   const caps = useCapabilities()
+  const { readOnly } = useProject()
   const extended = caps.allows('quality.extended')
   const [format, setFormat] = useState<FontFormatId>('ttf')
   const [filter, setFilter] = useState<Filter>('all')
@@ -81,7 +83,7 @@ export function QualityTab({ handle, onGo }: { handle: TypefaceHandle; onGo: (fi
           <p className="flex items-start gap-2 text-sm"><span className="mt-0.5 text-ok"><CheckIcon /></span>{filter === 'all' ? 'The checks found nothing to report.' : 'Nothing in this category.'}</p>
         ) : (
           <ol className="grid gap-3" aria-label="Quality findings">
-            {findings.map((f) => <Finding key={f.id} f={f} onFix={runFix} onGlyph={(c) => onGo({ kind: 'go', label: '', view: 'glyphs', glyph: c })} />)}
+            {findings.map((f) => <Finding key={f.id} f={f} readOnly={readOnly} onFix={runFix} onGlyph={(c) => onGo({ kind: 'go', label: '', view: 'glyphs', glyph: c })} />)}
           </ol>
         )}
       </section>
@@ -104,7 +106,7 @@ export function QualityTab({ handle, onGo }: { handle: TypefaceHandle; onGo: (fi
   )
 }
 
-function Finding({ f, onFix, onGlyph }: { f: QualityFinding; onFix: (fix: QualityFix) => void; onGlyph: (c: string) => void }) {
+function Finding({ f, readOnly, onFix, onGlyph }: { f: QualityFinding; readOnly: boolean; onFix: (fix: QualityFix) => void; onGlyph: (c: string) => void }) {
   const s = SEVERITY[f.severity]
   // The glyph chips already open the editor; do not repeat them as buttons.
   const shownFixes = f.fixes.filter((x) => !(x.kind === 'go' && x.view === 'glyphs' && x.glyph && f.glyphs.includes(x.glyph)))
@@ -133,7 +135,7 @@ function Finding({ f, onFix, onGlyph }: { f: QualityFinding; onFix: (fix: Qualit
             {f.glyphs.length > 24 ? <span className="text-xs text-ink-soft">and {f.glyphs.length - 24} more</span> : null}
           </p>
         ) : null}
-        {shownFixes.length > 0 ? <div className="flex flex-wrap gap-2 pt-1">{shownFixes.map((x) => <Button key={x.label} onClick={() => onFix(x)}>{x.label}</Button>)}</div> : null}
+        {shownFixes.length > 0 ? <div className="flex flex-wrap gap-2 pt-1">{shownFixes.map((x) => <Button key={x.label} disabled={readOnly && x.kind === 'edit'} title={readOnly && x.kind === 'edit' ? 'The sample project cannot be changed' : undefined} onClick={() => onFix(x)}>{x.label}</Button>)}</div> : null}
       </article>
     </li>
   )

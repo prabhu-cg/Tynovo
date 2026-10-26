@@ -636,13 +636,13 @@ function metadata(ctx: Ctx): QualityFinding[] {
     out.push(finding({ id: 'metadata.style', severity: 'warning', category: 'metadata', title: `Style name “${face.styleName}” does not match the font’s style flags`, detail: 'This version writes the font as Regular (weight 400, upright). The style flags in the file stay Regular whatever the name says.', why: 'Programs group bold and italic fonts using those flags; a name that disagrees with them causes confusing menus.', fixes: [{ kind: 'edit', label: 'Set the style name to Regular', apply: (f) => ({ ...f, styleName: 'Regular' }) }] }))
   }
   if (!face.copyright.trim()) {
-    out.push(finding({ id: 'metadata.copyright', severity: 'warning', category: 'metadata', title: 'No copyright notice', detail: 'The copyright field is empty, so the file carries no statement of who made it.', why: 'Copyright notices are conventional in font files and help others identify the author. The studio does not write one for you.', fixes: [goInfo('Add a copyright notice')] }))
+    out.push(finding({ id: 'metadata.copyright', severity: 'warning', category: 'metadata', title: 'No copyright notice', detail: 'The copyright field is empty, so the file carries no statement of who made it.', why: 'Copyright notices are conventional in font files and help others identify the author. Tynovo does not write one for you.', fixes: [goInfo('Add a copyright notice')] }))
   }
   const lic = face.license
   if (!lic.name.trim() || lic.name === LICENSE_PLACEHOLDER) {
-    out.push(finding({ id: 'metadata.license', severity: 'warning', category: 'metadata', title: 'No licence chosen', detail: 'No licence is set, so the exported file will carry no licence information.', why: 'Without a licence, people who receive the font cannot know what they may do with it. The choice is yours; the studio does not give legal advice.', fixes: [goInfo('Choose a licence')] }))
+    out.push(finding({ id: 'metadata.license', severity: 'warning', category: 'metadata', title: 'No licence chosen', detail: 'No licence is set, so the exported file will carry no licence information.', why: 'Without a licence, people who receive the font cannot know what they may do with it. The choice is yours; Tynovo does not give legal advice.', fixes: [goInfo('Choose a licence')] }))
   } else {
-    if (!lic.verified) out.push(finding({ id: 'metadata.license-unverified', severity: 'recommendation', category: 'metadata', title: 'Licence not confirmed', detail: `The licence “${lic.name}” is written into the file, but you have not confirmed it.`, why: 'The studio never assumes a licence is right; confirming it records that a person decided.', fixes: [goInfo('Confirm the licence')] }))
+    if (!lic.verified) out.push(finding({ id: 'metadata.license-unverified', severity: 'recommendation', category: 'metadata', title: 'Licence not confirmed', detail: `The licence “${lic.name}” is written into the file, but you have not confirmed it.`, why: 'Tynovo never assumes a licence is right; confirming it records that a person decided.', fixes: [goInfo('Confirm the licence')] }))
     if (!lic.url) out.push(finding({ id: 'metadata.license-url', severity: 'recommendation', category: 'metadata', title: 'No licence link', detail: 'The licence has a name but no URL.', why: 'A link lets people read the full text.', fixes: [goInfo('Add a licence link')] }))
   }
   return out
@@ -662,7 +662,7 @@ export const CHECKS: Check[] = [
   { info: { tier: 'extended', id: 'alignment', category: 'metrics', name: 'Metric consistency', measures: 'Baseline, cap height, x-height and ascender alignment of letters and digits, and whether the declared x-height and cap height match the letters.', limits: 'Reference shapes are fixed lists of Latin letters; unusual designs may trip them. Allowed overshoot comes from your design settings.' }, run: (c) => [...alignment(c), ...parameters(c)] },
   { info: { tier: 'extended', id: 'widths', category: 'widths', name: 'Unusual advance widths', measures: 'Each glyph’s advance against the median of its group (uppercase, lowercase, digits), with allowances for narrow and wide letters, and the space against lowercase.', limits: 'A statistical outlier is a prompt to look, not a mistake: some designs are deliberately uneven.' }, run: widths },
   { info: { tier: 'extended', id: 'spacing', category: 'spacing', name: 'Suspicious spacing', measures: 'Side bearings of overridden glyphs against automatic spacing, the closest approach and the average gap in about 40 letter pairs (sampled every 8 units of height), compared with the gap between straight stems.', limits: 'Gaps are measured, not seen: optical spacing depends on weight, size and taste. Kerning suggestions are a starting point to check in the preview.' }, run: spacing },
-  { info: { tier: 'core', id: 'metadata', category: 'metadata', name: 'Missing metadata', measures: 'Family and style names, copyright and licence fields.', limits: 'The studio checks that fields exist and are consistent. It cannot judge whether a licence or copyright statement is legally right.' }, run: metadata },
+  { info: { tier: 'core', id: 'metadata', category: 'metadata', name: 'Missing metadata', measures: 'Family and style names, copyright and licence fields.', limits: 'Tynovo checks that fields exist and are consistent. It cannot judge whether a licence or copyright statement is legally right.' }, run: metadata },
 ]
 
 const FILE_CHECK: CheckInfo = { tier: 'core', id: 'file', category: 'file', name: 'Exported file checks', measures: 'The finished file is built, opened again and compared with the design: signature, tables, checksums, every character mapping, advance widths, outline bounds, metrics, names and kerning, plus the exporter library’s own validator.', limits: 'Run on this browser’s build of the file. Other programs may still behave differently; see the validation notes for what was tested where.' }
@@ -694,7 +694,7 @@ export function runQualityChecks(face: CustomTypeface, file?: FileCheckInput, op
           category: 'file',
           title: i.severity === 'error' ? `The ${file.format} file fails a check` : `The ${file.format} file has a warning`,
           detail: i.message,
-          why: i.severity === 'error' ? 'The studio will not offer a file that fails its own checks.' : 'The file can be exported; check this in the programs you use.',
+          why: i.severity === 'error' ? 'Tynovo will not offer a file that fails its own checks.' : 'The file can be exported; check this in the programs you use.',
           glyphs: i.glyph ? [i.glyph] : [],
         }),
       )

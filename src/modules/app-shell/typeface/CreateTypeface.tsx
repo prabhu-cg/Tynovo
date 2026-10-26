@@ -5,6 +5,7 @@ import { createTypeface } from '@/modules/typeface-engine/typeface'
 import { Button } from '@/modules/shared-ui'
 import { viewOf, type FeatureId } from '@/modules/entitlements'
 import { useCapabilities } from '../entitlements'
+import { EditGroup } from '../EditGroup'
 import { useProject } from '../project'
 
 const FAMILIES: Family[] = ['geometric', 'rounded', 'modular']
@@ -20,6 +21,7 @@ export function CreateTypeface() {
         <h2 className="text-xl font-extrabold">Start a typeface</h2>
         <p className="mt-1 max-w-2xl text-ink-soft">Choose a construction family. Every setting can be changed afterwards, and the family can be switched later without losing glyph overrides.</p>
       </div>
+      <EditGroup>
       <ul className="grid gap-4 md:grid-cols-3">
         {previews.map(({ family, face }) => {
           const view = viewOf(`typeface.family.${family}` as FeatureId, caps)
@@ -35,6 +37,7 @@ export function CreateTypeface() {
           )
         })}
       </ul>
+      </EditGroup>
     </div>
   )
 }

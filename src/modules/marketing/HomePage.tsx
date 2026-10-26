@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { FAQS, byMode, type Status } from './content'
 import { InteractiveSpecimen } from './InteractiveSpecimen'
+import { LaptopShowcase } from './LaptopShowcase'
 import { Seo } from './Seo'
 import { PUBLIC_PAGES } from './seo-config'
 import { Container, PrimaryLink, SecondaryLink, Section, StatusBadge, TextLink } from './ui'
@@ -10,17 +11,17 @@ const ExampleFamilies = lazy(() => import('./ExampleFamilies').then((m) => ({ de
 const page = PUBLIC_PAGES[0]!
 
 const PROMISES: Array<{ title: string; body: string; status: Status }> = [
-  { title: 'Build a complete brand typography system with existing fonts.', body: 'Describe the brand, browse 24 licensed fonts with their sources, set roles, a pairing and a fluid type scale, and keep licence notes for each font. The catalog is small and fixed; fonts you name are checked, never assumed.', status: 'early' },
-  { title: 'Create and customise a procedural display font.', body: 'Adjust parameters and every glyph redraws. Three families draw letters, digits and most punctuation today; hand-editing outlines is in development.', status: 'early' },
-  { title: 'Preview typography in realistic contexts.', body: 'Check the system on a website, an editorial page, a product screen and a poster, light or dark, at phone to desktop width. A document layout is not built yet.', status: 'early' },
-  { title: 'Export specifications and supported font files.', body: 'TrueType and OpenType (CFF) export of your generated typeface, plus a Markdown specification, CSS, JSON tokens, an HTML specimen and a sources and licences file.', status: 'early' },
+  { title: 'Build a brand typography system from licensed fonts.', body: 'Describe the brand, browse 24 licensed fonts with their sources, set roles and a pairing, and tune a fluid type scale. A licence note is kept for every font. The catalog is small and fixed; a font you name is checked, never assumed.', status: 'early' },
+  { title: 'Create and refine an original typeface.', body: 'Pick a construction family and adjust its parameters, and every glyph redraws. Edit outline points in the glyph editor, explore seeded variations and run quality checks. Three families draw letters, digits and most punctuation; curve editing is not built yet.', status: 'early' },
+  { title: 'Use your typeface inside the system.', body: 'Assign your generated typeface to display, heading, body or interface roles when its characters and readability suit them. When they do not, you are told why, with the numbers.', status: 'early' },
+  { title: 'Preview, check and export.', body: 'See the system on a website, an editorial page, a product screen and a poster, light or dark. Export a specification, CSS, tokens, a specimen, a licence manifest and real TrueType or OpenType files.', status: 'early' },
 ]
 
 const STEPS = [
   ['Start a project', 'Name it and pick where to begin. Nothing to sign up for.', 'available'],
-  ['Define the system', 'Set the type scale and roles. Font selection is next.', 'early'],
-  ['Shape a typeface', 'Drive the generator with parameters and check the result.', 'early'],
-  ['Export', 'Download a project file or a validated font file.', 'available'],
+  ['Define the brand and system', 'Describe the brand, choose fonts, assign roles and tune the scale.', 'early'],
+  ['Shape a typeface', 'Optional. Drive the generator, edit glyphs and check the result.', 'early'],
+  ['Preview and export', 'See it in real layouts, then export files built from the saved project.', 'early'],
 ] as const
 
 export function HomePage() {
@@ -28,12 +29,12 @@ export function HomePage() {
   return (
     <>
       <Seo page={page} />
-      <section aria-labelledby="hero-h" className="border-b border-line bg-sheet">
+      <section aria-labelledby="hero-h" className="border-b border-line bg-[radial-gradient(60rem_32rem_at_85%_-10%,var(--color-accent-wash),transparent_70%),linear-gradient(180deg,#f3efe8_0%,var(--color-sheet)_55%,var(--color-paper)_100%)]">
         <Container className="grid gap-12 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
           <div>
             <p className="text-sm font-bold text-accent-strong">Free, in your browser, no account</p>
             <h1 id="hero-h" className="mt-3 text-5xl leading-[1.02] font-extrabold md:text-6xl">Build your brand typography. Create your own typeface.</h1>
-            <p className="mt-5 max-w-lg text-lg">One studio for the typography system of a brand and for an original display font. It is early software: the page below says plainly what works today and what does not.</p>
+            <p className="mt-5 max-w-lg text-lg">Tynovo is one studio for the typography system of a brand and for an original display font. It is early software: this page says plainly what works today and what does not.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <PrimaryLink to="/app/projects">Start a project</PrimaryLink>
               <SecondaryLink to="/features">See what works today</SecondaryLink>
@@ -45,7 +46,12 @@ export function HomePage() {
         </Container>
       </section>
 
-      <Section id="promise" title="What you will be able to do" intro="Four things, each with its honest status.">
+      <Section id="screens" tone="sheet" title="See it working" intro="Real screens from Tynovo’s read-only sample project, not mock-ups. Pick a screen to look at." centered>
+        <LaptopShowcase />
+        <p className="mt-8 flex justify-center"><SecondaryLink to="/app/projects/sample-fieldnote">Open the sample project</SecondaryLink></p>
+      </Section>
+
+      <Section id="promise" title="What you can do today" intro="Four things, each with its honest status.">
         <ol className="divide-y divide-line border-y border-line">
           {PROMISES.map((p, i) => (
             <li key={p.title} className="grid gap-3 py-6 md:grid-cols-[3rem_minmax(0,1fr)_auto] md:items-baseline md:gap-6">
@@ -57,7 +63,7 @@ export function HomePage() {
         </ol>
       </Section>
 
-      <Section id="modes" tone="sheet" title="Two modes, one project" intro="Both modes edit the same project and share the same type scale, so a typeface you generate can become part of the system.">
+      <Section id="modes" tone="sheet" title="Two modes, one project" intro="Both modes edit the same saved project. Assign a typeface you generate to a role in the system, and the previews and exports use it.">
         <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-2">
           {([['system', 'Brand Typography System', 'Decide which fonts a brand uses, for what, and at which sizes.'], ['typeface', 'Custom Typeface Creator', 'Generate an original display typeface from rules, check it, and export a real font file.']] as const).map(([mode, title, lead]) => (
             <div key={mode} className="bg-paper p-6 md:p-8">
@@ -74,7 +80,7 @@ export function HomePage() {
         <p className="mt-6"><TextLink to="/features">Full feature list</TextLink></p>
       </Section>
 
-      <Section id="families" title="Example typography families" intro="Open-licensed fonts that appear on this site, set live, next to an original geometric typeface generated by the studio.">
+      <Section id="families" title="Example typography families" intro="Open-licensed fonts that appear on this site, set live, next to an original geometric typeface generated by Tynovo.">
         <div ref={famRef} className="min-h-48">
           {famSeen ? (
             <Suspense fallback={<p className="text-ink-soft" role="status">Loading specimens…</p>}><ExampleFamilies /></Suspense>
@@ -94,18 +100,18 @@ export function HomePage() {
             </li>
           ))}
         </ol>
-        <p className="mt-6"><TextLink to="/how-it-works">The workflow in detail</TextLink></p>
+        <p className="mt-6 flex flex-wrap gap-x-6 gap-y-2"><TextLink to="/how-it-works">The workflow in detail</TextLink><TextLink to="/app/projects/sample-fieldnote">Open the read-only sample project</TextLink></p>
       </Section>
 
       <Section id="pricing" title="Free first">
         <div className="grid gap-8 md:grid-cols-2">
-          <p className="text-lg">Everything that exists today is free to use, with no account and no usage limits imposed by a server, because there is no server. No paid plan exists yet and none has been priced.</p>
+          <p className="text-lg">Everything that exists today is free to use, with no account and no payment system. What a plan includes is configuration in the code, and none has been priced or switched on. Exporting, importing and recovering your own projects are protected from any plan restriction.</p>
           <p><TextLink to="/pricing">How pricing is expected to work</TextLink></p>
         </div>
       </Section>
 
-      <Section id="faq" tone="sheet" title="Questions">
-        <div className="max-w-3xl divide-y divide-line border-y border-line">
+      <Section id="faq" tone="sheet" title="Questions" centered>
+        <div className="mx-auto max-w-3xl divide-y divide-line border-y border-line">
           {FAQS.slice(0, 4).map((f) => (
             <details key={f.q} className="group py-4">
               <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 font-bold text-ink-strong">{f.q}<span aria-hidden="true" className="text-accent transition-transform group-open:rotate-45">+</span></summary>
@@ -113,14 +119,14 @@ export function HomePage() {
             </details>
           ))}
         </div>
-        <p className="mt-6"><TextLink to="/faq">All questions and limitations</TextLink></p>
+        <p className="mx-auto mt-6 max-w-3xl"><TextLink to="/faq">All questions and limitations</TextLink></p>
       </Section>
 
       <section aria-labelledby="final-h">
-        <Container className="py-16 md:py-24">
-          <h2 id="final-h" className="max-w-3xl text-4xl leading-[1.05] font-extrabold md:text-5xl">Start with a project.</h2>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink to="/app/projects">Open the studio</PrimaryLink>
+        <Container className="py-16 text-center md:py-24">
+          <h2 id="final-h" className="mx-auto max-w-3xl text-4xl leading-[1.05] font-extrabold md:text-5xl">Start with a project.</h2>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <PrimaryLink to="/app/projects">Open Tynovo</PrimaryLink>
             <SecondaryLink to="/app/lab">Try the font lab</SecondaryLink>
           </div>
         </Container>

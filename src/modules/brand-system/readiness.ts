@@ -49,7 +49,7 @@ export function assessProject(project: Project, copy: PreviewCopy = effectiveCop
       }
     }
     if (font.source && font.source.weights.length > 0 && !font.source.weights.includes(role.weight)) {
-      add({ id: `weight.unavailable.${role.id}`, level: 'info', area: 'typography', roleId: role.id, message: `${role.name} uses weight ${role.weight}, which ${font.family} does not offer in the studio (${font.source.weights.join(', ')}). Browsers use the nearest weight.` })
+      add({ id: `weight.unavailable.${role.id}`, level: 'info', area: 'typography', roleId: role.id, message: `${role.name} uses weight ${role.weight}, which ${font.family} does not offer in Tynovo (${font.source.weights.join(', ')}). Browsers use the nearest weight.` })
     }
   }
 

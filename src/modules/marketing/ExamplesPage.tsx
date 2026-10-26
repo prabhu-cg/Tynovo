@@ -135,7 +135,7 @@ export function ExamplesPage() {
       </Section>
 
       <Section id="systems" title="Illustrative brand type systems" intro="Three invented brands, each with a display face, a text face and a modular scale.">
-        <div className="mb-8"><Notice title="Illustrative only">These are mock-ups made by hand to show the idea. The studio builds a system from your own roles and fonts, but not these layouts or these hand-made fonts: the generator draws display faces from parameters rather than from hand-drawn outlines.</Notice></div>
+        <div className="mb-8"><Notice title="Illustrative only">These are mock-ups made by hand to show the idea. Tynovo builds a system from your own roles and fonts, but not these layouts or these hand-made fonts: the generator draws display faces from parameters rather than from hand-drawn outlines.</Notice></div>
         <div className="grid gap-px overflow-hidden rounded-md border border-line bg-line lg:grid-cols-3">
           {BRANDS.map((b) => <BrandCard key={b.kind} b={b} />)}
         </div>

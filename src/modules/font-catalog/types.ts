@@ -5,7 +5,7 @@ export interface CatalogEntry {
   id: string
   family: string
   category: FontCategory
-  /** Upright weights the studio bundles (Latin subset). */
+  /** Upright weights Tynovo bundles (Latin subset). */
   weights: number[]
   /** Styles the family has upstream. Only regular italic is bundled, see `italic`. */
   styles: ('normal' | 'italic')[]

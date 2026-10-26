@@ -2,7 +2,7 @@ import type { Grant } from './resolve'
 
 /**
  * Where the grant comes from. In this version there is exactly one honest answer in production: everyone is on the
- * default tier, because the studio has no account and no server that could prove anything else.
+ * default tier, because Tynovo has no account and no server that could prove anything else.
  *
  * Replacing this file's `currentGrant` with a call that returns a grant verified by a server is the integration
  * point for paid plans; see docs/monetisation-architecture.md for everything that must exist first.

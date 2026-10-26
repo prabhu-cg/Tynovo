@@ -97,10 +97,10 @@ describe('tokens', () => {
     expect(t.typography.display.$value).toEqual({ fontFamily: ['Northwind Sans', 'sans-serif'], fontSize: '61.04px', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.02em' })
     expect(t.typography.body.$value.fontFamily).toEqual(['Manrope', 'sans-serif'])
     expect(t.scale['step-0']).toEqual({ $type: 'dimension', $value: '16px' })
-    expect(t.typography.display.$extensions['com.brand-typography-studio']).toMatchObject({ origin: 'custom', includedInExport: true, kind: 'display' })
-    expect(t.typography.body.$extensions['com.brand-typography-studio']).toMatchObject({ origin: 'catalog', includedInExport: false })
-    expect(t.typography.ui.$extensions['com.brand-typography-studio'].licence).toMatchObject({ verified: false })
-    expect(t.$extensions['com.brand-typography-studio'].revision).toBe(i.revision)
+    expect(t.typography.display.$extensions['com.tynovo']).toMatchObject({ origin: 'custom', includedInExport: true, kind: 'display' })
+    expect(t.typography.body.$extensions['com.tynovo']).toMatchObject({ origin: 'catalog', includedInExport: false })
+    expect(t.typography.ui.$extensions['com.tynovo'].licence).toMatchObject({ verified: false })
+    expect(t.$extensions['com.tynovo'].revision).toBe(i.revision)
   })
 })
 
@@ -208,7 +208,7 @@ describe('bundle: every export describes the same saved project', () => {
     const zipPath = join(dir, 'p.zip')
     writeFileSync(zipPath, b.files.package.bytes)
     const names = execFileSync('python3', ['-I', '-c', 'import zipfile,sys;z=zipfile.ZipFile(sys.argv[1]);assert z.testzip() is None;print("\\n".join(sorted(z.namelist())))', zipPath], { encoding: 'utf8' }).trim().split('\n')
-    expect(names).toEqual(['SOURCES-AND-LICENSES.md', 'fonts/NorthwindSans-Regular.ttf', 'northwind.btstudio.json', 'specimen.html', 'tokens.json', 'typography-spec.md', 'typography.css'])
+    expect(names).toEqual(['SOURCES-AND-LICENSES.md', 'fonts/NorthwindSans-Regular.ttf', 'northwind.tynovo.json', 'specimen.html', 'tokens.json', 'typography-spec.md', 'typography.css'])
   }, 30_000)
 
   it('builds the same font bytes every time for the same design', async () => {

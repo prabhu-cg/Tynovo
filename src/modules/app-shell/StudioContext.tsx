@@ -1,4 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { createSampleProject } from '@/modules/brand-system/sample'
+import { systemClock } from '@/modules/brand-projects/model'
 import { ProjectService } from '@/modules/brand-projects/service'
 import { openRepository } from '@/modules/persistence/repositories'
 
@@ -11,7 +13,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
     void openRepository().then(({ repo, warning }) => {
-      if (!cancelled) setStudio({ service: new ProjectService(repo), storageKind: repo.kind, storageWarning: warning })
+      if (!cancelled) setStudio({ service: new ProjectService(repo, systemClock, [createSampleProject()]), storageKind: repo.kind, storageWarning: warning })
     })
     return () => {
       cancelled = true

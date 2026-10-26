@@ -27,7 +27,7 @@ export function buildCss(input: ExportInput, opts: CssOptions = {}): string {
   const slugs = roleSlugs(typography.roles)
   const out: string[] = []
   out.push(`/* Typography for ${cssComment(brandName(project))}.`)
-  out.push(` * Brand Typography Studio, project revision ${revision}. Generated ${input.generatedAt}. */`)
+  out.push(` * Tynovo, project revision ${revision}. Generated ${input.generatedAt}. */`)
 
   const uses = fontsInUse(project)
   const custom = uses.find((u) => u.font.origin === 'custom')

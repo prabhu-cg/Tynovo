@@ -2,9 +2,9 @@ import type { CustomTypeface, FontSource, License, Project, RoleFont, Typography
 import { cssString, slug } from './text'
 
 /**
- * How a role's font is known to the rest of the studio. `origin` is the distinction users see everywhere:
+ * How a role's font is known to the rest of Tynovo. `origin` is the distinction users see everywhere:
  *  custom   the project's own generated typeface
- *  catalog  an existing font that ships with the studio
+ *  catalog  an existing font that ships with Tynovo
  *  system   an existing font the user named (installed on the viewer's device or supplied separately)
  *  none     nothing assigned yet
  *  broken   a link that points at something that no longer exists

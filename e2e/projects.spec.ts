@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { readFileSync, writeFileSync } from 'node:fs'
-import { createProject, saved } from './helpers'
+import { cardAction, createProject, saved } from './helpers'
 
 test('dashboard shows an empty state, then a created project', async ({ page }) => {
   await page.goto('/app/projects')
@@ -58,16 +58,16 @@ test('rename, duplicate, export, import and delete from the dashboard', async ({
   await createProject(page, 'Lifecycle')
   await page.goto('/app/projects')
 
-  await page.getByRole('button', { name: 'Rename Lifecycle' }).click()
+  await cardAction(page, 'Lifecycle', 'Rename')
   await page.getByLabel('New name for Lifecycle').fill('Lifecycle 2')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Lifecycle 2', exact: true })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Duplicate Lifecycle 2' }).click()
+  await cardAction(page, 'Lifecycle 2', 'Duplicate')
   await expect(page.getByRole('link', { name: 'Lifecycle 2 (copy)' })).toBeVisible()
 
-  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Export Lifecycle 2', exact: true }).click()])
-  expect(download.suggestedFilename()).toBe('lifecycle-2.btstudio.json')
+  const [download] = await Promise.all([page.waitForEvent('download'), cardAction(page, 'Lifecycle 2', 'Export project file')])
+  expect(download.suggestedFilename()).toBe('lifecycle-2.tynovo.json')
   const path = await download.path()
   expect(JSON.parse(readFileSync(path, 'utf8')).project.name).toBe('Lifecycle 2')
 
@@ -75,10 +75,10 @@ test('rename, duplicate, export, import and delete from the dashboard', async ({
   await expect(page.getByText(/Imported as a copy/)).toBeVisible()
   await expect(page.getByRole('link', { name: 'Lifecycle 2 (imported)' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Delete Lifecycle 2 (imported)' }).click()
+  await cardAction(page, 'Lifecycle 2 (imported)', /^Delete/)
   await page.getByRole('button', { name: 'Keep' }).click()
   await expect(page.getByRole('link', { name: 'Lifecycle 2 (imported)' })).toBeVisible()
-  await page.getByRole('button', { name: 'Delete Lifecycle 2 (imported)' }).click()
+  await cardAction(page, 'Lifecycle 2 (imported)', /^Delete/)
   await page.getByRole('button', { name: 'Delete', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Lifecycle 2 (imported)' })).toHaveCount(0)
 })
@@ -101,7 +101,7 @@ test('rejects a file that is not a project and stores nothing', async ({ page },
   const bad = info.outputPath('bad.json')
   writeFileSync(bad, '{"hello":"world"}')
   await page.locator('input[type=file]').setInputFiles(bad)
-  await expect(page.getByRole('alert')).toContainText('not a Brand Typography Studio project file')
+  await expect(page.getByRole('alert')).toContainText('not a Tynovo project file')
 })
 
 test('a failing save keeps the edits, offers recovery, and recovers when storage works again', async ({ page }) => {

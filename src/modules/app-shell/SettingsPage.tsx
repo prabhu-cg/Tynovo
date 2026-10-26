@@ -18,7 +18,7 @@ export function SettingsPage() {
     service.list().then((l) => setCount({ projects: l.projects.length, unreadable: l.unreadable.length }), (e: unknown) => setError(describeError(e)))
   }, [service])
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-3xl">
       <AppSeo title="Settings" />
       <h1 className="text-3xl font-extrabold">Settings</h1>
       <p className="mt-1 text-ink-soft">There is nothing to configure yet. This page shows where your data lives.</p>
@@ -29,7 +29,7 @@ export function SettingsPage() {
         <dt className="text-ink-soft">Projects</dt><dd>{count ? `${count.projects}${count.unreadable ? `, plus ${count.unreadable} unreadable` : ''}` : '…'}</dd>
         <dt className="text-ink-soft">Project schema</dt><dd>Version {CURRENT_SCHEMA_VERSION}</dd>
         <dt className="text-ink-soft">Account</dt><dd>None. There is no sign-in and no server.</dd>
-        <dt className="text-ink-soft">Plan</dt><dd data-testid="plan">{caps.label}. {caps.allows('export.package') ? 'Everything in this version of the studio is included.' : 'Some features are not included; they are listed below.'} There is no payment system in the studio: nothing here can be bought, and no plan can be switched on from this page.</dd>
+        <dt className="text-ink-soft">Plan</dt><dd data-testid="plan">{caps.label}. {caps.allows('export.package') ? 'Everything in this version of Tynovo is included.' : 'Some features are not included; they are listed below.'} There is no payment system in Tynovo: nothing here can be bought, and no plan can be switched on from this page.</dd>
         <dt className="text-ink-soft">Always free</dt><dd>Keeping, exporting, importing, upgrading and recovering your own projects. No plan can restrict these.</dd>
         <dt className="text-ink-soft">Licence</dt><dd>GPL-3.0-only. <Link to="/licensing" className="font-semibold text-accent-strong underline underline-offset-4">How licensing works</Link></dd>
         <dt className="text-ink-soft">Policies</dt><dd><Link to="/privacy" className="font-semibold text-accent-strong underline underline-offset-4">Privacy (draft)</Link>, <Link to="/terms" className="font-semibold text-accent-strong underline underline-offset-4">Terms (draft)</Link></dd>

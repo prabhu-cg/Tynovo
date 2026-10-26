@@ -40,10 +40,10 @@ test.describe('public routes', () => {
 
 test('application routes are never indexed and have their own titles', async ({ page }) => {
   await page.goto('/app/projects')
-  await expect(page).toHaveTitle('Projects · Brand Typography Studio')
+  await expect(page).toHaveTitle('Projects · Tynovo')
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow')
   await page.goto('/app/settings')
-  await expect(page).toHaveTitle('Settings · Brand Typography Studio')
+  await expect(page).toHaveTitle('Settings · Tynovo')
 })
 
 test('/app is the entry point and leads to the dashboard', async ({ page }) => {
@@ -57,7 +57,7 @@ test('marketing calls to action reach the app', async ({ page }) => {
   await page.getByRole('link', { name: 'Start a project' }).first().click()
   await expect(page).toHaveURL(/\/app\/projects$/)
   await page.goto('/')
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open the studio' }).click()
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open Tynovo' }).click()
   await expect(page).toHaveURL(/\/app\/projects$/)
   await page.goto('/pricing')
   await page.getByRole('link', { name: 'Start a project' }).click()

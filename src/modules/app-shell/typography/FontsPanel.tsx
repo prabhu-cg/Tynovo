@@ -110,7 +110,7 @@ export function FontsPanel() {
 
         <form
           aria-label="Add an existing font"
-          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end"
+          className="grid gap-2"
           onSubmit={(e) => {
             e.preventDefault()
             let added = false
@@ -122,10 +122,10 @@ export function FontsPanel() {
             if (added || name.trim() === '') setName('')
           }}
         >
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
           <label className="grid gap-1 text-sm font-semibold text-ink-strong">
             Add an existing font by name
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} placeholder="e.g. Helvetica Neue" className={`${inputClass} font-normal`} />
-            <span className="text-xs font-normal text-ink-soft">For a font installed on your device. The studio checks whether it is there and says so; it never claims a font it cannot find.</span>
           </label>
           <label className="grid gap-1 text-sm font-semibold text-ink-strong">
             Falls back to
@@ -134,6 +134,8 @@ export function FontsPanel() {
             </select>
           </label>
           <Button type="submit" disabled={name.trim() === ''}>Add font</Button>
+          </div>
+          <p className="text-xs text-ink-soft">For a font installed on your device. Tynovo checks whether it is there and says so; it never claims a font it cannot find.</p>
         </form>
       </section>
     </div>

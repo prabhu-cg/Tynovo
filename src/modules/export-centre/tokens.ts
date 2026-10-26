@@ -8,7 +8,7 @@ import type { ExportInput } from './types'
 const round = (n: number, d = 4) => Number(n.toFixed(d))
 
 /**
- * Design tokens in the Design Tokens Community Group format ($type / $value), plus the studio's own `project`
+ * Design tokens in the Design Tokens Community Group format ($type / $value), plus Tynovo's own `project`
  * block with the brand direction and settings. Values are literal rather than references so tools that do not
  * resolve aliases still read them. Sizes are the large-screen values; when responsive sizing is on, the small
  * value and the exact CSS clamp() are under $extensions. Which font is custom and which is existing is kept
@@ -18,7 +18,7 @@ export function buildTokens(input: ExportInput): string {
   const { project } = input
   const { typography, brand } = project
   const slugs = roleSlugs(typography.roles)
-  const ext = 'com.brand-typography-studio'
+  const ext = 'com.tynovo'
 
   const scale: Record<string, unknown> = {}
   for (const s of computeScale(typography.scale)) {
@@ -68,7 +68,7 @@ export function buildTokens(input: ExportInput): string {
   return (
     JSON.stringify(
       {
-        $description: `Typography tokens for ${brandName(project)}. Brand Typography Studio, project revision ${input.revision}.`,
+        $description: `Typography tokens for ${brandName(project)}. Tynovo, project revision ${input.revision}.`,
         $extensions: {
           [ext]: {
             revision: input.revision,

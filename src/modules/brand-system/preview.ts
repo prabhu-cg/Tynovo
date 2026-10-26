@@ -35,7 +35,7 @@ export function defaultCopy(project: Pick<Project, 'name' | 'brand'>): PreviewCo
   }
 }
 
-/** The copy the previews and the specimen use: the studio's defaults, overridden by what the person saved. */
+/** The copy the previews and the specimen use: Tynovo's defaults, overridden by what the person saved. */
 export const effectiveCopy = (project: Pick<Project, 'name' | 'brand'>): PreviewCopy => ({ ...defaultCopy(project), ...project.brand.sampleCopy }) as PreviewCopy
 
 export const APPLICATIONS = [

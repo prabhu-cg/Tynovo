@@ -7,10 +7,10 @@ export type { CatalogEntry, FontCategory } from './types'
 export type { FontTags } from './tags'
 
 /**
- * Existing fonts that ship inside the studio, so previews are drawn with the real font.
+ * Existing fonts that ship inside Tynovo, so previews are drawn with the real font.
  * Every one is distributed by its authors under the SIL Open Font License 1.1, which allows use and
  * redistribution (the font may not be sold on its own). Facts (category, weights, styles, licence, version,
- * source) are generated from each font package's own metadata; `tags` are the studio's judgement and say so.
+ * source) are generated from each font package's own metadata; `tags` are Tynovo's judgement and say so.
  *
  * Exports never include these files. They name the font and say where to get it (see export-centre).
  */
@@ -56,7 +56,7 @@ export function sourceFromCatalog(font: CatalogFont, id: string): FontSource {
   return { id, family: font.family, kind: 'catalog', license: catalogLicense(font), weights: [...font.weights], fallback: font.fallback, fallbackFamilies: [] }
 }
 
-/** Placeholder licence for a font the user names. The studio cannot know it, so it says so. */
+/** Placeholder licence for a font the user names. Tynovo cannot know it, so it says so. */
 export const UNKNOWN_LICENSE: License = { name: 'Not recorded', verified: false }
 
 /** A font installed on the viewer's device (or supplied separately), named by the user. */

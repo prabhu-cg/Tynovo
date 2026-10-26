@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
+import { EditGroup } from './EditGroup'
 import { useProject } from './project'
 import { BrandPreview } from './typography/BrandPreview'
 import { FontsPanel } from './typography/FontsPanel'
@@ -27,7 +28,7 @@ export function TypographyPage() {
           <h2 id="scale-h" className="text-lg font-bold">Type scale</h2>
           <p className="mt-1 text-sm text-ink-soft">Each step is the base size times the ratio to the power of its step number.</p>
         </div>
-        <ScaleEditor />
+        <EditGroup><ScaleEditor /></EditGroup>
       </section>
 
       {SECTIONS.map(({ id, title, note, Body }) => (
@@ -36,7 +37,7 @@ export function TypographyPage() {
             <h2 id={`${id}-h`} className="text-lg font-bold">{title}</h2>
             <p className="mt-1 text-sm text-ink-soft">{note}</p>
           </div>
-          <Body />
+          <EditGroup><Body /></EditGroup>
         </section>
       ))}
 

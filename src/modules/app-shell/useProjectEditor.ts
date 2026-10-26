@@ -18,6 +18,10 @@ export interface ProjectEditor {
   draft: Project | null
   /** The project as last stored. Exports are built from this, never from an unsaved draft. */
   saved: Project | null
+  /** True for the built-in sample: it can be read and exported, never changed. `patch` ignores edits. */
+  readOnly: boolean
+  /** How many edits were refused because the project is read-only (for a plain-language notice). */
+  rejected: number
   /** Set when the stored copy was in an older format and was upgraded in memory on opening. */
   migration: { from: number; originalJson: string } | null
   state: SaveState
@@ -41,6 +45,9 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
   const [loadError, setLoadError] = useState<string | null>(null)
   const [draft, setDraft] = useState<Project | null>(null)
   const [saved, setSaved] = useState<Project | null>(null)
+  const [readOnly, setReadOnly] = useState(false)
+  const [rejected, setRejected] = useState(0)
+  const readOnlyRef = useRef(false)
   const [migration, setMigration] = useState<{ from: number; originalJson: string } | null>(null)
   const [state, setState] = useState<SaveState>('saved')
   const [error, setError] = useState<string | null>(null)
@@ -67,6 +74,9 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
         return
       }
       const p = opened.project
+      readOnlyRef.current = service.isReadOnly(projectId)
+      setReadOnly(readOnlyRef.current)
+      setRejected(0)
       savedRef.current = p
       draftRef.current = p
       setDraft(p)
@@ -139,6 +149,11 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
     (fn: (p: Project) => Project) => {
       const current = draftRef.current
       if (!current) return
+      if (readOnlyRef.current) {
+        // The sample is never edited. The controls are disabled; this refuses anything that gets through and says so.
+        if (fn(current) !== current) setRejected((n) => n + 1)
+        return
+      }
       const next = fn(current)
       if (next === current) return
       draftRef.current = next
@@ -168,5 +183,5 @@ export function useProjectEditor(service: ProjectService, projectId: string, del
     return () => document.removeEventListener('visibilitychange', onHide)
   }, [flush])
 
-  return { load, loadError, draft, saved, migration, state, error, lastSavedAt, patch, flush, reload }
+  return { load, loadError, draft, saved, readOnly, rejected, migration, state, error, lastSavedAt, patch, flush, reload }
 }

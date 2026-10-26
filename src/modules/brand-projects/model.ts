@@ -102,7 +102,7 @@ export function serializeProject(project: Project, clock: Clock = systemClock): 
 
 export function projectFilename(project: Project): string {
   const slug = project.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project'
-  return `${slug}.btstudio.json`
+  return `${slug}.tynovo.json`
 }
 
 /** Parse the text of a project file. Never throws. */
@@ -118,7 +118,7 @@ export function parseProjectFile(text: string): ParseResult {
   }
   const file = data as Record<string, unknown>
   if (file['format'] !== PROJECT_FILE_FORMAT) {
-    return { ok: false, reason: 'invalid', message: 'This is not a Brand Typography Studio project file.' }
+    return { ok: false, reason: 'invalid', message: 'This is not a Tynovo project file.' }
   }
   return parseProject(file['project'])
 }

@@ -9,10 +9,10 @@ export function FaqPage() {
   return (
     <>
       <Seo page={metaFor('/faq')} />
-      <PageHeader eyebrow="FAQ" title="Questions and limits." lead="Including the things the studio cannot do yet." />
+      <PageHeader eyebrow="FAQ" title="Questions and limits." lead="Including the things Tynovo cannot do yet." />
       <Container className="py-14 md:py-20">
         {GROUPS.map((g) => (
-          <section key={g} aria-labelledby={`g-${g.replace(/\s/g, '')}`} className="mb-12 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)] md:gap-14">
+          <section key={g} aria-labelledby={`g-${g.replace(/\s/g, '')}`} className="mx-auto mb-12 grid max-w-3xl gap-4">
             <h2 id={`g-${g.replace(/\s/g, '')}`} className="text-2xl font-extrabold">{g}</h2>
             <div className="divide-y divide-line border-y border-line">
               {FAQS.filter((f) => f.group === g).map((f) => (
@@ -24,7 +24,7 @@ export function FaqPage() {
             </div>
           </section>
         ))}
-        <p>More on fonts and licences: <TextLink to="/licensing">licensing</TextLink>.</p>
+        <p className="mx-auto max-w-3xl">More on fonts and licences: <TextLink to="/licensing">licensing</TextLink>.</p>
       </Container>
     </>
   )

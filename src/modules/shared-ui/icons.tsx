@@ -32,3 +32,5 @@ export const CustomFontIcon = () => <Icon><path d="M3.5 16 8 4.5 12.5 16M5.2 12h
 export const ExistingFontIcon = () => <Icon><path d="M4 3.5h3v13H4zM8.5 3.5h3v13h-3z" /><path d="m13 5 2.8-.7 2.7 11.2-2.8.7z" /></Icon>
 export const DownloadIcon = () => <Icon><path d="M10 3.5v9M6.2 9 10 12.8 13.8 9M4 16.5h12" /></Icon>
 export const SaveIcon = () => <Icon><path d="M4 3.5h9l3 3v10H4zM7 3.5v4h5v-4M7 16.5v-5h6v5" /></Icon>
+export const LockIcon = () => <Icon><rect x="4.5" y="9" width="11" height="8" rx="1.8" /><path d="M7 9V6.5a3 3 0 0 1 6 0V9" /></Icon>
+export const MoreIcon = () => <Icon><circle cx="10" cy="4.5" r="1.1" fill="currentColor" /><circle cx="10" cy="10" r="1.1" fill="currentColor" /><circle cx="10" cy="15.5" r="1.1" fill="currentColor" /></Icon>

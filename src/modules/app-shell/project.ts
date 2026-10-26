@@ -22,6 +22,8 @@ export interface ProjectContext {
   /** The live draft (never null inside project routes). */
   draft: Project
   editor: ProjectEditor
+  /** True for the built-in sample project. */
+  readOnly: boolean
   /** The project's typeface as registered with the browser for previews. Shared by every screen. */
   customFont: ProjectFont
   /** Whether each existing font in the project can really be drawn right now. */

@@ -31,7 +31,7 @@ export const FALLBACK_STACKS = ['sans-serif', 'serif', 'monospace', 'system-ui',
 export const fontSourceSchema = z.object({
   id,
   family: z.string().min(1).max(200),
-  /** catalog: bundled with the studio. system: a family installed on the viewer's device, named by the user. uploaded: reserved. */
+  /** catalog: bundled with Tynovo. system: a family installed on the viewer's device, named by the user. uploaded: reserved. */
   kind: z.enum(['catalog', 'system', 'uploaded']),
   /** Licence of the font itself. Never inferred from the app or from libraries used to build it. */
   license: licenseSchema,
@@ -268,7 +268,7 @@ export const TONES = ['confident', 'friendly', 'technical', 'elegant', 'playful'
 export type Tone = (typeof TONES)[number]
 
 const sampleText = z.string().max(2000)
-/** Sample copy used by previews and the specimen. Missing keys fall back to the studio's defaults. */
+/** Sample copy used by previews and the specimen. Missing keys fall back to Tynovo's defaults. */
 export const sampleCopySchema = z
   .object({ headline: sampleText, subhead: sampleText, body: sampleText, caption: sampleText, action: sampleText, longform: sampleText })
   .partial()
@@ -353,21 +353,45 @@ export const projectSchema = z.object({
 })
 export type Project = z.infer<typeof projectSchema>
 
-/** What lists need without loading glyph data. */
+/** What lists and cards need without loading glyph data. */
 export interface ProjectSummary {
   id: string
   name: string
   createdAt: string
   updatedAt: string
   hasCustomTypeface: boolean
+  /** The brand's own name when it differs from the project name, else empty. */
+  brandName: string
+  /** First part of the brand description, for a card. */
+  description: string
+  tones: Tone[]
+  useCases: UseCase[]
+  /** Existing fonts in the project, plus one if it has its own typeface. */
+  fontCount: number
+  rolesTotal: number
+  rolesWithFont: number
+  typefaceName: string | null
+  exportCount: number
+  lastExportAt: string | null
 }
 
 export function summarize(p: Project): ProjectSummary {
+  const brand = p.brand.name.trim()
   return {
     id: p.id,
     name: p.name,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
     hasCustomTypeface: p.customTypeface !== null,
+    brandName: brand && brand !== p.name ? brand : '',
+    description: p.brand.description.trim().slice(0, 180),
+    tones: p.brand.tones,
+    useCases: p.brand.useCases,
+    fontCount: p.fontSources.length + (p.customTypeface ? 1 : 0),
+    rolesTotal: p.typography.roles.length,
+    rolesWithFont: p.typography.roles.filter((r) => r.font !== null).length,
+    typefaceName: p.customTypeface ? p.customTypeface.familyName : null,
+    exportCount: p.exportHistory.length,
+    lastExportAt: p.exportHistory[0]?.at ?? null,
   }
 }
