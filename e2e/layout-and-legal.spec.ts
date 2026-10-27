@@ -37,11 +37,11 @@ test.describe('application shell', () => {
   test('the left navigation is cream and the right panel is white', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/app/projects')
-    expect(await bg(page.getByRole('complementary'))).toBe('rgb(246, 246, 245)')
+    expect(await bg(page.getByRole('complementary'))).toBe('rgb(244, 242, 234)')
     expect(await bg(page.locator('#app-main'))).toBe('rgb(255, 255, 255)')
     // On a project screen too.
     await createProject(page, 'Colours')
-    expect(await bg(page.getByRole('complementary'))).toBe('rgb(246, 246, 245)')
+    expect(await bg(page.getByRole('complementary'))).toBe('rgb(244, 242, 234)')
     expect(await bg(page.locator('#app-main'))).toBe('rgb(255, 255, 255)')
   })
 
@@ -78,7 +78,7 @@ test.describe('application shell', () => {
     await expect(page.getByRole('link', { name: 'Website', exact: true })).toHaveCount(0)
     await page.setViewportSize({ width: 375, height: 700 })
     await page.reload()
-    await page.getByRole('button', { name: 'Menu' }).click()
+    await page.getByRole('button', { name: 'Open menu' }).click()
     await expect(page.getByRole('navigation', { name: 'Application' }).getByRole('link')).toHaveText(['Projects', 'Font lab', 'Settings'])
   })
 })

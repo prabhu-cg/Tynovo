@@ -43,17 +43,21 @@ export function OverviewPage() {
         </div>
         <ol aria-label="Brand workflow" className="divide-y divide-line border-y border-line">
           {steps_.map((s, i) => (
-            <li key={s.id} data-step={s.id} data-state={s.state} className="grid gap-1 py-3 sm:grid-cols-[2rem_11rem_1fr_auto] sm:items-baseline">
-              <span className="tnum text-sm text-ink-soft" aria-hidden="true">{i + 1}</span>
-              <span className="font-semibold text-ink-strong">{s.title}</span>
-              <span className="min-w-0 text-sm">
-                <span className={`mr-2 inline-flex items-center gap-1 text-xs font-bold uppercase ${s.state === 'done' ? 'text-ok' : s.state === 'attention' ? 'text-warn' : 'text-ink-soft'}`}>
-                  {s.state === 'done' ? <CheckIcon /> : s.state === 'attention' ? <AlertIcon /> : null}
+            // Below xl the row stacks (number and title, then status and detail, then the link). From xl it is five columns with
+            // a fixed-width status column, so every status and every description starts at the same x and sits on one centre line.
+            <li key={s.id} data-step={s.id} data-state={s.state} className="grid gap-1 py-3 xl:grid-cols-[2rem_12rem_9.5rem_minmax(0,1fr)_auto] xl:items-center xl:gap-x-3">
+              <div className="flex items-baseline gap-3 xl:contents">
+                <span className="tnum w-5 shrink-0 text-sm text-ink-soft xl:w-auto" aria-hidden="true">{i + 1}</span>
+                <span className="font-semibold text-ink-strong">{s.title}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-8 xl:contents xl:pl-0">
+                <span data-part="status" className={`inline-flex items-center gap-1.5 text-xs leading-none font-bold whitespace-nowrap uppercase ${s.state === 'done' ? 'text-ok' : s.state === 'attention' ? 'text-warn' : 'text-ink-soft'}`}>
+                  {s.state === 'done' ? <CheckIcon className="shrink-0" /> : s.state === 'attention' ? <AlertIcon className="shrink-0" /> : null}
                   {s.state === 'done' ? 'Done' : s.state === 'attention' ? 'Needs attention' : s.state === 'optional' ? 'Optional' : 'To do'}
                 </span>
-                {s.detail}
-              </span>
-              <Link to={s.to} className="inline-flex min-h-8 items-center text-sm font-semibold text-accent-strong underline underline-offset-4">Open<span className="sr-only"> {s.title}</span></Link>
+                <span data-part="detail" className="min-w-0 text-sm">{s.detail}</span>
+              </div>
+              <Link to={s.to} className="inline-flex min-h-8 items-center pl-8 text-sm font-semibold text-accent-strong underline underline-offset-4 xl:pl-0">Open<span className="sr-only"> {s.title}</span></Link>
             </li>
           ))}
         </ol>

@@ -269,7 +269,7 @@ test('duplicating and deleting projects leave other projects intact; a backup re
   // Delete the copy from the list, taking a backup first; the original and its typeface are untouched.
   await page.goto('/app/projects')
   await cardAction(page, 'Alpha (copy)', /^Delete/)
-  const panel = page.getByRole('group', { name: 'Confirm deleting Alpha (copy)' })
+  const panel = page.getByRole('dialog', { name: 'Delete “Alpha (copy)”?' })
   await expect(panel).toContainText('cannot be brought back')
   const [backup] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Download a backup first' }).click()])
   expect(backup.suggestedFilename()).toBe('alpha-copy.tynovo.json')

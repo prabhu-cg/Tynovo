@@ -23,8 +23,8 @@ export const ChevronRightIcon = () => <Icon><path d="m8 4 6 6-6 6" /></Icon>
 export const GuidesIcon = () => <Icon><path d="M2.5 6h15M2.5 11h15M2.5 15.5h15" strokeDasharray="2 2.4" /><path d="M6 3v14" /></Icon>
 export const GhostIcon = () => <Icon><path d="M5 17V9a5 5 0 0 1 10 0v8l-2.5-1.8L10 17l-2.5-1.8z" strokeDasharray="2.2 2" /></Icon>
 export const ResetIcon = () => <Icon><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="M3.5 3.5v3.8h3.8" /></Icon>
-export const CheckIcon = () => <Icon><path d="m4 10.5 4 4 8-9" /></Icon>
-export const AlertIcon = () => <Icon><path d="M10 3 2.5 16.5h15z" /><path d="M10 8.5v3.5M10 14.3v.2" /></Icon>
+export const CheckIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m4 10.5 4 4 8-9" /></Icon>
+export const AlertIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M10 3 2.5 16.5h15z" /><path d="M10 8.5v3.5M10 14.3v.2" /></Icon>
 export const InfoIcon = () => <Icon><circle cx="10" cy="10" r="7.5" /><path d="M10 9v5M10 6.3v.2" /></Icon>
 /** A drawn letter with a pen point: the project's own typeface. */
 export const CustomFontIcon = () => <Icon><path d="M3.5 16 8 4.5 12.5 16M5.2 12h5.6" /><path d="m14 8 3 3-4.5 4.5-3.2.5.5-3.2z" /></Icon>
@@ -34,3 +34,9 @@ export const DownloadIcon = () => <Icon><path d="M10 3.5v9M6.2 9 10 12.8 13.8 9M
 export const SaveIcon = () => <Icon><path d="M4 3.5h9l3 3v10H4zM7 3.5v4h5v-4M7 16.5v-5h6v5" /></Icon>
 export const LockIcon = () => <Icon><rect x="4.5" y="9" width="11" height="8" rx="1.8" /><path d="M7 9V6.5a3 3 0 0 1 6 0V9" /></Icon>
 export const MoreIcon = () => <Icon><circle cx="10" cy="4.5" r="1.1" fill="currentColor" /><circle cx="10" cy="10" r="1.1" fill="currentColor" /><circle cx="10" cy="15.5" r="1.1" fill="currentColor" /></Icon>
+
+export const MenuIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M3 5.5h14M3 10h14M3 14.5h14" /></Icon>
+export const CloseIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m5 5 10 10M15 5 5 15" /></Icon>
+export const ArrowRightIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M4 10h12m-5-5 5 5-5 5" /></Icon>
+export const BookIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M3.5 4.5c2.6-.8 4.9-.6 6.5.9 1.6-1.5 3.9-1.7 6.5-.9v10.8c-2.6-.8-4.9-.6-6.5.9-1.6-1.5-3.9-1.7-6.5-.9z" /><path d="M10 5.4v10.8" /></Icon>
+export const ChevronDownIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m5 7.5 5 5 5-5" /></Icon>

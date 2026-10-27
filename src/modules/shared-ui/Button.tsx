@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import { Link, type LinkProps } from 'react-router'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -13,7 +13,7 @@ const variants: Record<Variant, string> = {
   danger: 'bg-danger text-white hover:bg-[#8f1d17]',
 }
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export type ButtonProps = ComponentProps<'button'> & {
   variant?: Variant
 }
 

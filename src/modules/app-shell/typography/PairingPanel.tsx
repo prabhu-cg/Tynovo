@@ -79,8 +79,8 @@ export function PairingPanel() {
                 </div>
                 {s.together.length > 0 ? <ul className="tnum text-sm text-ink-soft">{s.together.map((r) => <li key={r.text}>{r.points > 0 ? '+' : ''}{r.points} {r.text}</li>)}</ul> : null}
                 <div className="flex flex-wrap gap-2">
-                  <Button aria-label={`Use ${s.primary.font.family} with ${s.secondary.font.family}`} onClick={() => adopt(s, false)}>Use this pairing</Button>
-                  <Button aria-label={`Use and apply ${s.primary.font.family} with ${s.secondary.font.family}`} onClick={() => adopt(s, true)}>Use and apply to roles</Button>
+                  <Button aria-label={`Use this pairing: ${s.primary.font.family} with ${s.secondary.font.family}`} onClick={() => adopt(s, false)}>Use this pairing</Button>
+                  <Button aria-label={`Use and apply to roles: ${s.primary.font.family} with ${s.secondary.font.family}`} onClick={() => adopt(s, true)}>Use and apply to roles</Button>
                 </div>
               </li>
             ))}

@@ -1,0 +1,45 @@
+# Known limitations
+
+Everything outstanding that a user, a reviewer or a maintainer should know before relying on Tynovo. Nothing here is hidden elsewhere; the website's "Early version" and "In development" labels come from `src/modules/marketing/content.ts` and are meant to match this list.
+
+## The product
+
+- **Typeface generator.** Draws letters, digits and most ASCII punctuation: **90 of the 95 target characters**. `& @ { } ~` are not designed. Latin only: no accented letters or other scripts.
+- **Glyph editor.** A *point* editor for straight-segment outlines; **no Bézier curve editing**.
+- **Export formats.** TrueType (`.ttf`) and OpenType/CFF (`.otf`). **No WOFF or WOFF2** (not validated). **No generated PDF**: the HTML specimen prints cleanly to PDF from the browser.
+- **Font catalog.** 24 fixed families, all SIL OFL 1.1. A font named from the user's device is checked by a **heuristic** ("detected" / "not detected"), not proof.
+- **Brand direction, roles, pairing.** Fixed, readable scoring rules, not an AI model; suggestions are an aid, not a verdict.
+- **Previews.** Website, editorial, product screen and poster. **No printed-document layout.**
+- **No accounts, sync, server or payments.** Paid plans do not exist (`docs/monetisation-architecture.md`). Everything shipped is free.
+
+## Where it has and has not been tested
+
+- **Browsers.** All automated and manual checking was in **Chromium** (desktop, plus phone-sized viewports emulated in Chromium). Firefox, Safari and real mobile devices are untested.
+- **Fonts in other software.** Exports validated with fontTools, fontkit, CoreText and Chromium (`docs/font-export-validation.md`). **Not tested:** Figma, Illustrator, Glyphs, Windows applications, Firefox, Safari. Install an exported font in your own tools and look at it.
+- **Accessibility.** Machine-checked at WCAG 2.2 AA and tested for keyboard, focus, announcements and reduced motion; **no screen-reader testing**, no 320px reflow, text-spacing or forced-colors testing. See `docs/accessibility.md`. No conformance claim is made.
+- **Deployment.** Verified against the production build served locally with the production headers. **Not yet verified on the live host:** the 404 behaviour, the headers as served by Vercel, Lighthouse / Web Vitals. GitHub Pages is untried (and cannot send the security headers or serve from a sub-path without further work).
+
+## Storage and data
+
+- Projects live only in one browser profile on one origin. Clearing site data, a different browser, a different device or a changed domain loses sight of them; browsers may also evict storage. **Tynovo does not request persistent storage** (`navigator.storage.persist()`), which would reduce the eviction risk. Export a project file to back up. See `docs/storage-and-recovery.md`.
+- Imported files over **25 MB** are refused. A project may have at most 5,000 kerning pairs, 32 contours per glyph and 4,000 points per contour.
+- A project saved by a *newer* version cannot be opened by an older one (it is kept, listed as unreadable and downloadable). This limits rollback across a schema change (`docs/deployment.md`).
+
+## Security and legal
+
+- The Content-Security-Policy is delivered as HTTP headers, so it applies only on hosts that send them (Vercel does, via `vercel.json`). No CSP reporting endpoint.
+- **No external security audit or penetration test.**
+- **The Privacy, Terms and Licensing pages have not been reviewed by a lawyer**, and no jurisdiction is chosen. They are accurate to the code as tested, not legal advice.
+- Tynovo is **GPL-3.0-only** because it uses Font Flux JS (GPL-3.0-only). Fonts a user exports carry the licence the user chooses.
+- One shipped package (`splaytree`, MIT) carries no licence file; the generated notices say so.
+
+## Performance
+
+- The first visit loads about 162 KB of gzip JavaScript, including a 28 KB schema (Zod) chunk the marketing home page does not strictly need.
+- `dist/` carries a 1 MB `brotli_wasm_bg.wasm` from Font Flux that Tynovo never requests (it costs deploy size, not visitors).
+- Runtime figures are from one laptop in headless Chromium (`docs/performance.md`); there is no measurement on low-end devices.
+
+## Code quality
+
+- `npm run lint` reports **3 warnings, no errors** (`react-hooks`/`react-refresh` rules: two `set-state-in-effect` in `DashboardPage.tsx` and `useProjectEditor.ts`, one `only-export-components` in `LicensingPage.tsx`). Each predates Phase 7 and is a style rule, not a defect.
+- The browser tests need ports 4173 free and run only in Chromium.

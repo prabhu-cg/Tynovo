@@ -53,6 +53,18 @@ The first run of the preview-vs-file comparison reported widths equal but only 5
 
 OTF `.notdef`: the library writes an hmtx side bearing of 0 for its own `.notdef` box in CFF fonts (outline starts at 50). FreeType and CoreText position CFF glyphs from the charstring, not hmtx, so nothing shifts; `verify-font.py` excepts it and says so. TTF `.notdef` is correct.
 
+## Production-build re-validation (Phase 7)
+
+On 2026-10-27 the files were produced the way a person gets them: from the **production build** (`npm run build`, served by `vite preview` with the production headers), in Chromium, by clicking *Check and build* and *Download* for every construction family in both formats (Geometric, Rounded and Modular; `.ttf` and `.otf`: six files, 7-27 KB). Each downloaded file was then run through `scripts/verify-font.py --coretext` (fontTools with strict checksums, then CoreText on macOS):
+
+| File | Result |
+|---|---|
+| Geometric `.ttf`, `.otf` | 13 of 13 checks pass |
+| Rounded `.ttf`, `.otf` | 13 of 13 checks pass |
+| Modular `.ttf`, `.otf` | 13 of 13 checks pass |
+
+The checks are the ones listed above (strict table checksums, side bearings equal outline xMin, cmap/glyph consistency, `.notdef` first, outline direction for the format, names and `fontRevision`, `fsSelection`, and CoreText's advance widths and mappings equal to the file's own tables). The in-app read-back (`verifyFontBytes`) and the e2e fontkit checks run on every export as before. The re-run covers only these six default designs; designs with extreme parameters, hand-edited outlines and large kerning tables are covered by the unit tests and by the in-app read-back, not by this external pass.
+
 ## Not tested (cannot be, here)
 
 - **Installing and rendering in Figma, Illustrator, Photoshop, InDesign, Glyphs, Sketch, Affinity, Word or any Windows application.** None are available in this environment. Windows (DirectWrite, GDI) was not tested at all; the Windows metrics and checksums are verified structurally, not by Windows.

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Banner, Button } from '@/modules/shared-ui'
-import { DeletePanel } from './DeletePanel'
+import { DeleteDialog } from './DeleteDialog'
 import { describeError } from './errors'
 import { useProject } from './project'
 import { exportProjectFile } from './projectFile'
@@ -66,13 +66,8 @@ export function ProjectSettingsPage() {
         <h2 id="del-h" className="text-lg font-bold text-danger">Delete</h2>
         <div>
           <p className="max-w-xl">{editor.readOnly ? 'The sample project is built into Tynovo, so there is nothing to delete and it cannot be removed.' : 'Deleting removes this project from this browser. It cannot be undone. You will be offered a backup file first.'}</p>
-          {editor.readOnly ? null : confirming ? (
-            <div className="mt-4 max-w-xl">
-              <DeletePanel name={draft.name} confirmLabel="Delete project" cancelLabel="Keep it" onBackup={async () => exportProjectFile(draft)} onConfirm={() => void remove()} onCancel={() => setConfirming(false)} />
-            </div>
-          ) : (
-            <Button className="mt-4" onClick={() => setConfirming(true)}>Delete this project…</Button>
-          )}
+          {editor.readOnly ? null : <Button className="mt-4" onClick={() => setConfirming(true)}>Delete this project…</Button>}
+          <DeleteDialog open={confirming} name={draft.name} confirmLabel="Delete project" cancelLabel="Keep it" onBackup={async () => exportProjectFile(draft)} onConfirm={() => void remove()} onCancel={() => setConfirming(false)} />
         </div>
       </section>
     </div>

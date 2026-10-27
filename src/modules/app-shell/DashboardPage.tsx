@@ -2,17 +2,21 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEven
 import { useNavigate } from 'react-router'
 import { AppSeo } from '@/modules/marketing/Seo'
 import { projectFilename, serializeProject } from '@/modules/brand-projects/model'
-import { ImportError } from '@/modules/brand-projects/service'
+import { ImportError, importTooLargeMessage, MAX_IMPORT_BYTES } from '@/modules/brand-projects/service'
 import { summarize, type ProjectSummary } from '@/modules/brand-projects/schema'
 import { downloadBytes } from '@/modules/font-export/download'
 import type { ProjectListing, UnreadableRecord } from '@/modules/persistence/types'
-import { Banner, Button, Drawer, inputClass } from '@/modules/shared-ui'
+import { Banner, Button, ChevronDownIcon, Drawer, inputClass } from '@/modules/shared-ui'
+import { DeleteDialog } from './DeleteDialog'
+import { useSampleCollapsed } from './preferences'
 import { ProjectCard } from './ProjectCard'
+import { SampleBanner } from './SampleBanner'
 import { describeError } from './errors'
 import { useStudio } from './studio'
 
 const textBytes = (s: string) => new TextEncoder().encode(s)
-const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-4'
+/** 1 column, then 2, 3 and 4 as the content area (not the viewport: the sidebar takes 240px of it) widens: 4 from 62rem, about a 1312px screen. */
+const GRID = 'grid grid-cols-1 gap-4 @min-[30rem]:grid-cols-2 @min-[46rem]:grid-cols-3 @min-[62rem]:grid-cols-4'
 
 const STARTS = [
   { value: '', label: 'Overview', hint: 'Describe the brand first: its name, tone and use cases.' },
@@ -31,6 +35,7 @@ export function DashboardPage() {
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [sampleCollapsed, setSampleCollapsed] = useSampleCollapsed()
 
   const refresh = useCallback(async () => {
     try {
@@ -73,6 +78,7 @@ export function DashboardPage() {
       const msgs: string[] = []
       setRecoverable(null)
       for (const file of files) {
+        if (file.size > MAX_IMPORT_BYTES) throw new ImportError(importTooLargeMessage(file.name))
         const text = await file.text()
         try {
           const { project, renamedOnClash } = await service.importFile(text)
@@ -95,16 +101,9 @@ export function DashboardPage() {
   return (
     <div>
       <AppSeo title="Projects" />
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold">Projects</h1>
-          <p className="mt-1 text-ink-soft">Stored in this browser. Export a file to back up or move a project.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <input ref={fileRef} type="file" accept=".json,application/json" multiple hidden onChange={(e) => void importFiles(e.target.files)} aria-label="Import project file" />
-          <Button onClick={() => fileRef.current?.click()}>Import project file</Button>
-          <Button variant="primary" onClick={() => setNewOpen(true)}>New project</Button>
-        </div>
+      <header>
+        <h1 className="text-3xl font-extrabold">Projects</h1>
+        <p className="mt-1 text-ink-soft">Stored in this browser. Export a file to back up or move a project.</p>
       </header>
 
       {storageKind === 'memory' ? <div className="mt-6"><Banner tone="warn">Browser storage is unavailable, so projects here are kept in memory and will be gone when you close this tab. Export a project file to keep your work.</Banner></div> : null}
@@ -135,24 +134,45 @@ export function DashboardPage() {
 
       {samples.length > 0 ? (
       <section aria-labelledby="sample-h" className="mt-8">
-        <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <h2 id="sample-h" className="text-lg font-bold">Sample project</h2>
-          <p className="text-sm text-ink-soft">A finished example to explore. It cannot be changed or deleted; duplicate it to make your own.</p>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <h2 id="sample-h" className="text-lg font-bold">Sample project</h2>
+            <p className="text-sm text-ink-soft">A finished example to explore. It cannot be changed or deleted; duplicate it to make your own.</p>
+          </div>
+          <button
+            type="button"
+            aria-expanded={!sampleCollapsed}
+            aria-controls="sample-body"
+            onClick={() => setSampleCollapsed(!sampleCollapsed)}
+            className="-mr-2.5 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold text-ink-strong transition-colors hover:bg-sheet-deep md:min-h-9"
+          >
+            {sampleCollapsed ? 'Show' : 'Hide'}<span className="sr-only"> sample project</span>
+            <ChevronDownIcon aria-hidden="true" className={`transition-transform duration-200 ${sampleCollapsed ? '' : 'rotate-180'}`} />
+          </button>
         </div>
-        <ul aria-label="Sample project" className={GRID}>
-          {samples.map((p) => (
-            <ProjectCard key={p.id} summary={p} sample onDuplicate={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”. It is in your projects below and is yours to edit.` })} onExport={() => void exportOne(p)} />
-          ))}
-        </ul>
+        <div id="sample-body" hidden={sampleCollapsed} className="mt-4">
+          <ul aria-label="Sample project" className="grid gap-4">
+            {samples.map((p) => (
+              <SampleBanner key={p.id} summary={p} onDuplicate={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”. It is in your projects below and is yours to edit.` })} onExport={() => void exportOne(p)} />
+            ))}
+          </ul>
+        </div>
       </section>
       ) : null}
 
-      <section aria-labelledby="own-h" aria-busy={listing === null && !loadError} className="mt-8">
-        <h2 id="own-h" className="mb-4 text-lg font-bold">Your projects{listing && projects.length > 0 ? <span className="tnum ml-2 text-sm font-normal text-ink-soft">{projects.length}</span> : null}</h2>
+      <section aria-labelledby="own-h" aria-busy={listing === null && !loadError} className="@container mt-10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 id="own-h" tabIndex={-1} className="text-lg font-bold outline-none">Your projects{listing && projects.length > 0 ? <span className="tnum ml-2 text-sm font-normal text-ink-soft">{projects.length}</span> : null}</h2>
+          <div className="flex flex-wrap gap-2">
+            <input ref={fileRef} type="file" accept=".json,application/json" multiple hidden onChange={(e) => void importFiles(e.target.files)} aria-label="Import project file" />
+            <Button onClick={() => fileRef.current?.click()}>Import project file</Button>
+            <Button variant="primary" onClick={() => setNewOpen(true)}>New project</Button>
+          </div>
+        </div>
         {listing === null && !loadError ? (
           <ul aria-label="Loading projects" className={GRID}>
-            {[0, 1, 2].map((n) => (
-              <li key={n} className="grid animate-pulse gap-4 rounded-md border border-line bg-paper p-5" aria-hidden="true">
+            {[0, 1, 2, 3].map((n) => (
+              <li key={n} className="grid animate-pulse gap-4 rounded-card border border-line bg-paper p-5" aria-hidden="true">
                 <div className="h-5 w-2/3 rounded bg-sheet-deep" />
                 <div className="h-3 w-full rounded bg-sheet" />
                 <div className="grid grid-cols-2 gap-3 border-t border-line pt-4"><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /><div className="h-8 rounded bg-sheet" /></div>
@@ -160,7 +180,7 @@ export function DashboardPage() {
             ))}
           </ul>
         ) : listing && projects.length === 0 ? (
-          <div className="rounded-md border border-dashed border-line-strong bg-paper px-6 py-12 text-center">
+          <div className="rounded-card border border-dashed border-line-strong bg-paper px-6 py-12 text-center">
             <h3 className="text-xl font-extrabold">No projects yet</h3>
             <p className="mx-auto mt-2 max-w-md text-ink-soft">A project holds a brand’s direction, fonts, type scale and roles and, optionally, an original typeface. Everything stays in this browser. Not sure where to start? Open the sample above.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -175,7 +195,6 @@ export function DashboardPage() {
                 key={p.id}
                 summary={p}
                 renaming={renaming?.id === p.id ? renaming.name : undefined}
-                confirmingDelete={confirmDelete === p.id}
                 onRenameStart={() => setRenaming({ id: p.id, name: p.name })}
                 onRenameChange={(name) => setRenaming({ id: p.id, name })}
                 onRenameSubmit={() => void run(async () => { if (renaming) await service.rename(p.id, renaming.name); setRenaming(null) })}
@@ -183,9 +202,6 @@ export function DashboardPage() {
                 onDuplicate={() => void run(async () => { const c = await service.duplicate(p.id); return `Duplicated as “${c.name}”.` })}
                 onExport={() => void exportOne(p)}
                 onDeleteStart={() => setConfirmDelete(p.id)}
-                onDeleteBackup={() => backupOne(p.id)}
-                onDeleteConfirm={() => void run(async () => { await service.delete(p.id); setConfirmDelete(null); return `Deleted “${p.name}”.` })}
-                onDeleteCancel={() => setConfirmDelete(null)}
               />
             ))}
           </ul>
@@ -208,6 +224,19 @@ export function DashboardPage() {
           </ul>
         </section>
       ) : null}
+
+      <DeleteDialog
+        open={confirmDelete !== null}
+        name={projects.find((p) => p.id === confirmDelete)?.name ?? ''}
+        onBackup={() => backupOne(confirmDelete!)}
+        onConfirm={() => {
+          const id = confirmDelete!
+          const name = projects.find((p) => p.id === id)?.name ?? 'the project'
+          // Focus moves to the list heading afterwards: the card that held it is gone.
+          void run(async () => { await service.delete(id); setConfirmDelete(null); return `Deleted “${name}”.` }).then(() => document.getElementById('own-h')?.focus())
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
 
       <NewProjectDrawer
         open={newOpen}

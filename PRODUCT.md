@@ -30,7 +30,7 @@ Runs entirely in the browser. Projects persist in IndexedDB with explicit export
 - Usable on desktop and tablet, practical on mobile.
 
 ## Brand Commitments
-Binding visual constraints given by the user: Manrope as interface font; accent #C74504; primary text #444444; neutral white/light-grey surfaces, subtle borders, restrained shadows; modern, editorial, precise, minimal; specimens are the visual focus; prefer side panels and drawers over modals; avoid a generic AI-dashboard look.
+Binding visual constraints given by the user: Manrope as interface font; accent #C74504; interface tokens match Doxa (prabhu-cg/Doxa), updated at the user's request: warm ink #1c1917, muted #6f6963, warm cream surfaces #f4f2ea, hairlines #e8ddc8 / #d6c7ab, 6px control radius, 16px cards (the Tynovo logo mark keeps its own #444444 grey); white page and footer, subtle borders, restrained shadows; modern, editorial, precise, minimal; specimens are the visual focus; prefer side panels and drawers over modals; avoid a generic AI-dashboard look.
 
 ## Evidence on Hand
 No customers, testimonials, benchmarks, pricing or user numbers exist. None may be fabricated on the marketing site.

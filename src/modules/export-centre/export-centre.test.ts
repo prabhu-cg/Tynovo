@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as fontkit from 'fontkit'
-import { assignCustomTypeface, removeCustomTypeface, updateRole } from '@/modules/brand-system/ops'
+import { addNamedFont, assignCustomTypeface, assignSource, removeCustomTypeface, updateRole } from '@/modules/brand-system/ops'
 import { contentRevision } from '@/modules/brand-system/revision'
 import { fakeClock, integratedProject } from '@/modules/testing/factories'
 import { createProject } from '@/modules/brand-projects/model'
@@ -147,6 +147,52 @@ describe('specimen', () => {
     const html = buildSpecimen(await input(integratedProject('</title><script>alert(1)</script>'), FAKE_FONT))
     expect(html).not.toContain('<script')
     expect(html).toContain('&lt;/title&gt;&lt;script&gt;')
+  })
+})
+
+describe('hostile text in every user-written field', () => {
+  const HTML = '</title></style><script>window.x=1</script><img src=x onerror=alert(1)>'
+  const CSS = '"; } body{color:red} /* \\'
+
+  /** Every field a person can type into that an export prints. */
+  async function hostile() {
+    let p = integratedProject(HTML)
+    const [display, , body] = p.typography.roles
+    p = { ...p, brand: { ...p.brand, name: HTML, description: HTML, personality: [HTML, CSS], notes: HTML, sampleCopy: { headline: HTML, subhead: HTML, body: HTML, caption: HTML } } }
+    p = { ...p, customTypeface: { ...p.customTypeface!, familyName: CSS, styleName: HTML } }
+    p = updateRole(p, display!.id, { name: HTML })
+    const named = addNamedFont(p, CSS, 'sans-serif')!
+    p = assignSource(named.project, body!.id, named.sourceId)
+    return input(p, FAKE_FONT)
+  }
+
+  it('cannot add markup to the specimen', async () => {
+    const html = buildSpecimen(await hostile())
+    expect(html.match(/<script/gi)).toBeNull()
+    expect(html.match(/<img/gi)).toBeNull()
+    expect(html.match(/<\/style>/gi)).toHaveLength(1) // only the one that closes the real stylesheet
+    expect(html.match(/<\/title>/gi)).toHaveLength(1)
+    expect(html).not.toMatch(/<[^>]*\son\w+\s*=/i) // no tag carries an event handler (the escaped text may still say "onerror=")
+  })
+
+  it('cannot add rules to the stylesheet or break out of the specimen stylesheet', async () => {
+    const css = buildCss(await hostile())
+    expect(outsideStringsAndComments(css)).not.toMatch(/color:\s*red|window\.x|<\/style/i)
+    const html = buildSpecimen(await hostile())
+    const sheet = html.slice(html.indexOf('<style>') + 7, html.indexOf('</style>'))
+    expect(sheet).not.toContain('<')
+    expect(outsideStringsAndComments(sheet)).not.toMatch(/color:\s*red/)
+  })
+
+  it('keeps the tokens, specification and manifest well formed', async () => {
+    const i = await hostile()
+    expect(() => JSON.parse(buildTokens(i))).not.toThrow()
+    const roles = Object.values(JSON.parse(buildTokens(i)).typography) as { $value: unknown }[]
+    expect(roles.length).toBeGreaterThanOrEqual(5)
+    for (const r of roles) expect(r.$value).toBeTypeOf('object')
+    // Markdown cannot run anything, but raw HTML in it is printed as written; the files are documentation, not pages.
+    expect(buildSpec(i).length).toBeGreaterThan(0)
+    expect(buildManifest(i, []).length).toBeGreaterThan(0)
   })
 })
 

@@ -93,7 +93,7 @@ export const pointSchema = z.object({
 export type Point = z.infer<typeof pointSchema>
 
 /** A closed contour. Outer contours run clockwise, counters counter-clockwise (TrueType). */
-export const contourSchema = z.array(pointSchema).min(3)
+export const contourSchema = z.array(pointSchema).min(3).max(4000)
 export type Contour = z.infer<typeof contourSchema>
 
 export const glyphSchema = z.object({
