@@ -93,7 +93,7 @@ export function HomePage() {
         <ol className="grid gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-4">
           {STEPS.map(([t, d, s], i) => (
             <li key={t} className="bg-paper p-5">
-              <span aria-hidden="true" className="tnum text-3xl font-extrabold text-accent">{i + 1}</span>
+              <span aria-hidden="true" className="tnum text-3xl font-extrabold text-accent-text">{i + 1}</span>
               <h3 className="mt-3 text-lg font-bold">{t}</h3>
               <p className="mt-1 text-[0.9375rem]">{d}</p>
               <div className="mt-3"><StatusBadge status={s} /></div>
@@ -114,7 +114,7 @@ export function HomePage() {
         <div className="mx-auto max-w-3xl divide-y divide-line border-y border-line">
           {FAQS.slice(0, 4).map((f) => (
             <details key={f.q} className="group py-4">
-              <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 font-bold text-ink-strong">{f.q}<span aria-hidden="true" className="text-accent transition-transform group-open:rotate-45">+</span></summary>
+              <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 font-bold text-ink-strong">{f.q}<span aria-hidden="true" className="text-accent-text transition-transform group-open:rotate-45">+</span></summary>
               <p className="mt-2 max-w-2xl">{f.a}</p>
             </details>
           ))}

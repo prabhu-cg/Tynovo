@@ -57,7 +57,7 @@ test('marketing calls to action reach the app', async ({ page }) => {
   await page.getByRole('link', { name: 'Start a project' }).first().click()
   await expect(page).toHaveURL(/\/app\/projects$/)
   await page.goto('/')
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Open Tynovo' }).click()
+  await page.getByRole('banner').getByRole('link', { name: 'Open Tynovo' }).click()
   await expect(page).toHaveURL(/\/app\/projects$/)
   await page.goto('/pricing')
   await page.getByRole('link', { name: 'Start a project' }).click()

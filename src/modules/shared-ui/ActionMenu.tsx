@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { MoreIcon } from './icons'
+import { CheckIcon, MoreIcon } from './icons'
 
 export interface MenuItem {
   id: string
@@ -12,6 +12,8 @@ export interface MenuItem {
   danger?: boolean
   /** Extra words for assistive technology only, e.g. which project the item acts on. */
   srSuffix?: string
+  /** Makes the item a choice (menuitemradio): true marks the current one, false the others. */
+  checked?: boolean
 }
 
 const item = 'flex min-h-11 w-full cursor-pointer items-center rounded-sm px-3 text-left text-sm font-semibold whitespace-nowrap hover:bg-sheet-deep focus-visible:bg-sheet-deep md:min-h-9'
@@ -27,7 +29,7 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
   const trigger = useRef<HTMLButtonElement>(null)
   const menuId = useId()
 
-  const entries = () => [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+  const entries = () => [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"],[role="menuitemradio"]') ?? [])]
   const focusAt = (i: number) => {
     const list = entries()
     list[(i + list.length) % list.length]?.focus()
@@ -98,7 +100,8 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
               <button
                 key={it.id}
                 type="button"
-                role="menuitem"
+                role={it.checked === undefined ? 'menuitem' : 'menuitemradio'}
+                aria-checked={it.checked}
                 tabIndex={-1}
                 onClick={() => {
                   // Focus goes back to the menu button first, so it is never lost to the page when the menu unmounts, and so
@@ -108,6 +111,7 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
                 }}
                 className={`${item} ${it.danger ? 'text-danger' : 'text-ink-strong'}`}
               >
+                {it.checked === undefined ? null : <span aria-hidden="true" className="mr-2 inline-flex w-[18px] shrink-0 text-accent-text">{it.checked ? <CheckIcon /> : null}</span>}
                 {it.label}{it.srSuffix ? <span className="sr-only"> {it.srSuffix}</span> : null}
               </button>
             ),

@@ -71,7 +71,7 @@ export function ProjectCard(p: ProjectCardProps) {
           ) : (
             <h3 className="text-lg leading-snug font-bold break-words text-ink-strong">
               {/* The link stretches over the card, so the whole card opens the project; the menu sits above it. */}
-              <Link to={href} className="underline-offset-4 outline-offset-4 after:absolute after:inset-0 after:content-[''] hover:text-accent hover:underline">{s.name}</Link>
+              <Link to={href} className="underline-offset-4 outline-offset-4 after:absolute after:inset-0 after:content-[''] hover:text-accent-text hover:underline">{s.name}</Link>
             </h3>
           )}
           {s.brandName ? <p className="mt-0.5 text-sm text-ink-soft">Brand: {s.brandName}</p> : null}

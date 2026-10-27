@@ -26,7 +26,7 @@ export function HowItWorksPage() {
           <ol className="divide-y divide-line border-y border-line">
             {STEPS.map((s, i) => (
               <li key={s.title} className="grid gap-4 py-8 md:grid-cols-[4rem_minmax(0,1fr)_auto] md:gap-8">
-                <span aria-hidden="true" className="tnum text-4xl leading-none font-extrabold text-accent">{i + 1}</span>
+                <span aria-hidden="true" className="tnum text-4xl leading-none font-extrabold text-accent-text">{i + 1}</span>
                 <div><h2 className="text-2xl font-extrabold">{s.title}</h2><p className="mt-2 max-w-2xl">{s.body}</p></div>
                 <div><StatusBadge status={s.status} /></div>
               </li>

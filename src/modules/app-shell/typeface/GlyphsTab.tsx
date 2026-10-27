@@ -41,7 +41,7 @@ export function GlyphsTab({ handle, onOpen }: { handle: TypefaceHandle; onOpen: 
                 type="button"
                 aria-label={`${c}, ${STATUS_TEXT[r.status]}${overridden(c) ? ', has overrides' : ''}`}
                 onClick={() => onOpen(c)}
-                className={`relative grid aspect-[3/4] w-full cursor-pointer place-items-center rounded-md border p-1 transition-colors ${r.status === 'supported' ? 'border-line bg-paper hover:border-ink' : r.status === 'invalid' ? 'border-danger bg-[#fdeceb]' : 'border-dashed border-line-strong bg-sheet text-ink-soft hover:border-ink'}`}
+                className={`relative grid aspect-[3/4] w-full cursor-pointer place-items-center rounded-md border p-1 transition-colors ${r.status === 'supported' ? 'border-line bg-paper hover:border-ink' : r.status === 'invalid' ? 'border-danger bg-danger-soft' : 'border-dashed border-line-strong bg-sheet text-ink-soft hover:border-ink'}`}
               >
                 {r.glyph ? <GlyphThumb glyph={r.glyph} metrics={metrics} tone={r.status === 'invalid' ? 'danger' : 'ink'} /> : <span aria-hidden="true" className="text-xl font-bold">{c}</span>}
                 <span aria-hidden="true" className="absolute bottom-0.5 left-1 text-[0.65rem] font-semibold text-ink-soft">{c}</span>

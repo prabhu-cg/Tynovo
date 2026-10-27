@@ -22,7 +22,7 @@ export function SampleBanner({ summary: s, onDuplicate, onExport }: { summary: P
   return (
     <li data-project={s.name} data-sample="true" className={`group relative flex min-w-0 flex-col gap-5 sm:p-6 ${cardClass}`}>
       <div className="flex items-start gap-4">
-        <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent-wash text-accent"><BookIcon width={24} height={24} /></span>
+        <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent-wash text-accent-text"><BookIcon width={24} height={24} /></span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <h3 className="text-lg leading-snug font-bold break-words text-ink-strong">

@@ -3,8 +3,10 @@
 @theme {
   --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 
-  --color-accent: #c74504;        /* primary */
-  --color-accent-strong: #a93a03; /* hover/pressed and text on tints; 6.9:1 on white */
+  --color-accent: #c74504;        /* primary: fills, borders, the logo */
+  --color-accent-hover: #a93a03;  /* hover and pressed fill of a primary button */
+  --color-accent-text: #c74504;   /* accent used as text or an icon on the page surface (light: 4.9:1 on white) */
+  --color-accent-strong: #a93a03; /* text on the accent tint, links; 6.9:1 on white */
   --color-accent-wash: #fdefe7;   /* primary-soft: tint for selected rows, badges, emphasis */
   --color-ink: #1c1917;           /* foreground */
   --color-ink-strong: #1c1917;    /* headings and specimens (same as ink: hierarchy comes from weight and size) */
@@ -18,7 +20,9 @@
   --color-ok-soft: #e6f4ec;
   --color-warn: #8a5a00;
   --color-warn-soft: #fdf3e0;
-  --color-danger: #b3261e;
+  --color-danger: #b3261e;        /* text and icons */
+  --color-danger-solid: #b3261e;  /* a solid destructive button (white text) */
+  --color-danger-solid-hover: #8f1d17;
   --color-danger-soft: #fdeceb;
   --color-info: #1f5f9e;
   --color-info-soft: #ebf3fb;
@@ -32,4 +36,45 @@
   --shadow-drawer: -12px 0 32px -16px rgb(0 0 0 / 0.18);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The logo's own grey: #444444 as drawn; lightened on dark surfaces so the mark stays legible. */
+:root {
+  color-scheme: light;
+  --logo-ink: #444444;
+}
+
+/*
+ * Dark theme (Doxa's dark palette). Set by data-theme="dark" on <html>, which /theme-init.js sets before first paint.
+ * Same token names as light, so every utility follows. Orange stays #c74504 for fills (white text on it is 4.9:1);
+ * orange used as text lightens to #ff8a5c, which is 7:1 on the page.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --logo-ink: #e7e2d8;
+  --color-ink: #faf7f2;
+  --color-ink-strong: #faf7f2;
+  --color-ink-soft: #a8a097;
+  --color-paper: #12100e;
+  --color-sheet: #181512;
+  --color-sheet-deep: #27221e;
+  --color-line: #302a25;
+  --color-line-strong: #453d35;
+  --color-accent-hover: #a93a03; /* hover darkens in both themes: white on it stays 6.6:1 (Doxa's lighter #dd5211 is 4.0:1) */
+  --color-accent-text: #ff8a5c;
+  --color-accent-strong: #ff8a5c;
+  --color-accent-wash: #26130a;
+  --color-ok: #7ee2ab;
+  --color-ok-soft: #10281c;
+  --color-warn: #f5c26b;
+  --color-warn-soft: #2b2110;
+  --color-danger: #ff9d95;
+  --color-danger-solid: #b3261e;
+  --color-danger-solid-hover: #c9342b;
+  --color-danger-soft: #2e1513;
+  --color-info: #8cc2f5;
+  --color-info-soft: #10202e;
+  --shadow-card: 0 1px 2px 0 #00000066, 0 1px 3px 0 #0000004d;
+  --shadow-lift: 0 2px 4px -1px #00000066, 0 8px 24px -6px #00000099;
+  --shadow-drawer: -12px 0 32px -16px rgb(0 0 0 / 0.6);
 }

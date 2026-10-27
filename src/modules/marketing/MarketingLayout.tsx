@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { CloseIcon, Logo, MenuIcon, ScrollToTop } from '@/modules/shared-ui'
+import { CloseIcon, Logo, MenuIcon, ScrollToTop, ThemeMenu } from '@/modules/shared-ui'
 import { CtaBanner, Container, PrimaryLink } from './ui'
 
 /** Legal and informational pages end with the footer, not a call to action. */
@@ -28,24 +28,27 @@ export function MarketingLayout() {
   }, [])
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
-      <a href="#main" className="sr-only z-50 rounded-md bg-ink-strong px-4 py-2 text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+      <a href="#main" className="sr-only z-50 rounded-md bg-ink-strong px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
       <header className={`sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm transition-shadow duration-200 ${scrolled ? 'shadow-card' : ''}`} onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
-        <Container className="flex h-16 items-center justify-between gap-4">
-          <Link to="/" className="flex min-h-11 items-center" onClick={() => setOpen(false)}><Logo size="md" /></Link>
+        <Container className="grid h-16 grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+          <Link to="/" className="flex min-h-11 items-center justify-self-start" onClick={() => setOpen(false)}><Logo size="md" /></Link>
           <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
             {NAV.map((n) => <NavLink key={n.to} to={n.to} className={navLink}>{n.label}</NavLink>)}
-            <PrimaryLink to="/app/projects" className="ml-2 min-h-9 px-3.5 text-sm">Open Tynovo</PrimaryLink>
           </nav>
-          <button
-            type="button"
-            className="inline-flex size-11 cursor-pointer items-center justify-center rounded-md border border-line-strong text-ink-strong transition-colors hover:bg-sheet-deep md:hidden"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            onClick={() => setOpen((o) => !o)}
-          >
-            {open ? <CloseIcon width={22} height={22} /> : <MenuIcon width={22} height={22} />}
-          </button>
+          <div className="flex items-center justify-self-end gap-1.5">
+            <ThemeMenu />
+            <div className="ml-1 hidden md:block"><PrimaryLink to="/app/projects" className="min-h-9 px-3.5 text-sm">Open Tynovo</PrimaryLink></div>
+            <button
+              type="button"
+              className="inline-flex size-11 cursor-pointer items-center justify-center rounded-md border border-line-strong text-ink-strong transition-colors hover:bg-sheet-deep md:hidden"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              onClick={() => setOpen((o) => !o)}
+            >
+              {open ? <CloseIcon width={22} height={22} /> : <MenuIcon width={22} height={22} />}
+            </button>
+          </div>
         </Container>
         {open ? (
           <nav id="mobile-nav" aria-label="Main" className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-paper px-5 pt-2 pb-4 md:hidden" onClick={() => setOpen(false)}>
@@ -82,7 +85,7 @@ function FooterGroup({ title, links }: { title: string; links: Array<[string, st
       <p className="text-sm font-bold text-ink-strong">{title}</p>
       <ul className="mt-3 grid gap-1 text-sm">
         {links.map(([to, label]) => (
-          <li key={to}><Link to={to} className="inline-flex min-h-8 items-center underline-offset-4 hover:text-accent hover:underline">{label}</Link></li>
+          <li key={to}><Link to={to} className="inline-flex min-h-8 items-center underline-offset-4 hover:text-accent-text hover:underline">{label}</Link></li>
         ))}
       </ul>
     </nav>

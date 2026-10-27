@@ -23,7 +23,8 @@ Result: no violations in any of them. The test waits for animations to finish fi
 | Focus not obscured (2.4.11) | At 640px wide or less a drawer covers the page, so everything behind it is made `inert` while it is open: Tab, click and assistive technology cannot reach the page underneath. Tested at phone width. On wider screens the drawer is deliberately non-modal and the page stays usable. |
 | Error identification (3.3.1) and announcements (4.1.3) | Errors and warnings are `role="alert"`; confirmations and notes are `role="status"`. The save indicator is a polite live region. Tested for an import error, a failed save (full storage), unavailable storage and a two-tab conflict. |
 | Not colour alone (1.4.1) | Every banner has an icon and a word: **Error**, **Warning**, **Done** (visible) or a read-out "Note". Quality findings show an icon and a severity label ("Blocks export", "Warning", "Recommendation"); the save indicator uses words ("Could not save", "Changed elsewhere"). Tested: an error banner contains the word "Error" and an icon. |
-| Reduced motion (good practice; 2.3.3 is level AAA) | With `prefers-reduced-motion: reduce`, no element has a transition or animation longer than a blink (checked across the whole DOM with a drawer open). The rule is one global block in `src/index.css`. |
+| Reduced motion (good practice; 2.3.3 is level AAA) | With `prefers-reduced-motion: reduce` nothing moves. Overlays (drawer, modal) keep a short fade, because one that simply appears and vanishes is hard to follow; every other element is instant. Tested across the whole DOM with a drawer open (only `data-fade` overlays may animate, and only `fade-in`/`fade-out`), and in `e2e/motion.spec.ts`. |
+| Dark theme (1.4.3, 1.4.11) | The whole axe sweep above runs in both the light and the dark theme (`e2e/accessibility.spec.ts`), at desktop and phone width. It found one real dark-only failure, fixed: white text on Doxa's lighter dark hover orange was 4.0:1, so hover darkens in both themes (6.6:1). |
 | Label in name (2.5.3) | axe's `label-content-name-mismatch` rule over the catalog and project pages. |
 
 ## Defects found and fixed in this phase
@@ -32,6 +33,7 @@ Result: no violations in any of them. The test waits for animations to finish fi
 2. **A drawer lost focus on close**: its autofocus field made the drawer record the wrong "opener", so Escape dropped focus to the page body. All drawers (new project, font catalog, font export) now return focus to the real opener.
 3. **On a phone, Tab reached the page hidden behind a drawer** (skip link, menu, import, new project, project cards). The page is now inert while a full-width drawer is open.
 4. **Buttons whose accessible name did not contain their visible text** ("Add to project" labelled "Add Inter to project"; "Use this pairing" labelled "Use Inter with Lora"). Labels now start with the visible text ("Add to project: Inter").
+5. **Reduced motion removed the drawer's animation entirely**: one global rule squashed every animation to 0.00001s, so people with the operating-system setting never saw the drawer arrive, and no closing animation existed for anyone. Overlays now fade under reduced motion and animate out in both modes.
 
 ## Not done: what a person must still check
 

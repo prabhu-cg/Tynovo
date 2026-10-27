@@ -17,7 +17,7 @@ export function FaqPage() {
             <div className="divide-y divide-line border-y border-line">
               {FAQS.filter((f) => f.group === g).map((f) => (
                 <details key={f.q} className="group py-4">
-                  <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink-strong">{f.q}<span aria-hidden="true" className="text-accent transition-transform group-open:rotate-45">+</span></summary>
+                  <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink-strong">{f.q}<span aria-hidden="true" className="text-accent-text transition-transform group-open:rotate-45">+</span></summary>
                   <p className="mt-2 max-w-2xl">{f.a}</p>
                 </details>
               ))}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
-import { Banner, CloseIcon, Logo, MenuIcon, ScrollToTop } from '@/modules/shared-ui'
+import { Banner, CloseIcon, Logo, MenuIcon, ScrollToTop, ThemeMenu } from '@/modules/shared-ui'
 import { useCapabilities } from './entitlements'
 import { StudioProvider } from './StudioContext'
 import { useStudio } from './studio'
@@ -30,7 +30,7 @@ function Shell() {
   const [open, setOpen] = useState(false)
   return (
     <div className="min-h-dvh bg-paper md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
-      <a href="#app-main" className="sr-only z-50 rounded-md bg-ink-strong px-4 py-2 text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+      <a href="#app-main" className="sr-only z-50 rounded-md bg-ink-strong px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
 
       {/* Left panel: cream, hairline on its right, a 56px header carrying the logo, then the navigation (Doxa's sidebar). */}
       <aside className="hidden border-r border-line bg-sheet md:sticky md:top-0 md:flex md:h-dvh md:flex-col">
@@ -49,9 +49,12 @@ function Shell() {
               <Link to="/" className="flex min-h-11 items-center"><Logo size="sm" tagline={false} /><span className="sr-only">, go to the website</span></Link>
             </div>
             <div className="hidden md:block" />
-            <p className="hidden text-xs text-ink-soft sm:block">
-              Storage: <span className="font-semibold">{storageKind === 'indexeddb' ? 'this browser (IndexedDB)' : 'memory only'}</span>
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="hidden text-xs text-ink-soft sm:block">
+                Storage: <span className="font-semibold">{storageKind === 'indexeddb' ? 'this browser (IndexedDB)' : 'memory only'}</span>
+              </p>
+              <ThemeMenu />
+            </div>
           </header>
           {open ? <div id="app-menu" className="border-b border-line bg-sheet px-4 pb-3 md:hidden"><Nav onNavigate={() => setOpen(false)} /></div> : null}
         </div>

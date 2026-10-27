@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Button } from './Button'
 import { isolate, useReturnFocus } from './focus'
+import { usePresence } from './presence'
 
 /** At or below this width the drawer covers (nearly) the whole page, so the page behind must not take focus. */
 const COVERS_PAGE = '(max-width: 640px)'
@@ -12,6 +13,7 @@ const COVERS_PAGE = '(max-width: 640px)'
  */
 export function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLElement>(null)
+  const { mounted, closing } = usePresence(open, 170) // long enough for the exit animation in index.css
 
   useEffect(() => {
     if (!open) return
@@ -32,15 +34,18 @@ export function Drawer({ open, title, onClose, children }: { open: boolean; titl
   }, [open])
   useReturnFocus(open) // after the effect above: the page must not be inert when focus goes back
 
-  if (!open) return null
+  if (!mounted) return null
   return (
     <aside
       ref={ref}
       tabIndex={-1}
       aria-label={title}
       data-drawer
+      data-fade
+      data-closing={closing || undefined}
+      inert={closing || undefined}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-line bg-paper shadow-(--shadow-drawer) outline-none animate-[drawer-in_260ms_var(--ease-out-expo)]"
+      className="drawer-panel fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-line bg-paper shadow-(--shadow-drawer) outline-none"
     >
       <header className="flex items-center justify-between border-b border-line px-5 py-4">
         <h2 className="text-base font-bold">{title}</h2>

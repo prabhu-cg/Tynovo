@@ -40,3 +40,5 @@ export const CloseIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m
 export const ArrowRightIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M4 10h12m-5-5 5 5-5 5" /></Icon>
 export const BookIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M3.5 4.5c2.6-.8 4.9-.6 6.5.9 1.6-1.5 3.9-1.7 6.5-.9v10.8c-2.6-.8-4.9-.6-6.5.9-1.6-1.5-3.9-1.7-6.5-.9z" /><path d="M10 5.4v10.8" /></Icon>
 export const ChevronDownIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m5 7.5 5 5 5-5" /></Icon>
+export const SunIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><circle cx="10" cy="10" r="3.4" /><path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M15.3 4.7 14 6M6 14l-1.3 1.3" /></Icon>
+export const MoonIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M16.5 11.6A6.6 6.6 0 0 1 8.4 3.5a6.6 6.6 0 1 0 8.1 8.1z" /></Icon>

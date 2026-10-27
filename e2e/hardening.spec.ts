@@ -171,7 +171,7 @@ test.describe('what the privacy notice says is true', () => {
   })
 })
 
-test('the one display preference is the only thing kept beside projects, holds one value, and is not sent anywhere', async ({ page, context }) => {
+test('the two display preferences are the only things kept beside projects, hold one short value each, and are not sent anywhere', async ({ page, context }) => {
   const sent: string[] = []
   page.on('request', (r) => {
     if (r.method() !== 'GET' && r.method() !== 'HEAD') sent.push(`${r.method()} ${r.url()}`)
@@ -180,6 +180,12 @@ test('the one display preference is the only thing kept beside projects, holds o
   await page.getByRole('button', { name: 'Hide sample project' }).click()
   const entries = await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)))
   expect(entries).toEqual({ 'tynovo.sampleCollapsed': '1' })
+  await page.getByRole('button', { name: 'Colour theme' }).click()
+  await page.getByRole('menuitemradio', { name: 'Dark' }).click()
+  expect(await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)))).toEqual({ 'tynovo.sampleCollapsed': '1', 'tynovo.theme': 'dark' })
+  await page.getByRole('button', { name: 'Colour theme' }).click()
+  await page.getByRole('menuitemradio', { name: 'System' }).click()
+  expect(await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)))).toEqual({ 'tynovo.sampleCollapsed': '1' }) // System stores nothing
   expect(await page.evaluate(() => sessionStorage.length)).toBe(0)
   expect(await context.cookies()).toEqual([])
   expect(sent).toEqual([])
