@@ -42,3 +42,6 @@ export const BookIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M3
 export const ChevronDownIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="m5 7.5 5 5 5-5" /></Icon>
 export const SunIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><circle cx="10" cy="10" r="3.4" /><path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M15.3 4.7 14 6M6 14l-1.3 1.3" /></Icon>
 export const MoonIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M16.5 11.6A6.6 6.6 0 0 1 8.4 3.5a6.6 6.6 0 1 0 8.1 8.1z" /></Icon>
+export const SearchIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><circle cx="8.6" cy="8.6" r="5.2" /><path d="m12.5 12.5 4.2 4.2" /></Icon>
+export const SlidersIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M3 5.5h8M15 5.5h2M3 14.5h2M9 14.5h8" /><circle cx="13" cy="5.5" r="2" /><circle cx="7" cy="14.5" r="2" /></Icon>
+export const SortIcon = (p: SVGProps<SVGSVGElement>) => <Icon {...p}><path d="M6.5 16V4M3.5 7l3-3 3 3M13.5 4v12M10.5 13l3 3 3-3" /></Icon>

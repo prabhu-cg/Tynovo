@@ -23,7 +23,7 @@ const item = 'flex min-h-11 w-full cursor-pointer items-center rounded-sm px-3 t
  * and focuses the first action; Arrow Up and Down, Home and End move; Escape closes and returns to the button;
  * Tab leaves. Clicking elsewhere closes it. Every action is also a real button or link, so it works without a mouse.
  */
-export function ActionMenu({ label, items, icon }: { label: string; items: readonly MenuItem[]; icon?: ReactNode }) {
+export function ActionMenu({ label, items, icon, text, align = 'right' }: { label: string; items: readonly MenuItem[]; icon?: ReactNode; /** Shows this beside the icon, as a labelled button (for a menu that displays its current choice). */ text?: ReactNode; align?: 'left' | 'right' }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
@@ -71,16 +71,19 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
             setOpen(true)
           }
         }}
-        className="inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-ink transition-colors hover:bg-sheet-deep aria-expanded:bg-sheet-deep md:size-9"
+        className={text === undefined
+          ? 'inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-ink transition-colors hover:bg-sheet-deep aria-expanded:bg-sheet-deep md:size-9'
+          : 'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-line-strong bg-paper px-3 text-sm font-semibold whitespace-nowrap text-ink-strong transition-colors hover:border-ink hover:bg-sheet aria-expanded:bg-sheet md:min-h-9'}
       >
         {icon ?? <MoreIcon />}
+        {text}
       </button>
       {open ? (
         <div
           id={menuId}
           role="menu"
           aria-label={label}
-          className="absolute top-full right-0 z-20 mt-1 grid min-w-52 gap-0.5 rounded-md border border-line-strong bg-paper p-1 shadow-(--shadow-lift)"
+          className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} z-20 mt-1 grid min-w-52 gap-0.5 rounded-md border border-line-strong bg-paper p-1 shadow-(--shadow-lift)`}
           onKeyDown={(e) => {
             const list = entries()
             const at = list.indexOf(document.activeElement as HTMLElement)

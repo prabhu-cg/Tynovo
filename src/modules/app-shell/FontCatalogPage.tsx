@@ -1,18 +1,17 @@
 import { useEffect, useId, useMemo, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router'
 import type { RoleKind, Tone, UseCase } from '@/modules/brand-projects/schema'
-import { TONES, USE_CASES } from '@/modules/brand-projects/schema'
 import { PRIORITY_LABEL, TONE_LABEL, USE_CASE_LABEL } from '@/modules/brand-system/brand'
 import { addCatalogFont, setPairing } from '@/modules/brand-system/ops'
-import { CATALOG, CATEGORIES, CATEGORY_LABEL, catalogFontFor, type CatalogFont, type FontCategory } from '@/modules/font-catalog/catalog'
+import { CATALOG, CATEGORY_LABEL, catalogFontFor, type CatalogFont } from '@/modules/font-catalog/catalog'
 import { fontLoader, nearestWeight, type FontSpec } from '@/modules/font-catalog/loader'
 import { filterCatalog, hasBrandSignals, NO_FILTER, RECOMMENDATION_NOTE, scoreFont, type CatalogFilter } from '@/modules/font-catalog/recommend'
 import { AppSeo } from '@/modules/marketing/Seo'
-import { AlertIcon, Banner, Button, CheckIcon, Chip, Drawer, inputClass, Segmented } from '@/modules/shared-ui'
+import { AlertIcon, Banner, Button, CheckIcon, Drawer, inputClass } from '@/modules/shared-ui'
+import { CatalogToolbar } from './catalog/CatalogToolbar'
 import { EditGroup } from './EditGroup'
 import { useProject } from './project'
 
-const toggle = <T,>(list: readonly T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 const KINDS: { kind: RoleKind; label: string }[] = [{ kind: 'display', label: 'Display' }, { kind: 'heading', label: 'Headings' }, { kind: 'body', label: 'Body text' }, { kind: 'ui', label: 'Interface' }]
 
 /** Browse the bundled, properly licensed fonts: search, filter, see weights, styles and licence, and add them to the project. */
@@ -21,7 +20,6 @@ export function FontCatalogPage() {
   const [filter, setFilter] = useState<CatalogFilter>(NO_FILTER)
   const [sort, setSort] = useState<'az' | 'match'>('az')
   const [openId, setOpenId] = useState<string | null>(null)
-  const searchId = useId()
   const brand = draft.brand
   const signals = hasBrandSignals(brand)
 
@@ -31,7 +29,6 @@ export function FontCatalogPage() {
     const list = filterCatalog(filter)
     return sort === 'match' && signals ? [...list].sort((a, b) => matchScore(b) - matchScore(a) || a.family.localeCompare(b.family)) : list // eslint-disable-line
   }, [filter, sort, signals, brand.tones, brand.useCases, brand.readabilityPriority, brand.displayPriority]) // eslint-disable-line
-  const active = filter.query !== '' || filter.categories.length + filter.tones.length + filter.uses.length > 0 || filter.text || filter.display
   const open = CATALOG.find((f) => f.id === openId) ?? null
 
   return (
@@ -45,41 +42,9 @@ export function FontCatalogPage() {
         <p className="text-sm text-ink-soft">Category, weights, styles and licence come from each font’s own package. The tone and use-case tags are Tynovo’s own judgement, used only to order and filter. Need a font that is installed on your device instead? <Link to="../typography#fonts" className="font-semibold text-accent-strong underline underline-offset-4">Add it by name on the typography page</Link>.</p>
       </header>
 
-      <section aria-label="Search and filters" className="grid gap-4 rounded-md border border-line bg-paper p-4">
-        <div className="grid gap-4 md:grid-cols-[minmax(0,22rem)_1fr] md:items-end">
-          <div className="grid gap-1">
-            <label htmlFor={searchId} className="text-sm font-semibold text-ink-strong">Search by family name</label>
-            <input id={searchId} type="search" value={filter.query} onChange={(e) => setFilter((f) => ({ ...f, query: e.target.value }))} placeholder="e.g. Plex" className={inputClass} />
-          </div>
-          <Segmented label="Order" value={sort} options={[{ value: 'az', label: 'A to Z' }, { value: 'match', label: 'Best match for my brand' }]} onChange={setSort} />
-        </div>
-        {sort === 'match' && !signals ? <p className="text-sm text-ink-soft">Ordering by match needs a tone or a use case. <Link to=".." className="font-semibold text-accent-strong underline underline-offset-4">Set them on the overview</Link>.</p> : null}
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-semibold text-ink-strong">Category</legend>
-          <div className="flex flex-wrap gap-2">{CATEGORIES.map((c) => <Chip key={c} checked={filter.categories.includes(c)} onChange={() => setFilter((f) => ({ ...f, categories: toggle(f.categories, c as FontCategory) }))}>{CATEGORY_LABEL[c]}</Chip>)}</div>
-        </fieldset>
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-semibold text-ink-strong">Tone (studio tags)</legend>
-          <div className="flex flex-wrap gap-2">
-            {TONES.map((t) => <Chip key={t} checked={filter.tones.includes(t)} onChange={() => setFilter((f) => ({ ...f, tones: toggle(f.tones, t) }))}>{TONE_LABEL[t]}</Chip>)}
-          </div>
-        </fieldset>
-        <fieldset className="grid gap-2">
-          <legend className="mb-1 text-sm font-semibold text-ink-strong">Use (studio tags)</legend>
-          <div className="flex flex-wrap gap-2">
-            {USE_CASES.map((u) => <Chip key={u} checked={filter.uses.includes(u)} onChange={() => setFilter((f) => ({ ...f, uses: toggle(f.uses, u) }))}>{USE_CASE_LABEL[u]}</Chip>)}
-            <Chip checked={filter.text} onChange={() => setFilter((f) => ({ ...f, text: !f.text }))}>Drawn for text</Chip>
-            <Chip checked={filter.display} onChange={() => setFilter((f) => ({ ...f, display: !f.display }))}>Suited to large sizes</Chip>
-          </div>
-        </fieldset>
-        <div className="flex flex-wrap items-center gap-2">
-          {signals ? <Button onClick={() => setFilter((f) => ({ ...f, tones: [...brand.tones], uses: [...brand.useCases] }))}>Use my brand’s tone and use cases</Button> : null}
-          {active ? <Button variant="ghost" onClick={() => setFilter(NO_FILTER)}>Clear filters</Button> : null}
-        </div>
-      </section>
+      <CatalogToolbar filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} brand={brand} signals={signals} shown={results.length} total={CATALOG.length} />
 
       <section aria-label="Results" className="grid gap-3">
-        <p role="status" data-testid="catalog-count" className="tnum text-sm text-ink-soft">{results.length} of {CATALOG.length} fonts{active ? ' match' : ''}.</p>
         {results.length === 0 ? (
           <div className="rounded-md border border-dashed border-line-strong bg-paper px-6 py-10 text-center">
             <h3 className="text-lg font-bold">No font matches</h3>
