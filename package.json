@@ -13,10 +13,12 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "spike": "WRITE_SPIKE_OUTPUT=1 vitest run src/modules/font-export",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run budgets && npm run verify:dist",
     "contact-sheet": "tsx scripts/contact-sheet.ts",
     "catalog": "node scripts/build-catalog.mjs",
-    "screens": "tsx scripts/make-screens.ts"
+    "screens": "tsx scripts/make-screens.ts",
+    "budgets": "node scripts/check-budgets.mjs",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",
@@ -75,5 +77,8 @@
     "vite": "^8.3.4",
     "vitest": "^5.0.5"
   },
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=23.6"
+  }
 }

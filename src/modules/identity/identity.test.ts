@@ -23,10 +23,12 @@ describe('identity', () => {
     expect([Number(box[1]), Number(box[2])]).toEqual([MARK_VIEWBOX.width, MARK_VIEWBOX.height])
   })
 
-  it('uses the brand palette the interface is built on', () => {
+  it('keeps the logo in the colours it was drawn in, and the interface on the Doxa-matched tokens', () => {
+    // The mark is the user's artwork and keeps its own greys; the interface tokens follow Doxa (warm ink).
     expect(MARK_COLORS).toEqual({ ink: '#444444', accent: '#C74504' })
     const tokens = readFileSync('src/modules/design-tokens/tokens.css', 'utf8')
     expect(tokens.toLowerCase()).toContain('--color-accent: #c74504')
-    expect(tokens.toLowerCase()).toContain('--color-ink: #444444')
+    expect(tokens.toLowerCase()).toContain('--color-ink: #1c1917')
+    expect(tokens.toLowerCase()).toContain('--color-sheet: #f4f2ea')
   })
 })

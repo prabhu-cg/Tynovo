@@ -29,7 +29,7 @@ export function HomePage() {
   return (
     <>
       <Seo page={page} />
-      <section aria-labelledby="hero-h" className="border-b border-line bg-[radial-gradient(60rem_32rem_at_85%_-10%,var(--color-accent-wash),transparent_70%),linear-gradient(180deg,#f3efe8_0%,var(--color-sheet)_55%,var(--color-paper)_100%)]">
+      <section aria-labelledby="hero-h" className="hero-field border-b border-line">
         <Container className="grid gap-12 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
           <div>
             <p className="text-sm font-bold text-accent-strong">Free, in your browser, no account</p>
@@ -121,16 +121,6 @@ export function HomePage() {
         </div>
         <p className="mx-auto mt-6 max-w-3xl"><TextLink to="/faq">All questions and limitations</TextLink></p>
       </Section>
-
-      <section aria-labelledby="final-h">
-        <Container className="py-16 text-center md:py-24">
-          <h2 id="final-h" className="mx-auto max-w-3xl text-4xl leading-[1.05] font-extrabold md:text-5xl">Start with a project.</h2>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <PrimaryLink to="/app/projects">Open Tynovo</PrimaryLink>
-            <SecondaryLink to="/app/lab">Try the font lab</SecondaryLink>
-          </div>
-        </Container>
-      </section>
     </>
   )
 }

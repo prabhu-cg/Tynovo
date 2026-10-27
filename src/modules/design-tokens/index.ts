@@ -1,9 +1,9 @@
 /** Token names mirrored from tokens.css for use in TypeScript (e.g. SVG/canvas drawing). */
 export const colors = {
   accent: '#C74504',
-  ink: '#444444',
-  inkStrong: '#262626',
-  line: '#E3E3E0',
+  ink: '#1C1917',
+  inkStrong: '#1C1917',
+  line: '#E8DDC8',
   paper: '#FFFFFF',
 } as const
 

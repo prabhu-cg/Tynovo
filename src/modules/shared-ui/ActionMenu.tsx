@@ -82,11 +82,11 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
           onKeyDown={(e) => {
             const list = entries()
             const at = list.indexOf(document.activeElement as HTMLElement)
-            if (e.key === 'ArrowDown') (e.preventDefault(), focusAt(at + 1))
-            else if (e.key === 'ArrowUp') (e.preventDefault(), focusAt(at - 1))
-            else if (e.key === 'Home') (e.preventDefault(), focusAt(0))
-            else if (e.key === 'End') (e.preventDefault(), focusAt(list.length - 1))
-            else if (e.key === 'Tab') setOpen(false)
+            const to = e.key === 'ArrowDown' ? at + 1 : e.key === 'ArrowUp' ? at - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? list.length - 1 : null
+            if (to !== null) {
+              e.preventDefault()
+              focusAt(to)
+            } else if (e.key === 'Tab') setOpen(false)
           }}
         >
           {items.map((it) =>
@@ -101,7 +101,9 @@ export function ActionMenu({ label, items, icon }: { label: string; items: reado
                 role="menuitem"
                 tabIndex={-1}
                 onClick={() => {
-                  close(false)
+                  // Focus goes back to the menu button first, so it is never lost to the page when the menu unmounts, and so
+                  // whatever the action opens (a modal, an autofocused field) knows what to hand focus back to.
+                  close(true)
                   it.onSelect?.()
                 }}
                 className={`${item} ${it.danger ? 'text-danger' : 'text-ink-strong'}`}

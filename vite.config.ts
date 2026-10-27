@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vitest/config'
 import { PUBLIC_PAGES } from './src/modules/marketing/seo-config.ts'
@@ -16,7 +17,17 @@ const servePrerenderedRoutes: Plugin = {
   },
 }
 
+/** `vite preview` serves the same headers as production, read from vercel.json, so tests run under the real CSP. */
+const productionHeaders = (): Record<string, string> => {
+  const config = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')) as {
+    headers: { source: string; headers: { key: string; value: string }[] }[]
+  }
+  const all = config.headers.find((h) => h.source === '/(.*)')?.headers ?? []
+  return Object.fromEntries(all.map((h) => [h.key, h.value]))
+}
+
 export default defineConfig({
+  preview: { headers: productionHeaders() },
   plugins: [react(), tailwindcss(), servePrerenderedRoutes],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

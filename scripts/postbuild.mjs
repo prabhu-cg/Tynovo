@@ -2,6 +2,7 @@
 // Needs Node >= 23.6 (imports the shared TypeScript config directly).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { loadEnv } from 'vite'
 import { applyMeta, buildRobots, buildSitemap, normalizeSiteUrl, PUBLIC_PAGES } from '../src/modules/marketing/seo-config.ts'
 
@@ -30,6 +31,9 @@ for (const page of PUBLIC_PAGES) {
   writeFileSync(out, html)
 }
 
+// Unknown URLs get the app shell with a 404 status (Vercel and GitHub Pages both serve 404.html); the router shows the not-found page.
+writeFileSync(join(dist, '404.html'), template.replace(/<!--seo:start-->[\s\S]*?<!--seo:end-->/, '<title>Page not found · Tynovo</title>\n    <meta name="robots" content="noindex" />'))
+
 writeFileSync(join(dist, 'robots.txt'), buildRobots(siteUrl))
 if (siteUrl) {
   writeFileSync(join(dist, 'sitemap.xml'), buildSitemap(siteUrl))
@@ -38,3 +42,5 @@ if (siteUrl) {
   console.warn('postbuild: VITE_SITE_URL is not set. Canonical/OG URLs and sitemap.xml were skipped. Set it for production deploys.')
 }
 if (!existsSync(join(dist, 'og.png'))) console.warn('postbuild: public/og.png is missing; og:image will 404.')
+
+execFileSync(process.execPath, [new URL('./third-party-notices.mjs', import.meta.url).pathname], { stdio: 'inherit' })

@@ -4,7 +4,7 @@ import { parseProject } from './migrations'
 import { CURRENT_SCHEMA_VERSION } from './schema'
 import { serializeProject } from './model'
 import { recoverProject } from './recover'
-import { ImportError, ProjectService } from './service'
+import { ImportError, MAX_IMPORT_BYTES, ProjectService } from './service'
 
 const damaged = () => {
   const p = structuredClone(integratedProject()) as unknown as Record<string, any>
@@ -102,6 +102,19 @@ describe('ProjectService: opening, importing and recovering', () => {
     const service = new ProjectService(new MemoryProjectRepository(), fakeClock())
     expect(await service.importFile('{"hello":1}').catch((e: ImportError) => e.recoverable)).toBe(false)
     expect(await service.importFile('nope').catch((e: ImportError) => e.recoverable)).toBe(false)
+  })
+
+  it('refuses a file over the size cap without parsing it, for import and for recovery', async () => {
+    const repo = new MemoryProjectRepository()
+    const service = new ProjectService(repo, fakeClock())
+    const huge = ' '.repeat(MAX_IMPORT_BYTES + 1)
+    for (const attempt of [service.importFile(huge), service.recoverFile(huge)]) {
+      const err = await attempt.catch((e: unknown) => e)
+      expect(err).toBeInstanceOf(ImportError)
+      expect((err as ImportError).message).toMatch(/larger than 25 MB/)
+      expect((err as ImportError).recoverable).toBe(false)
+    }
+    expect((await service.list()).projects).toEqual([])
   })
 
   it('recovers a stored record into a new project and leaves the damaged one in place', async () => {

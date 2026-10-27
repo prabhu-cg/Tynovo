@@ -63,11 +63,11 @@ test('the closing call to action is centred', async ({ page }) => {
   for (const width of [1280, 1920, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
-    const section = page.locator('section[aria-labelledby="final-h"]')
+    const section = page.locator('section[aria-labelledby="cta-h"]')
     await section.scrollIntoViewIfNeeded()
-    const h = (await page.locator('#final-h').boundingBox())!
+    const h = (await page.locator('#cta-h').boundingBox())!
     expect(Math.abs(h.x + h.width / 2 - width / 2), `heading @${width}`).toBeLessThan(2)
-    expect(await page.locator('#final-h').evaluate((e) => getComputedStyle(e).textAlign)).toBe('center')
+    expect(await page.locator('#cta-h').evaluate((e) => getComputedStyle(e).textAlign)).toBe('center')
     const buttons = section.getByRole('link')
     const boxes = [await buttons.first().boundingBox(), await buttons.last().boundingBox()] as const
     const left = Math.min(boxes[0]!.x, boxes[1]!.x)

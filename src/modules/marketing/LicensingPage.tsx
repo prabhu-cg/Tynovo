@@ -65,7 +65,7 @@ const BLOCKS: readonly Block[] = [
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-ink-soft">The licences and notices of every package are included with the packages in the repository’s dependency list. They are all compatible with the GPL.</p>
+        <p className="mt-3 text-sm text-ink-soft">The full licence text of every package Tynovo ships, the bundled fonts included, is in the <a href="/third-party-notices.txt" className="font-semibold text-accent-strong underline decoration-1 underline-offset-4 hover:text-accent">third-party notices</a>, generated when the site is built. They are all compatible with the GPL.</p>
       </>
     ),
   },

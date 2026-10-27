@@ -67,7 +67,7 @@ test('marketing calls to action reach the app', async ({ page }) => {
   await expect(page).toHaveURL(/\/app\/lab$/)
 })
 
-test('no dead or placeholder links anywhere on the public site', async ({ page }) => {
+test('no dead or placeholder links anywhere on the public site', async ({ page, request }) => {
   const targets = new Set<string>()
   for (const path of marketingPaths) {
     await page.goto(path)
@@ -81,6 +81,14 @@ test('no dead or placeholder links anywhere on the public site', async ({ page }
   }
   expect(targets.size).toBeGreaterThan(10)
   for (const t of targets) {
+    if (/\.[a-z0-9]+$/i.test(t)) {
+      // A static file (the third-party notices), not a page: it must exist and say something.
+      const file = await request.get(t)
+      expect(file.status(), t).toBe(200)
+      expect((await file.text()).length, t).toBeGreaterThan(500)
+      expect(file.headers()['content-type'] ?? '', t).not.toContain('text/html') // not the app shell answering for a missing file
+      continue
+    }
     const response = await page.goto(t)
     expect(response?.status(), t).toBe(200)
     await expect(page.getByText('That page does not exist.'), t).toHaveCount(0)
@@ -140,7 +148,7 @@ test.describe('keyboard and touch', () => {
     test.use({ hasTouch: true, viewport: { width: 375, height: 800 } })
     test('mobile menu opens with Enter, is reachable by Tab, closes with Escape and on navigation', async ({ page }) => {
     await page.goto('/')
-    const menu = page.getByRole('button', { name: 'Menu' })
+    const menu = page.getByRole('button', { name: 'Open menu' })
     await expect(menu).toHaveAttribute('aria-expanded', 'false')
     await menu.focus()
     await page.keyboard.press('Enter')
@@ -149,7 +157,7 @@ test.describe('keyboard and touch', () => {
     await expect(page.locator('#mobile-nav').getByRole('link', { name: 'Features' })).toBeFocused()
     await page.keyboard.press('Escape')
     await expect(page.locator('#mobile-nav')).toHaveCount(0)
-    await page.getByRole('button', { name: 'Menu' }).tap()
+    await page.getByRole('button', { name: 'Open menu' }).tap()
     await page.locator('#mobile-nav').getByRole('link', { name: 'Pricing' }).tap()
     await expect(page).toHaveURL(/\/pricing$/)
     await expect(page.locator('#mobile-nav')).toHaveCount(0)
@@ -159,7 +167,7 @@ test.describe('keyboard and touch', () => {
   test('app menu on mobile works the same way', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 })
     await page.goto('/app/projects')
-    await page.getByRole('button', { name: 'Menu' }).click()
+    await page.getByRole('button', { name: 'Open menu' }).click()
     await page.locator('#app-menu').getByRole('link', { name: 'Settings' }).click()
     await expect(page).toHaveURL(/\/app\/settings$/)
     await expect(page.locator('#app-menu')).toHaveCount(0)
@@ -168,7 +176,7 @@ test.describe('keyboard and touch', () => {
   test('touch targets on small screens are at least 44px', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 })
     await page.goto('/app/projects')
-    for (const name of ['Menu', 'New project', 'Import project file']) {
+    for (const name of ['Open menu', 'New project', 'Import project file']) {
       const box = await page.getByRole('button', { name: name, exact: true }).boundingBox()
       expect(box!.height, name).toBeGreaterThanOrEqual(44)
     }

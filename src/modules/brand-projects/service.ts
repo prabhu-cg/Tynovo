@@ -12,6 +12,12 @@ import {
 } from './model'
 import type { Project } from './schema'
 
+/** Largest project file Tynovo will read. A real project is well under 1 MB; the cap keeps a wrong or hostile file from freezing the page. */
+export const MAX_IMPORT_BYTES = 25 * 1024 * 1024
+
+export const importTooLargeMessage = (name: string) =>
+  `“${name}” is larger than ${MAX_IMPORT_BYTES / 1024 / 1024} MB, which is far more than a Tynovo project. It was not opened.`
+
 export class ImportError extends Error {
   override name = 'ImportError'
   /** True when the file is a project file that failed validation, so "recover what can be read" is worth offering. */
@@ -138,6 +144,7 @@ export class ProjectService {
 
   /** Import a project file. Existing projects are never replaced; an id clash becomes a copy. */
   async importFile(text: string): Promise<{ project: Project; renamedOnClash: boolean }> {
+    if (text.length > MAX_IMPORT_BYTES) throw new ImportError(importTooLargeMessage('This file'))
     const parsed = parseProjectFile(text)
     if (!parsed.ok) throw new ImportError(parsed.message, parsed.reason === 'invalid' && looksLikeProjectFile(text))
     const { projects } = await this.repo.list()
@@ -159,6 +166,7 @@ export class ProjectService {
 
   /** Same, for the text of a project file that failed validation. */
   async recoverFile(text: string): Promise<Recovery> {
+    if (text.length > MAX_IMPORT_BYTES) throw new ImportError(importTooLargeMessage('This file'))
     let data: unknown
     try {
       data = JSON.parse(text)

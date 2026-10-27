@@ -1,5 +1,6 @@
 import { Link, type LinkProps } from 'react-router'
 import type { ReactNode } from 'react'
+import { ArrowRightIcon } from '@/modules/shared-ui'
 import { STATUS_LABEL, type Status } from './content'
 
 export function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -32,6 +33,28 @@ export function PrimaryLink(props: LinkProps) {
 export function SecondaryLink(props: LinkProps) {
   const { className = '', ...rest } = props
   return <Link {...rest} className={`${cta} border border-line-strong bg-paper text-ink-strong hover:border-ink ${className}`} />
+}
+
+/**
+ * The closing call to action: a full-bleed solid primary band, as on Doxa. White on the accent is 4.9:1, so the copy is
+ * plain white (no translucent white, which would fall under 4.5:1) and the focus ring is white (the default accent ring
+ * would vanish on this band).
+ */
+export function CtaBanner() {
+  const ring = 'focus-visible:outline-white'
+  return (
+    <section aria-labelledby="cta-h" className="bg-accent px-5 py-20 text-center sm:py-28">
+      <h2 id="cta-h" className="mx-auto max-w-xl text-3xl font-extrabold tracking-tight text-balance text-white sm:text-4xl">Start with a project.</h2>
+      <p className="mx-auto mt-3 max-w-lg text-lg text-balance text-white">Free, with no account. Your projects stay in your browser.</p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link to="/app/projects" className={`${cta} gap-2 bg-paper text-ink-strong hover:bg-sheet ${ring}`}>
+          Open Tynovo
+          <ArrowRightIcon />
+        </Link>
+        <Link to="/app/lab" className={`${cta} border border-white/40 text-white hover:bg-white/10 ${ring}`}>Try the font lab</Link>
+      </div>
+    </section>
+  )
 }
 
 export function TextLink(props: LinkProps) {
@@ -67,7 +90,7 @@ export function Section({ id, title, intro, children, tone = 'plain', centered =
 /** Notice for draft or illustrative content. Uses role=note so it is announced but not an alert. */
 export function Notice({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <aside role="note" className="rounded-md border border-[#e0c27a] bg-[#fdf6e3] px-5 py-4 text-[#5c3d00]">
+    <aside role="note" className="rounded-md border border-warn/30 bg-warn-soft px-5 py-4 text-warn">
       <p className="font-bold">{title}</p>
       <div className="mt-1 text-[0.9375rem]">{children}</div>
     </aside>

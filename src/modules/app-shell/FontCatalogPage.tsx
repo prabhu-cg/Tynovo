@@ -100,7 +100,7 @@ export function FontCatalogPage() {
                 {inProject.has(f.id) ? (
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ok"><CheckIcon />In this project</span>
                 ) : (
-                  <Button aria-label={`Add ${f.family} to project`} disabled={readOnly} title={readOnly ? 'The sample project cannot be changed' : undefined} onClick={() => editor.patch((p) => addCatalogFont(p, f.id)?.project ?? p)}>Add to project</Button>
+                  <Button aria-label={`Add to project: ${f.family}`} disabled={readOnly} title={readOnly ? 'The sample project cannot be changed' : undefined} onClick={() => editor.patch((p) => addCatalogFont(p, f.id)?.project ?? p)}>Add to project</Button>
                 )}
               </li>
             ))}

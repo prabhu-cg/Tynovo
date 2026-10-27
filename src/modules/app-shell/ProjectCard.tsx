@@ -1,8 +1,7 @@
 import { Link } from 'react-router'
 import type { ProjectSummary } from '@/modules/brand-projects/schema'
 import { TONE_LABEL, USE_CASE_LABEL } from '@/modules/brand-system/brand'
-import { ActionMenu, Button, CustomFontIcon, inputClass, LockIcon, type MenuItem } from '@/modules/shared-ui'
-import { DeletePanel } from './DeletePanel'
+import { ActionMenu, Button, cardClass, CustomFontIcon, inputClass, LockIcon, type MenuItem } from '@/modules/shared-ui'
 
 const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 const day = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
@@ -13,7 +12,6 @@ export interface ProjectCardProps {
   sample?: boolean
   /** The new name while renaming, else undefined. */
   renaming?: string | undefined
-  confirmingDelete?: boolean
   onRenameStart?: () => void
   onRenameChange?: (name: string) => void
   onRenameSubmit?: () => void
@@ -21,15 +19,12 @@ export interface ProjectCardProps {
   onDuplicate: () => void
   onExport: () => void
   onDeleteStart?: () => void
-  onDeleteBackup?: () => Promise<string>
-  onDeleteConfirm?: () => void
-  onDeleteCancel?: () => void
 }
 
-function Stat({ term, children }: { term: string; children: React.ReactNode }) {
+export function Stat({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs text-ink-soft">{term}</dt>
+      <dt className="text-xs leading-tight text-ink-soft">{term}</dt>
       <dd className="tnum truncate text-sm font-semibold text-ink-strong">{children}</dd>
     </div>
   )
@@ -58,7 +53,7 @@ export function ProjectCard(p: ProjectCardProps) {
       ]
 
   return (
-    <li data-project={s.name} data-sample={p.sample ? 'true' : undefined} className="relative flex min-w-0 flex-col gap-4 rounded-md border border-line bg-paper p-5 transition-colors focus-within:border-ink hover:border-line-strong">
+    <li data-project={s.name} data-sample={p.sample ? 'true' : undefined} className={`relative flex min-w-0 flex-col gap-4 ${cardClass}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           {p.renaming !== undefined ? (
@@ -108,13 +103,7 @@ export function ProjectCard(p: ProjectCardProps) {
         <Stat term="Exports">{s.exportCount === 0 ? 'None yet' : `${s.exportCount}${s.lastExportAt ? `, last ${day.format(new Date(s.lastExportAt))}` : ''}`}</Stat>
       </dl>
 
-      {p.confirmingDelete ? (
-        <div className="relative z-10 border-t border-line pt-4">
-          <DeletePanel name={s.name} onBackup={p.onDeleteBackup!} onConfirm={p.onDeleteConfirm!} onCancel={p.onDeleteCancel!} />
-        </div>
-      ) : (
-        <p className="tnum mt-auto text-xs text-ink-soft">{p.sample ? 'Built into Tynovo. The same for everyone.' : `Edited ${fmt.format(new Date(s.updatedAt))} · Created ${day.format(new Date(s.createdAt))}`}</p>
-      )}
+      <p className="tnum mt-auto text-xs text-ink-soft">{p.sample ? 'Built into Tynovo. The same for everyone.' : `Edited ${fmt.format(new Date(s.updatedAt))} · Created ${day.format(new Date(s.createdAt))}`}</p>
     </li>
   )
 }

@@ -1,28 +1,34 @@
-/* Single source of truth for visual tokens. Tailwind v4 reads @theme and generates utilities. */
+/* Single source of truth for visual tokens. Tailwind v4 reads @theme and generates utilities.
+ * Values follow the Doxa design tokens (prabhu-cg/Doxa): terracotta primary, warm cream neutrals, warm ink. */
 @theme {
   --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 
-  /* Pinned by the brief */
-  --color-accent: #c74504;
-  --color-ink: #444444;
-
-  --color-accent-strong: #a33803; /* hover/pressed; 6.9:1 on white */
-  --color-accent-wash: #fbece4;   /* tint for selected rows, hairlines of emphasis */
-  --color-ink-strong: #262626;    /* headings and specimens */
-  --color-ink-soft: #6b6b6b;      /* secondary text, 5.3:1 on white */
+  --color-accent: #c74504;        /* primary */
+  --color-accent-strong: #a93a03; /* hover/pressed and text on tints; 6.9:1 on white */
+  --color-accent-wash: #fdefe7;   /* primary-soft: tint for selected rows, badges, emphasis */
+  --color-ink: #1c1917;           /* foreground */
+  --color-ink-strong: #1c1917;    /* headings and specimens (same as ink: hierarchy comes from weight and size) */
+  --color-ink-soft: #6f6963;      /* muted foreground, 5.5:1 on white */
   --color-paper: #ffffff;
-  --color-sheet: #f6f6f5;         /* app canvas */
-  --color-sheet-deep: #ececea;
-  --color-line: #e3e3e0;
-  --color-line-strong: #c9c9c5;
-  --color-ok: #2f6b3a;
+  --color-sheet: #f4f2ea;         /* warm cream surface: app canvas, bands */
+  --color-sheet-deep: #ebe7da;    /* hover on cream */
+  --color-line: #e8ddc8;          /* hairline */
+  --color-line-strong: #d6c7ab;
+  --color-ok: #146c43;
+  --color-ok-soft: #e6f4ec;
   --color-warn: #8a5a00;
+  --color-warn-soft: #fdf3e0;
   --color-danger: #b3261e;
+  --color-danger-soft: #fdeceb;
+  --color-info: #1f5f9e;
+  --color-info-soft: #ebf3fb;
 
   --radius-sm: 4px;
-  --radius-md: 8px;
+  --radius-md: 6px;   /* controls */
+  --radius-card: 16px;
 
-  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px -12px rgb(0 0 0 / 0.14);
+  --shadow-card: 0 1px 2px 0 #1010140a, 0 1px 3px 0 #1010140f;
+  --shadow-lift: 0 2px 4px -1px #1010140f, 0 8px 24px -6px #1010141f;
   --shadow-drawer: -12px 0 32px -16px rgb(0 0 0 / 0.18);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
