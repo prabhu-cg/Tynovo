@@ -7,10 +7,10 @@ const base =
   'inline-flex items-center justify-center gap-2 rounded-md px-3.5 min-h-11 md:min-h-9 text-sm font-semibold whitespace-nowrap transition-colors duration-150 disabled:opacity-45 disabled:pointer-events-none cursor-pointer'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-white hover:bg-accent-strong',
+  primary: 'bg-accent text-white hover:bg-accent-hover',
   secondary: 'bg-paper text-ink-strong border border-line-strong hover:border-ink hover:bg-sheet',
   ghost: 'text-ink hover:bg-sheet-deep',
-  danger: 'bg-danger text-white hover:bg-[#8f1d17]',
+  danger: 'bg-danger-solid text-white hover:bg-danger-solid-hover',
 }
 
 export type ButtonProps = ComponentProps<'button'> & {

@@ -37,7 +37,7 @@ export function DnaPanel({ handle }: { handle: TypefaceHandle }) {
         <details key={group} open={group === 'Proportions' || group === 'Strokes'} className="group rounded-md border border-line bg-paper">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-3 text-sm font-bold text-ink-strong md:min-h-9">
             {group}
-            <span aria-hidden="true" className="text-accent transition-transform group-open:rotate-45">+</span>
+            <span aria-hidden="true" className="text-accent-text transition-transform group-open:rotate-45">+</span>
           </summary>
           <div className="grid gap-4 border-t border-line px-3 py-4">
             {DNA_CONTROLS.filter((c) => c.group === group).map((c) => (

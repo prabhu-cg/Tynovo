@@ -91,7 +91,7 @@ export function FontCatalogPage() {
             {results.map((f) => (
               <li key={f.id} data-font={f.family} data-category={f.category} className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
                 <div className="min-w-48 flex-1">
-                  <button type="button" onClick={() => setOpenId(f.id)} aria-label={`Details of ${f.family}`} className="min-h-8 cursor-pointer text-left text-base font-bold text-ink-strong underline-offset-4 hover:text-accent hover:underline">{f.family}</button>
+                  <button type="button" onClick={() => setOpenId(f.id)} aria-label={`Details of ${f.family}`} className="min-h-8 cursor-pointer text-left text-base font-bold text-ink-strong underline-offset-4 hover:text-accent-text hover:underline">{f.family}</button>
                   <p className="tnum text-xs text-ink-soft">
                     {CATEGORY_LABEL[f.category]} · {f.weights.length} weight{f.weights.length === 1 ? '' : 's'} ({f.weights.join(', ')}){f.italic ? ' · italic' : ''}
                     {sort === 'match' && signals ? ` · match ${matchScore(f) > 0 ? '+' : ''}${matchScore(f)}` : ''}

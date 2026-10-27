@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 import { isolate, useReturnFocus } from './focus'
+import { usePresence } from './presence'
 
 /**
  * A modal dialog, for the few tasks that need an interruption and protected focus (a destructive confirmation).
@@ -23,6 +24,7 @@ export function Modal({
   children: ReactNode
 }) {
   const layer = useRef<HTMLDivElement>(null)
+  const { mounted, closing } = usePresence(open, 150) // long enough for the exit animation in index.css
   const panel = useRef<HTMLDivElement>(null)
   const titleId = useId()
   // A click that starts and ends on the backdrop cancels. It must close on `click`, not `mousedown`: the browser moves focus
@@ -43,12 +45,15 @@ export function Modal({
   }, [open, initialFocus])
   useReturnFocus(open) // after the effect above: the page must not be inert when focus goes back
 
-  if (!open) return null
+  if (!mounted) return null
   return (
     <div
       ref={layer}
       data-modal
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/45 p-4"
+      data-fade
+      data-closing={closing || undefined}
+      inert={closing || undefined}
+      className="modal-scrim fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onMouseDown={(e) => { downOnBackdrop.current = e.target === e.currentTarget }}
       onClick={(e) => { if (downOnBackdrop.current && e.target === e.currentTarget) onClose() }}
       onKeyDown={(e) => {
@@ -65,7 +70,9 @@ export function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className="max-h-full w-full max-w-md overflow-y-auto rounded-card border border-line bg-paper p-6 shadow-lift outline-none motion-safe:animate-[modal-in_180ms_var(--ease-out-expo)]"
+        data-fade
+        data-closing={closing || undefined}
+        className="modal-panel max-h-full w-full max-w-md overflow-y-auto rounded-card border border-line bg-paper p-6 shadow-lift outline-none"
       >
         <h2 id={titleId} className="text-lg leading-snug font-bold text-ink-strong">{title}</h2>
         {description ? <p id={descId} className="mt-2 text-sm">{description}</p> : null}

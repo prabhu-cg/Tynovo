@@ -1,7 +1,7 @@
 import { MARK_COLORS, MARK_PATHS, MARK_VIEWBOX, PRODUCT_NAME, TAGLINE } from '@/modules/identity/identity'
 
-/** The mark keeps the colours it was drawn in; only the accent follows the interface token. */
-const FILL = { ink: MARK_COLORS.ink, accent: 'var(--color-accent)' } as const
+/** The mark keeps the colours it was drawn in (the grey lightens on dark surfaces so it stays legible). */
+const FILL = { ink: `var(--logo-ink, ${MARK_COLORS.ink})`, accent: 'var(--color-accent)' } as const
 
 /** The Tynovo mark. Decorative: the name is always written out next to it. The grey is the logo's own; the orange is the accent token. */
 export function LogoMark({ height = 32, className = '' }: { height?: number; className?: string }) {

@@ -21,7 +21,8 @@ const SIZES = [
   { name: 'phone', width: 390, height: 844 },
 ] as const
 
-test.describe('axe, WCAG 2.2 AA, every impact level', () => {
+for (const scheme of ['light', 'dark'] as const) test.describe(`axe, WCAG 2.2 AA, every impact level, ${scheme} theme`, () => {
+  test.use({ colorScheme: scheme })
   for (const size of SIZES) {
     test(`public pages and the not-found page, ${size.name}`, async ({ page }) => {
       await page.setViewportSize(size)
@@ -69,7 +70,8 @@ test.describe('axe, WCAG 2.2 AA, every impact level', () => {
   }
 })
 
-test.describe('axe, busy states', () => {
+for (const scheme of ['light', 'dark'] as const) test.describe(`axe, busy states, ${scheme} theme`, () => {
+  test.use({ colorScheme: scheme })
   for (const size of SIZES) {
     test(`open drawers, brand suggestions, a selected glyph and a built export, ${size.name}`, async ({ page }) => {
       test.setTimeout(120_000) // six axe passes and a font build
@@ -195,21 +197,20 @@ test.describe('keyboard', () => {
 })
 
 test.describe('motion, errors and colour', () => {
-  test('with reduced motion requested nothing animates for more than a blink', async ({ page }) => {
+  test('with reduced motion requested nothing moves: only overlays animate, and only by fading', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/app/projects')
     await page.getByRole('button', { name: /New project|Create your first project/ }).first().click()
     const drawer = page.getByRole('complementary', { name: 'New project' })
     await expect(drawer).toBeVisible()
-    const ms = await drawer.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration) * 1000)
-    expect(ms).toBeLessThan(1)
-    const slow = await page.evaluate(() =>
-      [...document.querySelectorAll('*')].filter((el) => {
+    expect(await drawer.evaluate((el) => getComputedStyle(el).animationName)).toBe('fade-in') // not the slide
+    const offenders = await page.evaluate(() =>
+      [...document.querySelectorAll('*:not([data-fade])')].filter((el) => {
         const cs = getComputedStyle(el)
         return parseFloat(cs.transitionDuration) > 0.001 || (cs.animationName !== 'none' && parseFloat(cs.animationDuration) > 0.001)
       }).map((el) => el.tagName.toLowerCase()),
     )
-    expect(slow).toEqual([])
+    expect(offenders).toEqual([])
   })
 
   test('an error is announced as an alert and says it is an error in words and with an icon, not by colour alone', async ({ page }) => {

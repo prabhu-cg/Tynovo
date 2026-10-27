@@ -27,7 +27,7 @@ const cta = 'inline-flex min-h-11 items-center justify-center rounded-md px-5 te
 
 export function PrimaryLink(props: LinkProps) {
   const { className = '', ...rest } = props
-  return <Link {...rest} className={`${cta} bg-accent text-white hover:bg-accent-strong ${className}`} />
+  return <Link {...rest} className={`${cta} bg-accent text-white hover:bg-accent-hover ${className}`} />
 }
 
 export function SecondaryLink(props: LinkProps) {
@@ -59,7 +59,7 @@ export function CtaBanner() {
 
 export function TextLink(props: LinkProps) {
   const { className = '', ...rest } = props
-  return <Link {...rest} className={`font-semibold text-accent-strong underline decoration-1 underline-offset-4 hover:text-accent ${className}`} />
+  return <Link {...rest} className={`font-semibold text-accent-strong underline decoration-1 underline-offset-4 hover:text-accent-text ${className}`} />
 }
 
 export function PageHeader({ eyebrow, title, lead, children }: { eyebrow?: string; title: string; lead?: ReactNode; children?: ReactNode }) {

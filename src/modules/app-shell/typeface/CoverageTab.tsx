@@ -40,7 +40,7 @@ export function CoverageTab({ face }: { face: CustomTypeface }) {
         {invalid.length === 0 ? <p className="mt-1 text-ink-soft">None. Every generated glyph passes validation.</p> : (
           <ul className="mt-2 grid max-w-2xl gap-2 text-sm">
             {invalid.map((r) => (
-              <li key={r.char} className="rounded-md border border-danger bg-[#fdeceb] px-3 py-2"><span className="font-bold text-ink-strong">{show(r.char)}</span> <span className="text-danger">{r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join(' ')}</span></li>
+              <li key={r.char} className="rounded-md border border-danger bg-danger-soft px-3 py-2"><span className="font-bold text-ink-strong">{show(r.char)}</span> <span className="text-danger">{r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join(' ')}</span></li>
             ))}
           </ul>
         )}

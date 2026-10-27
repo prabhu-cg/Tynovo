@@ -2,9 +2,16 @@
 
 Projects live in the browser's **IndexedDB** (database `brand-typography-studio`, store `projects`, JSON only). Font binaries are never stored: they are rebuilt from the glyph model on export. Nothing is sent anywhere. The architecture is in [architecture.md](architecture.md); this page is the honest list of what that storage can and cannot promise.
 
-## The one preference
+## The two preferences
 
-Apart from projects, Tynovo keeps a single display preference: whether the sample project on the Projects page is collapsed (`localStorage` key `tynovo.sampleCollapsed`, value `1` or `0`; nothing is written until the person uses the control). It is not part of any project, is not exported, and clearing site data removes it, which simply shows the sample again. If the browser blocks `localStorage`, the choice still holds while the person moves around the app (it is kept in memory) and is forgotten afterwards. Tested in `e2e/cards-and-sample.spec.ts` and `e2e/hardening.spec.ts`.
+Apart from projects, Tynovo keeps up to two display preferences in `localStorage`, each a single short value written only when the person uses the control:
+
+| Key | Value | Meaning |
+|---|---|---|
+| `tynovo.sampleCollapsed` | `1` or `0` | whether the sample project on the Projects page is collapsed |
+| `tynovo.theme` | `light` or `dark` | the colour theme; removed again when the person picks System (the default, which follows the operating system) |
+
+Neither is part of any project or of an export, and clearing site data removes them, which simply shows the sample and follows the system theme again. If the browser blocks `localStorage`, each choice still holds while the person moves around the app (kept in memory) and is forgotten afterwards. The theme is also applied before first paint by `public/theme-init.js`, so a dark-mode visitor sees no white flash. Tested in `e2e/cards-and-sample.spec.ts`, `e2e/theme.spec.ts` and `e2e/hardening.spec.ts`.
 
 ## What the storage cannot promise
 

@@ -8,7 +8,7 @@ export const CONTACT_URL = `${PROJECT_URL}/issues`
 export const LEGAL_UPDATED = '26 October 2026'
 
 export function External({ href, children }: { href: string; children: ReactNode }) {
-  return <a href={href} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-strong underline decoration-1 underline-offset-4 hover:text-accent">{children}</a>
+  return <a href={href} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-strong underline decoration-1 underline-offset-4 hover:text-accent-text">{children}</a>
 }
 
 export interface LegalSection {
@@ -27,7 +27,7 @@ export function LegalPage({ title, lead, sections }: { title: string; lead: stri
           <p className="text-sm font-bold text-ink-strong">On this page</p>
           <ol className="mt-3 grid gap-1 text-sm">
             {sections.map((s, i) => (
-              <li key={s.id}><a href={`#${s.id}`} className="inline-flex min-h-8 items-center gap-2 underline-offset-4 hover:text-accent hover:underline"><span className="tnum w-5 text-ink-soft">{i + 1}.</span>{s.title}</a></li>
+              <li key={s.id}><a href={`#${s.id}`} className="inline-flex min-h-8 items-center gap-2 underline-offset-4 hover:text-accent-text hover:underline"><span className="tnum w-5 text-ink-soft">{i + 1}.</span>{s.title}</a></li>
             ))}
           </ol>
         </nav>
