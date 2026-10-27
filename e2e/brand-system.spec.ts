@@ -52,6 +52,13 @@ test('brand direction is defined, saved, survives a refresh and reaches the spec
   expect(tokens.$extensions['com.tynovo'].brand).toMatchObject({ name: 'Northwind Labs', useCases: ['saas'], readabilityPriority: 5 })
 })
 
+/** The filter chips live in a panel behind the Filter button; open it if it is not open, then pick a chip. */
+async function filterChip(page: Page, label: string) {
+  const panel = page.getByRole('dialog', { name: 'Filter fonts' })
+  if (!(await panel.isVisible())) await page.getByRole('button', { name: /^Filter/ }).click()
+  await panel.getByText(label, { exact: true }).click()
+}
+
 test('the catalog searches, filters and shows weights, styles, source and licence', async ({ page }) => {
   await createProject(page, 'Catalog')
   await tab(page, 'Font catalog').click()
@@ -59,7 +66,7 @@ test('the catalog searches, filters and shows weights, styles, source and licenc
   await page.getByLabel('Search by family name').fill('plex')
   await expect(page.getByTestId('catalog-count')).toHaveText('3 of 24 fonts match.')
   await expect(page.getByRole('list', { name: 'Fonts' }).getByRole('listitem')).toHaveCount(3)
-  await page.getByText('Monospace', { exact: true }).click()
+  await filterChip(page, 'Monospace')
   await expect(page.getByTestId('catalog-count')).toHaveText('1 of 24 fonts match.')
   await expect(page.getByRole('list', { name: 'Fonts' })).toContainText('IBM Plex Mono')
   await page.getByLabel('Search by family name').fill('zzzz')
@@ -68,12 +75,12 @@ test('the catalog searches, filters and shows weights, styles, source and licenc
   await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
 
   // Category and tag filters narrow the list, and every row obeys them.
-  await page.getByText('Display', { exact: true }).first().click()
+  await filterChip(page, 'Display')
   const rows = page.getByRole('list', { name: 'Fonts' }).getByRole('listitem')
   await expect(rows).toHaveCount(1)
   await expect(rows.first()).toHaveAttribute('data-category', 'display')
   await page.getByRole('button', { name: 'Clear filters' }).first().click()
-  await page.getByText('Drawn for text', { exact: true }).click()
+  await filterChip(page, 'Drawn for text')
   const n = await rows.count()
   expect(n).toBeGreaterThan(5)
   expect(n).toBeLessThan(24)
@@ -279,8 +286,10 @@ test('role suggestions and catalog ordering show their reasons, and ask for a br
   await expect(fontOf(page, 'Body')).toHaveValue(/^source:/)
 
   await tab(page, 'Font catalog').click()
-  await page.getByText('Best match for my brand', { exact: true }).click()
+  await page.getByRole('button', { name: /^Sort:/ }).click()
+  await page.getByRole('menuitemradio', { name: 'Best match for my brand' }).click()
   await expect(page.getByRole('list', { name: 'Fonts' }).getByRole('listitem').first()).toContainText(/match \+\d+/)
+  await page.getByRole('button', { name: /^Filter/ }).click()
   await page.getByRole('button', { name: 'Use my brand’s tone and use cases' }).click()
   await expect(page.getByRole('checkbox', { name: 'Technical' })).toBeChecked()
   const n = await page.getByRole('list', { name: 'Fonts' }).getByRole('listitem').count()
