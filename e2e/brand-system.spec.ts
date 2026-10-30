@@ -120,6 +120,7 @@ test('catalog fonts load only when needed, from the app itself, and a bounded nu
   // Open many fonts one after another: the number of registered faces never grows without limit.
   const names = ['Lora', 'Manrope', 'DM Sans', 'Work Sans', 'Caveat', 'Space Mono', 'Fraunces', 'Merriweather', 'Public Sans', 'EB Garamond', 'Bebas Neue', 'Abril Fatface']
   for (const name of names) {
+    await page.keyboard.press('Escape') // the open panel dims the list behind it
     await page.getByRole('button', { name: `Details of ${name}` }).click()
     await expect(page.getByTestId('font-sample')).toHaveAttribute('data-state', 'loaded')
   }

@@ -31,11 +31,11 @@ const shot = async (name: string) => {
 try {
   // 1. Overview: the whole workflow, filled in.
   await page.goto(SAMPLE)
-  await page.getByText('Brand workflow').waitFor()
+  await page.getByTestId('workflow-bar').waitFor()
   await shot('overview')
 
   // 2. Font catalog: a font opened with its weights, source and licence.
-  await page.getByRole('link', { name: 'Font catalog', exact: true }).click()
+  await page.getByTestId('workflow-bar').getByRole('link', { name: 'Fonts', exact: true }).click()
   await page.getByRole('button', { name: 'Details of Fraunces' }).click()
   await page.getByTestId('font-sample').and(page.locator('[data-state="loaded"]')).waitFor()
   await page.evaluate(() => window.scrollTo(0, 0))

@@ -7,7 +7,7 @@ import { usePresence } from './presence'
 const COVERS_PAGE = '(max-width: 640px)'
 
 /**
- * Side panel. On a wide screen it is non-modal: the page behind stays readable and interactive. On a narrow one it
+ * Side panel. The page behind is dimmed by a scrim; pressing the scrim (or anywhere outside) closes it. On a narrow screen it
  * covers the page, so the page is made inert while it is open. Escape closes it; focus moves in on open (to a field
  * that asked for focus, otherwise to the panel) and back to the opener on close.
  */
@@ -48,6 +48,8 @@ export function Drawer({ open, title, onClose, children }: { open: boolean; titl
 
   if (!mounted) return null
   return (
+    <>
+    <div aria-hidden="true" data-fade data-closing={closing || undefined} className="modal-scrim fixed inset-0 z-[45] bg-black/40" />
     <aside
       ref={ref}
       tabIndex={-1}
@@ -65,5 +67,6 @@ export function Drawer({ open, title, onClose, children }: { open: boolean; titl
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
     </aside>
+    </>
   )
 }

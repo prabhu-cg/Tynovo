@@ -72,7 +72,10 @@ test.describe('help', () => {
     const drawer = page.getByRole('complementary', { name: 'Help' })
     await expect(drawer.getByTestId('help-screen')).toContainText('Brand Typography System')
     await expect(drawer.getByTestId('help-screen')).toContainText('Roles, pairing, the type scale')
-    // Pressing outside closes it; opened again on another screen it explains that one.
+    // Pressing the dimmed page closes it (and does nothing else); opened again on another screen it explains that one.
+    await page.mouse.click(20, 400)
+    await expect(drawer).toHaveCount(0)
+    await expect(page).toHaveURL(/\/typography$/)
     await page.getByTestId('workflow-bar').getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Fonts', exact: true }).click()
     await expect(page).toHaveURL(/\/fonts$/)
     await expect(drawer).toHaveCount(0)
@@ -121,7 +124,8 @@ test.describe('help', () => {
     await page.goto(SAMPLE)
     await page.getByRole('button', { name: 'Help' }).click()
     await expect(page.getByRole('complementary', { name: 'Help' })).toBeVisible()
-    await page.getByTestId('workflow-bar').getByRole('button', { name: /Workflow/ }).click()
+    await page.getByTestId('workflow-bar').getByRole('button', { name: /Workflow/ }).focus() // the dimmed page takes no pointer, so open it from the keyboard
+    await page.keyboard.press('Enter')
     await expect(page.getByRole('complementary', { name: 'Workflow' })).toBeVisible()
     await expect(page.getByRole('complementary', { name: 'Help' })).toHaveCount(0)
   })

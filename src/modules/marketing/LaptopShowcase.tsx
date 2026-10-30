@@ -6,7 +6,7 @@ const SCREENS = [
     id: 'overview',
     tab: 'Overview',
     file: '/screens/overview.jpg',
-    caption: 'The whole workflow on one page: brand direction, fonts, roles, scale, typeface, preview, checks and export, each with its state.',
+    caption: 'The whole workflow on one page, with a numbered step bar that stays in view on every screen: brand direction, fonts, roles, scale, typeface, preview, checks and export, each with its state.',
     alt: 'The Overview screen of the Fieldnote sample project in Tynovo. A banner says the project is a read-only sample, and below it the brand workflow lists brand direction, fonts, roles, scale, typeface and preview as done, validate as needing attention and export still to do.',
   },
   {

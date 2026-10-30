@@ -21,7 +21,7 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 | `entitlements` | domain | Feature registry, tier configuration (data, validated), capability resolution with a trust rule, presentation of locked features. No payment, account or server. See `monetisation-architecture.md` |
 | `app-shell` | UI | App layout (responsive nav), dashboard, project workspace (`ProjectLayout` + section pages), `useProjectEditor` autosave hook, storage context |
 | `marketing` | UI | Public website, `content.ts` (single source of capability status), `seo-config.ts` (page metadata shared by client and build) |
-| `shared-ui` | UI | Button, Banner, non-modal Drawer |
+| `shared-ui` | UI | Button, Banner, Drawer (scrim, closes on an outside press) |
 | `design-tokens` | styling | `tokens.css` (Tailwind `@theme`): Manrope, `#C74504`, `#444444`, neutrals, radii, shadows |
 | `testing` | support | Vitest setup (jsdom, fake-indexeddb), deterministic clock |
 

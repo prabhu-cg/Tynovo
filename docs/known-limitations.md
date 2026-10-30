@@ -46,4 +46,6 @@ Everything outstanding that a user, a reviewer or a maintainer should know befor
 
 ## Navigation
 
+- There are **no section tabs**: the workflow bar is the one way around a project (Fonts, Roles, Typeface and Export are steps; Settings and Export also sit in the project header). Its markers are numbered; the current step is filled, and step names show in full only from 1536 px wide (below that only the current step is named; the Workflow panel lists all).
+- **Help** is a side panel (`app-shell/help/`), opened from the top bar or the `?` key, that follows the current screen. All side panels (`shared-ui/Drawer`) dim the page with a scrim, close on a press outside, and slide in from the right and out to the right; only one of Help and Workflow is open at a time.
 - The **workflow bar** (`app-shell/workflow/`) is on every screen of a project, sticky under the top bar. It reads the same eight steps as the Overview list (`brand-system/workflow.ts`); which step is "current" follows the screen and the `#section`, and Validate and Export both live on the Export screen, so only Export is marked there. Motion: the bar and list use short fades and one arrival wash; with reduced motion the movements stop and the wash is a plain fade. A page's own `scroll-padding` keeps anything focused or jumped to below the two sticky bars (`index.css`).
