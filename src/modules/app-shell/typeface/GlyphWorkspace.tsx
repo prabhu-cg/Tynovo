@@ -4,7 +4,8 @@ import { validateGlyph } from '@/modules/font-validation/glyphs'
 import { appliedDraft, applyDraft, asGlyph, draftFixes, generatedDraft, leftBearingOf, rightBearingOf, contextText, withAdvance, withLeftBearing, withRightBearing, type DraftFix } from '@/modules/glyph-editor/draft'
 import { GlyphCanvas, type CanvasCommand, type Tool } from '@/modules/glyph-editor/GlyphCanvas'
 import { GlyphThumb } from '@/modules/glyph-editor/GlyphThumb'
-import { allKeys, contourKeys, deletePoints, insertPointAfter, insertPointAt, movePoints, parseKey, pointKey, setPoint, stepContour, stepPoint, type Selection } from '@/modules/glyph-editor/outline'
+import { fitCurves } from '@/modules/glyph-editor/fit'
+import { allKeys, contourKeys, curveSegments, deletePoints, insertPointAfter, insertPointAt, movePoints, parseKey, pointKey, setPoint, smoothPoints, stepContour, stepPoint, straightenSegments, type Selection } from '@/modules/glyph-editor/outline'
 import { draftOf, isDirty, openSession, reduce, sameDraft, type Draft } from '@/modules/glyph-editor/session'
 import { SpecimenSvg } from '@/modules/glyph-editor/SpecimenSvg'
 import { useViewport } from '@/modules/glyph-editor/useViewport'
@@ -27,13 +28,17 @@ const SHORTCUTS: Array<[string, string]> = [
   ['[  and  ]', 'Select the previous or next point.'],
   ['{  and  }', 'Select the previous or next contour.'],
   ['I or Enter', 'Insert a point after the selected point.'],
+  ['C', 'Turn the segment after the selected point into a curve. Its control point (a diamond) starts on the line; drag it to bend the curve.'],
+  ['L', 'Turn the selected curve back into a straight line.'],
+  ['F', 'Fit curves: replace runs of short straight sides (the arcs of a generated letter) with a few curves, within 1.5 units. Applies to the selected contours, or to every contour when nothing is selected. Corners and long straight edges stay.'],
+  ['M', 'Smooth the selected point: its two control points are lined up so the curve has no kink there.'],
   ['Delete', 'Remove the selected points.'],
   ['Escape', 'Clear the selection.'],
   ['Ctrl/Cmd + A', 'Select every point.'],
   ['Ctrl/Cmd + Z, Shift + Z', 'Undo and redo.'],
   ['+  -  0', 'Zoom in, zoom out, fit the glyph.'],
   ['Space + drag', 'Pan the view. Ctrl/Cmd + wheel or a pinch zooms.'],
-  ['Double-click an edge', 'Insert a point there.'],
+  ['Double-click an edge or curve', 'Insert a point there. On a curve the two halves keep its exact shape.'],
   ['Shift + click or drag', 'Add to the selection. Shift while dragging keeps to one axis.'],
 ]
 
@@ -42,7 +47,7 @@ function describeSelection(contours: Contour[], selection: Selection): string {
   if (selection.size > 1) return `${selection.size} points selected.`
   const { c, p } = parseKey([...selection][0]!)
   const pt = contours[c]?.[p]
-  return pt ? `Point ${p + 1} of ${contours[c]!.length} in contour ${c + 1} of ${contours.length}: x ${pt.x}, y ${pt.y}.` : 'No point selected.'
+  return pt ? `${pt.onCurve ? 'Point' : 'Control point'} ${p + 1} of ${contours[c]!.length} in contour ${c + 1} of ${contours.length}: x ${pt.x}, y ${pt.y}.` : 'No point selected.'
 }
 
 export function GlyphWorkspace({ handle, char, onNavigate }: { handle: TypefaceHandle; char: string; onNavigate: (char: string | null) => void }) {
@@ -139,10 +144,20 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
   const structureNote = canStructure ? undefined : lockedMessage('glyph.edit.structure', caps)
   const shapeNote = canShape ? undefined : lockedMessage('glyph.edit.shape-params', caps)
   const structureHidden = !canStructure && whenLocked('glyph.edit.structure') === 'hide'
+  const canCurves = caps.allows('glyph.edit.curves')
+  const curvesNote = canCurves ? undefined : lockedMessage('glyph.edit.curves', caps)
+  const curvesHidden = !canCurves && whenLocked('glyph.edit.curves') === 'hide'
+  // Each curve tool is offered only when the selection gives it something to do.
+  const canCurve = useMemo(() => curveSegments(draft.contours, selection).ok, [draft.contours, selection])
+  const canStraighten = useMemo(() => straightenSegments(draft.contours, selection).ok, [draft.contours, selection])
+  const canSmooth = useMemo(() => smoothPoints(draft.contours, selection).ok, [draft.contours, selection])
+  // Cheap: whether any contour is a plain polygon big enough to hold a bend. The real test runs when the button is used and says if nothing could be fitted.
+  const canFitCurves = draft.contours.some((c) => c.length >= 6 && c.every((p) => p.onCurve))
   const shapeHidden = !canShape && whenLocked('glyph.edit.shape-params') === 'hide'
 
   const run = (cmd: CanvasCommand) => {
     if ((cmd.type === 'insert' || cmd.type === 'delete') && !canStructure) return setNote(structureNote ?? '')
+    if ((cmd.type === 'curve' || cmd.type === 'straighten' || cmd.type === 'smooth' || cmd.type === 'fitCurves') && !canCurves) return setNote(curvesNote ?? '')
     switch (cmd.type) {
       case 'nudge':
         if (selection.size === 0) viewport.pan(-cmd.dx * 40, cmd.dy * 40)
@@ -160,6 +175,22 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
         if (!r.ok) return setNote(r.reason)
         commit(withContours(r.contours), { selection: r.selection })
         return setNote('Point inserted and selected.')
+      }
+      case 'curve':
+      case 'straighten':
+      case 'smooth': {
+        const r = (cmd.type === 'curve' ? curveSegments : cmd.type === 'straighten' ? straightenSegments : smoothPoints)(draft.contours, selection)
+        if (!r.ok) return setNote(r.reason)
+        commit(withContours(r.contours), { selection: r.selection })
+        return setNote(cmd.type === 'curve' ? 'Segment turned into a curve. Drag its control point (the diamond) to bend it.' : cmd.type === 'straighten' ? 'Curve turned back into a straight line.' : 'Point smoothed.')
+      }
+      case 'fitCurves': {
+        const r = fitCurves(draft.contours, selection)
+        if (!r.ok) return setNote(r.reason)
+        const before = draft.contours.reduce((n, c) => n + c.length, 0)
+        const after = r.contours.reduce((n, c) => n + c.length, 0)
+        commit(withContours(r.contours), { selection: r.selection })
+        return setNote(`Curves fitted: ${before} points became ${after}. Undo restores the straight sides.`)
       }
       case 'point': {
         const next = stepPoint(draft.contours, single, cmd.dir)
@@ -283,6 +314,16 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
             structureHidden={structureHidden}
             onInsert={() => run({ type: 'insert' })}
             onDelete={() => run({ type: 'delete' })}
+            canCurve={canCurve && canCurves}
+            canStraighten={canStraighten && canCurves}
+            canSmooth={canSmooth && canCurves}
+            canFitCurves={canFitCurves && canCurves}
+            onFitCurves={() => run({ type: 'fitCurves' })}
+            onCurve={() => run({ type: 'curve' })}
+            onStraighten={() => run({ type: 'straighten' })}
+            onSmooth={() => run({ type: 'smooth' })}
+            curvesNote={curvesNote}
+            curvesHidden={curvesHidden}
             zoom={viewport.view ? zoomPercent(viewport.view) : 100}
             onZoomIn={() => run({ type: 'zoom', factor: 1.25 })}
             onZoomOut={() => run({ type: 'zoom', factor: 0.8 })}
@@ -321,12 +362,12 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
               onCommand={run}
             />
           </div>
-          <p id={helpId} className="sr-only">Outline editor. Arrow keys move selected points. Left and right square brackets choose the previous or next point. Delete removes points, I inserts one, Control Z undoes. The full list of keys follows the editor.</p>
+          <p id={helpId} className="sr-only">Outline editor. Arrow keys move selected points. Left and right square brackets choose the previous or next point. Delete removes points, I inserts one, C turns a segment into a curve, L turns a curve back into a line, M smooths a point, F fits curves to short straight sides, Control Z undoes. The full list of keys follows the editor.</p>
           <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-1 text-sm">
             <p role="status" aria-live="polite" className="tnum text-ink">{describeSelection(draft.contours, selection)}</p>
             <p role="status" aria-live="polite" className="text-ink-soft">{note}</p>
           </div>
-          <p className="text-xs text-ink-soft">Square markers are points; the round one starts each contour. Dashed outline: the generated shape.</p>
+          <p className="text-xs text-ink-soft">Square markers are points on the outline; the round one starts each contour. Diamonds are control points: they shape a curve but are not on it. Dashed outline: the generated shape.</p>
           <details className="rounded-md border border-line bg-paper px-3 py-2 text-sm">
             <summary className="min-h-8 cursor-pointer font-semibold text-ink-strong">Keyboard and pointer controls</summary>
             <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-[auto_1fr]">
@@ -358,6 +399,16 @@ function Editor({ handle, char, applied, onNavigate }: { handle: TypefaceHandle;
             onStepPoint={(dir) => run({ type: 'point', dir })}
             onInsert={() => run({ type: 'insert' })}
             onDelete={() => run({ type: 'delete' })}
+            canCurve={canCurve && canCurves}
+            canStraighten={canStraighten && canCurves}
+            canSmooth={canSmooth && canCurves}
+            canFitCurves={canFitCurves && canCurves}
+            onFitCurves={() => run({ type: 'fitCurves' })}
+            onCurve={() => run({ type: 'curve' })}
+            onStraighten={() => run({ type: 'straighten' })}
+            onSmooth={() => run({ type: 'smooth' })}
+            curvesNote={curvesNote}
+            curvesHidden={curvesHidden}
             mode={parametric ? 'parametric' : 'outline'}
             advance={draft.advanceWidth}
             left={leftBearingOf(draft)}

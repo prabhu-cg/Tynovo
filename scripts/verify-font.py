@@ -6,7 +6,9 @@
 
 Checks (exit code 1 if any fails):
   - opens with strict table and whole-file checksum verification
-  - every glyph's hmtx left side bearing equals its outline's xMin (CFF .notdef excepted, see docs/font-export-validation.md)
+  - every glyph's hmtx left side bearing equals where its ink starts: the glyph header's xMin for TrueType (the box around
+    every point, control points included, which is what FreeType positions by) and the curve's own xMin for CFF
+    (including .notdef)
   - cmap maps only to glyphs that exist, no duplicate glyph names, .notdef is glyph 0
   - the outline direction follows the format (TrueType: outer contours clockwise; CFF: counter-clockwise)
   - names, head.fontRevision against the version string, OS/2 fsSelection against the style
@@ -37,8 +39,11 @@ hmtx = font['hmtx']
 bad = []
 for name in order:
     pen = BoundsPen(glyphs); glyphs[name].draw(pen)
-    if pen.bounds and hmtx[name][1] != round(pen.bounds[0]) and not (cff and name == '.notdef'):
-        bad.append((name, hmtx[name][1], pen.bounds[0]))
+    if not pen.bounds: continue
+    # TrueType: the glyph header records the box around all points (off-curve ones too); hmtx must equal it.
+    want = font['glyf'][name].xMin if not cff else round(pen.bounds[0])
+    if hmtx[name][1] != want:
+        bad.append((name, hmtx[name][1], want))
 check(not bad, 'hmtx left side bearing equals outline xMin for every glyph' + (f' (first mismatch {bad[0]})' if bad else ''))
 
 areas = []

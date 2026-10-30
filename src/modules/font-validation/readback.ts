@@ -3,7 +3,8 @@ import { FORMATS, sniffFormat, type FontFormatId } from '../font-export/formats'
 import { loadFontFlux } from '../font-export/loadFontFlux'
 import { psName } from '../font-export/fontFluxBuilder'
 import { readDirectory, verifyChecksums } from '../font-export/sfnt'
-import { contoursBounds, signedArea } from '../glyph-editor/geometry'
+import { AREA_STEPS, contoursBounds, signedArea } from '../glyph-editor/geometry'
+import { fileLeftSideBearing } from '../font-export/sidebearing'
 import { deriveMetrics } from '../typeface-engine/dna'
 import { LICENSE_PLACEHOLDER } from '../typeface-engine/typeface'
 import { analyzeTypeface } from './coverage'
@@ -15,9 +16,40 @@ export interface ReadbackReport {
   passed: string[]
 }
 
-interface Point { x: number; y: number }
-const asContour = (points: Point[]): Contour => points.map((p) => ({ x: p.x, y: p.y, onCurve: true }))
+/** A point as Font Flux reads it from a TrueType file, or a path command as it reads one from a CFF file (cubic curves). */
+type ReadPoint = { x: number; y: number; onCurve?: boolean; type?: 'M' | 'L' | 'C' | 'Q' | 'Z'; x1?: number; y1?: number; x2?: number; y2?: number }
+
+/**
+ * One contour read back from the file, as a contour the editor's geometry can measure. TrueType points keep their
+ * on-curve flags. A CFF path is drawn with cubic pieces, which are flattened into short lines, so both formats are
+ * measured along the same kind of curve as the design.
+ */
+function asContour(raw: ReadPoint[]): Contour {
+  if (!raw.some((p) => p.type)) return raw.map((p) => ({ x: p.x, y: p.y, onCurve: p.onCurve ?? true }))
+  const out: Contour = []
+  let at = { x: 0, y: 0 }
+  for (const cmd of raw) {
+    if (cmd.type === 'C' && cmd.x1 !== undefined && cmd.y1 !== undefined && cmd.x2 !== undefined && cmd.y2 !== undefined) {
+      for (let k = 1; k <= AREA_STEPS; k++) {
+        const t = k / AREA_STEPS
+        const u = 1 - t
+        out.push({
+          x: u * u * u * at.x + 3 * u * u * t * cmd.x1 + 3 * u * t * t * cmd.x2 + t * t * t * cmd.x,
+          y: u * u * u * at.y + 3 * u * u * t * cmd.y1 + 3 * u * t * t * cmd.y2 + t * t * t * cmd.y,
+          onCurve: true,
+        })
+      }
+    } else if (cmd.type !== 'Z') out.push({ x: cmd.x, y: cmd.y, onCurve: true })
+    if (cmd.type !== 'Z') at = { x: cmd.x, y: cmd.y }
+  }
+  // A closed path ends where it began; the repeated point would be a zero-length edge.
+  const first = out[0]
+  const last = out[out.length - 1]
+  if (first && last && out.length > 1 && first.x === last.x && first.y === last.y) out.pop()
+  return out
+}
 const inkArea = (contours: Contour[]) => contours.reduce((s, c) => s + Math.abs(signedArea(c)), 0)
+const hasCurves = (contours: Contour[]) => contours.some((c) => c.some((p) => !p.onCurve))
 
 /**
  * Open the produced bytes again and compare what is really in the file with what the project says should be
@@ -103,16 +135,21 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
       err('advance', `Advance width of ${label} is ${read.advanceWidth} in the file but ${g.advanceWidth} in the design.`, label)
       wrongAdvance += 1
     }
-    const readContours = (font.getGlyphContours(found.name) as Point[][]).map(asContour).filter((c) => c.length >= 3) // CFF reads an empty glyph as a lone moveto
+    const readContours = (font.getGlyphContours(found.name) as ReadPoint[][]).map(asContour).filter((c) => c.length >= 3) // CFF reads an empty glyph as a lone moveto
     const a = contoursBounds(g.contours)
     const b = contoursBounds(readContours)
     // The side bearing in hmtx must equal where the ink starts, or renderers disagree about where it is drawn.
-    if (a && read.leftSideBearing !== a.minX) {
-      err('side-bearing', `The left side bearing of ${label} in the file is ${read.leftSideBearing} but its outline starts at ${a.minX}; browsers would draw it ${a.minX - (read.leftSideBearing ?? 0)} units off.`, label)
+    const wantBearing = fileLeftSideBearing(g.contours, format)
+    if (a && read.leftSideBearing !== wantBearing) {
+      err('side-bearing', `The left side bearing of ${label} in the file is ${read.leftSideBearing} but its outline starts at ${wantBearing}; browsers would draw it ${wantBearing - (read.leftSideBearing ?? 0)} units off.`, label)
       wrongBearing += 1
     }
-    const sameBounds = (!a && !b) || (a && b && a.minX === b.minX && a.minY === b.minY && a.maxX === b.maxX && a.maxY === b.maxY)
-    const sameShape = readContours.length === g.contours.length && Math.abs(inkArea(readContours) - inkArea(g.contours)) < 1
+    // CFF stores each quadratic curve as a cubic with whole-unit control points, so a curved glyph may differ from the design by a unit or so.
+    const curved = hasCurves(g.contours)
+    const slack = curved ? 2 : 0
+    const sameBounds = (!a && !b) || (a && b && Math.abs(a.minX - b.minX) <= slack && Math.abs(a.minY - b.minY) <= slack && Math.abs(a.maxX - b.maxX) <= slack && Math.abs(a.maxY - b.maxY) <= slack)
+    const designArea = inkArea(g.contours)
+    const sameShape = readContours.length === g.contours.length && Math.abs(inkArea(readContours) - designArea) <= (curved ? Math.max(1, designArea * 0.01) : 1)
     if (!sameBounds || !sameShape) {
       err('outline', `The outline of ${label} in the file differs from the design (bounds or contour area).`, label)
       wrongShape += 1

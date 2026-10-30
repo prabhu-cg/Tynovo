@@ -18,7 +18,7 @@ async function openGlyph(page: Page, char: string) {
   return canvas
 }
 
-const status = (page: Page) => page.getByRole('status').filter({ hasText: /^(Point \d|No point|\d+ points)/ })
+const status = (page: Page) => page.getByRole('status').filter({ hasText: /^(Point \d|Control point \d|No point|\d+ points)/ })
 const storedGlyph = async (page: Page, char: string) => (await readProjects(page))[0]!['customTypeface'].overrides[char]
 
 test.describe('glyph editor', () => {
@@ -304,6 +304,149 @@ test.describe('text preview', () => {
     await page.getByLabel('Preview text').fill('Café chips')
     await expect(page.getByRole('status').filter({ hasText: 'Not in this typeface' })).toContainText('é')
   })
+})
+
+test.describe('curve editing', () => {
+  const pathOf = (page: Page) => page.getByRole('application', { name: 'Outline of I' }).locator('path').last().getAttribute('d')
+
+  test('turn a segment into a curve, bend it with the keyboard, split it, straighten it, and undo it', async ({ page }) => {
+    await startTypeface(page)
+    const canvas = await openGlyph(page, 'I')
+    await canvas.focus()
+    const straight = await pathOf(page)
+    expect(straight).not.toContain('Q') // the generated I is a plain rectangle
+    await page.keyboard.press(']')
+    await expect(status(page)).toContainText('Point 1 of 4')
+
+    // C turns the segment after the selected point into a curve; its control point (a diamond) is selected.
+    await page.keyboard.press('c')
+    await expect(status(page)).toContainText('Control point 2 of 5')
+    await expect(page.getByTestId('point-kind')).toContainText('Control point')
+    await expect(page.getByText('Segment turned into a curve')).toBeVisible()
+    expect(await pathOf(page)).toContain('Q') // drawn as a curve, though its control point sits on the line, so the shape has not changed yet
+    for (let i = 0; i < 6; i++) await page.keyboard.press('Shift+ArrowUp') // 60 units up: the top edge bows
+    expect(await pathOf(page)).toMatch(/Q/)
+    await expect(page.locator('[data-kind="off"]')).toHaveCount(1)
+
+    // Splitting a curve keeps its shape: the control point becomes two and a point between them.
+    const bowed = await pathOf(page)
+    await page.keyboard.press('i')
+    await expect(status(page)).toContainText('Point 3 of 7') // the new on-curve point, between its two control points
+    await expect(page.locator('[data-kind="off"]')).toHaveCount(2)
+    expect(await pathOf(page)).toMatch(/Q.*Q/)
+    expect(bowed).not.toBe(await pathOf(page)) // different points, same shape (checked exactly in the unit tests)
+
+    // L turns it back into a line; undo brings the curve back.
+    await page.keyboard.press('Control+KeyZ')
+    await expect(page.locator('[data-kind="off"]')).toHaveCount(1)
+    await page.locator('[data-kind="off"]').first().click()
+    await expect(page.getByTestId('point-kind')).toContainText('Control point')
+    await page.keyboard.press('l')
+    await expect(page.locator('[data-kind="off"]')).toHaveCount(0)
+    expect(await pathOf(page)).not.toContain('Q')
+    await page.keyboard.press('Control+KeyZ')
+    await expect(page.locator('[data-kind="off"]')).toHaveCount(1)
+  })
+
+  test('drag a control point with the pointer, apply, and the saved outline has the curve', async ({ page }) => {
+    await startTypeface(page)
+    const canvas = await openGlyph(page, 'I')
+    await canvas.focus()
+    await page.keyboard.press(']')
+    await page.getByRole('button', { name: 'Make curve' }).click()
+    const handle = page.locator('[data-kind="off"]').first()
+    const box = (await handle.boundingBox())!
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width / 2 + 5, box.y + box.height / 2 + 40, { steps: 6 }) // down: the top edge bows inward
+    await page.mouse.up()
+    expect(await pathOf(page)).toMatch(/Q/)
+    await page.getByRole('button', { name: 'Apply changes' }).click()
+    await saved(page)
+    const o = await storedGlyph(page, 'I')
+    const off = o.contours[0].filter((p: { onCurve: boolean }) => !p.onCurve)
+    expect(off).toHaveLength(1)
+    expect(Number.isInteger(off[0].x) && Number.isInteger(off[0].y)).toBe(true)
+    await expect(page.getByText('No problems found')).toBeVisible() // a curved glyph still passes every check
+  })
+
+  test('smooth lines up the two control points of a point and refuses where it has nothing to smooth', async ({ page }) => {
+    await startTypeface(page)
+    const canvas = await openGlyph(page, 'I')
+    await canvas.focus()
+    await page.keyboard.press(']')
+    await page.keyboard.press('m')
+    await expect(page.getByText(/Smoothing needs an on-curve point/)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Smooth point' })).toBeDisabled()
+  })
+
+  test('curved glyphs are drawn by the browser from the exported font exactly as the editor draws them', async ({ page }) => {
+    await startTypeface(page, 'Rounded')
+    for (const ch of ['O', 'C', 'S']) {
+      const canvas = await openGlyph(page, ch)
+      await canvas.focus()
+      await page.getByRole('button', { name: /Fit curves to the selected contours/ }).click()
+      await page.getByRole('button', { name: 'Apply changes' }).click()
+      await page.getByRole('button', { name: 'All glyphs' }).click()
+    }
+    await page.getByRole('button', { name: 'Preview', exact: true }).click()
+    const exported = page.getByTestId('exported-preview')
+    await expect(exported).toHaveAttribute('data-font-state', 'ready')
+    await page.getByLabel('Preview text').fill('OCS COS SOC')
+    await page.getByRole('button', { name: 'Compare preview with exported file' }).click()
+    const result = page.getByTestId('rendering-result')
+    await expect(result).toContainText('Widths match.')
+    await expect(result).toContainText('Shapes match.')
+  })
+
+  test('fit curves turns the many short sides of a generated round letter into a few curves, keeps every check passing, and can be undone', async ({ page }) => {
+    await startTypeface(page, 'Rounded')
+    const canvas = await openGlyph(page, 'O')
+    await canvas.focus()
+    const points = () => page.locator('[data-pt]').count()
+    const before = await points()
+    expect(before).toBeGreaterThan(60) // the generator draws arcs as many short straight sides
+    await page.getByRole('button', { name: /Fit curves to the selected contours/ }).click()
+    await expect(page.getByText(/Curves fitted: \d+ points became \d+/)).toBeVisible()
+    const after = await points()
+    expect(after).toBeLessThan(before / 2)
+    expect(await page.locator('[data-kind="off"]').count()).toBeGreaterThan(4)
+    await expect(page.getByText('No problems found')).toBeVisible() // the fitted outline passes every check
+    await page.getByRole('button', { name: 'Apply changes' }).click()
+    await saved(page)
+    const stored = await storedGlyph(page, 'O')
+    expect(stored.contours.flat().some((p: { onCurve: boolean }) => !p.onCurve)).toBe(true)
+    await canvas.focus()
+    await page.keyboard.press('Control+KeyZ')
+    expect(await points()).toBe(before)
+    await page.keyboard.press('Control+Shift+KeyZ')
+    expect(await points()).toBe(after)
+    await expect(page.getByRole('button', { name: /Fit curves to the selected contours/ })).toBeDisabled() // nothing left to fit
+  })
+
+  for (const [label, ext] of [['TrueType', '.ttf'], ['OpenType, CFF', '.otf']] as const) {
+    test(`a curved glyph exports to ${ext} as real curves and passes every check`, async ({ page }) => {
+      await startTypeface(page)
+      await page.getByLabel('Typeface name').fill('Curve Check')
+      const canvas = await openGlyph(page, 'I')
+      await canvas.focus()
+      await page.keyboard.press(']')
+      await page.keyboard.press('c')
+      for (let i = 0; i < 5; i++) await page.keyboard.press('Shift+ArrowUp') // bow the top edge
+      await page.getByRole('button', { name: 'Apply changes' }).click()
+      await saved(page)
+      await page.getByRole('link', { name: 'Export…' }).click()
+      await page.getByText(label, { exact: false }).first().click()
+      await page.getByRole('button', { name: new RegExp(`Check and build \\${ext}`) }).click()
+      const drawer = page.getByRole('complementary', { name: 'Font export' })
+      await expect(drawer).toContainText('Built a')
+      await expect(drawer).toContainText('0 errors')
+      const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: new RegExp(`Download CurveCheck-Regular\\${ext}`) }).click()])
+      const font = fontkit.create(readFileSync(await download.path())) as fontkit.Font
+      const commands = font.glyphForCodePoint('I'.codePointAt(0)!).path.commands.map((c) => c.command)
+      expect(commands).toContain(ext === '.ttf' ? 'quadraticCurveTo' : 'bezierCurveTo')
+    })
+  }
 })
 
 test.describe('quality checks and font information', () => {

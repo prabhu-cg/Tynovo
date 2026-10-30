@@ -7,8 +7,8 @@ Nothing here is simulated: every result below comes from a file the app built, r
 
 | Format | Offered | Outlines | Media type | Why / why not |
 |---|---|---|---|---|
-| TrueType `.ttf` | yes | quadratic `glyf` (the engine's polylines, as straight segments) | `font/ttf` | Validated end to end (below). |
-| OpenType `.otf` | yes | PostScript/CFF | `font/otf` | Validated the same way. The generator's contours are written **reversed**, because CFF uses the opposite winding to TrueType; the shapes are identical (tested by area and bounds). |
+| TrueType `.ttf` | yes | quadratic `glyf` (straight segments, and the quadratic curves the glyph editor makes, kept as they are) | `font/ttf` | Validated end to end (below). |
+| OpenType `.otf` | yes | PostScript/CFF | `font/otf` | Validated the same way. The generator's contours are written **reversed**, because CFF uses the opposite winding to TrueType; the shapes are identical (tested by area and bounds). Quadratic curves become cubics (Font Flux, 2/3 rule) with control points on whole units: a curved glyph can differ from the design by a unit or so, so the read-back allows 2 units of bounds and 1% of ink area for glyphs with curves, and nothing for glyphs without. |
 | WOFF / WOFF2 | **no** | – | – | Font Flux can write them, but the OS/2 metrics patch (`sfntPatch.ts`) cannot be applied inside a compressed container, WOFF2 needs a Brotli runtime, and neither was validated. They are not offered rather than offered untested. Wrapping a validated `.ttf` in WOFF is the obvious next step. |
 | Variable, colour, collections | no | – | – | Out of scope. |
 
@@ -51,7 +51,11 @@ The first run of the preview-vs-file comparison reported widths equal but only 5
 
 ### Known exception
 
-OTF `.notdef`: the library writes an hmtx side bearing of 0 for its own `.notdef` box in CFF fonts (outline starts at 50). FreeType and CoreText position CFF glyphs from the charstring, not hmtx, so nothing shifts; `verify-font.py` excepts it and says so. TTF `.notdef` is correct.
+Was: the library's own `.notdef` box has an hmtx side bearing of 0 while its outline starts at 50, in both formats (an earlier version of this note said TrueType was correct; it was not, and `verify-font.py` could not see it because fontTools shifts TrueType outlines to the hmtx bearing when drawing). Fixed in Phase 8: the exporter writes its own `.notdef` box with the right bearing, and `verify-font.py` now compares hmtx with the glyph header's xMin (TrueType) or the curve's xMin (CFF), `.notdef` included.
+
+### Left side bearing of curved glyphs
+
+A TrueType glyph header records the box around **every point, control points included**, and FreeType positions a glyph by `xMin - lsb`, so hmtx must carry that box's xMin (`font-export/sidebearing.ts`). A CFF font has no header; its bearing is where the ink starts, measured on the curve. The two agree for straight-edged glyphs and differ only when a control point sticks out past its curve (tested: a bump whose control point is 100 units outside its ink gets -100 in TTF and 0 in OTF).
 
 ## Production-build re-validation (Phase 7)
 

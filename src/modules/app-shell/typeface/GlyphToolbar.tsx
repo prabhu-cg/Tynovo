@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AddPointIcon, DeletePointIcon, FitIcon, GhostIcon, GuidesIcon, HandIcon, PointerIcon, RedoIcon, UndoIcon, ZoomInIcon, ZoomOutIcon } from '@/modules/shared-ui'
+import { AddPointIcon, CurveIcon, DeletePointIcon, FitCurvesIcon, FitIcon, GhostIcon, GuidesIcon, HandIcon, PointerIcon, RedoIcon, SmoothIcon, StraightenIcon, UndoIcon, ZoomInIcon, ZoomOutIcon } from '@/modules/shared-ui'
 import type { Tool } from '@/modules/glyph-editor/GlyphCanvas'
 
 const btn =
@@ -41,6 +41,18 @@ export interface GlyphToolbarProps {
   /** Why adding and deleting points is unavailable, when the plan leaves it out. */
   structureNote?: string | undefined
   structureHidden?: boolean
+  /** Curve tools: each is enabled only when the selection gives it something to do. */
+  canCurve: boolean
+  canStraighten: boolean
+  canSmooth: boolean
+  canFitCurves: boolean
+  onFitCurves: () => void
+  onCurve: () => void
+  onStraighten: () => void
+  onSmooth: () => void
+  /** Why curve editing is unavailable, when the plan leaves it out. */
+  curvesNote?: string | undefined
+  curvesHidden?: boolean
 }
 
 /** Every canvas action is a button here as well as a key, so nothing depends on a mouse or on remembering a shortcut. */
@@ -57,6 +69,15 @@ export function GlyphToolbar(p: GlyphToolbarProps) {
         <>
           <ToolButton label="Insert a point after the selected point" icon={<AddPointIcon />} disabled={!p.canInsert || !!p.structureNote} onClick={p.onInsert} shortcut="I" note={p.structureNote} />
           <ToolButton label="Delete the selected points" icon={<DeletePointIcon />} disabled={!p.canDelete || !!p.structureNote} onClick={p.onDelete} shortcut="Delete" note={p.structureNote} />
+          <Divider />
+        </>
+      )}
+      {p.curvesHidden ? null : (
+        <>
+          <ToolButton label="Turn the segment after the selected point into a curve" icon={<CurveIcon />} disabled={!p.canCurve || !!p.curvesNote} onClick={p.onCurve} shortcut="C" note={p.curvesNote} />
+          <ToolButton label="Turn the selected curve back into a straight line" icon={<StraightenIcon />} disabled={!p.canStraighten || !!p.curvesNote} onClick={p.onStraighten} shortcut="L" note={p.curvesNote} />
+          <ToolButton label="Smooth the selected point: line up the control points on either side" icon={<SmoothIcon />} disabled={!p.canSmooth || !!p.curvesNote} onClick={p.onSmooth} shortcut="M" note={p.curvesNote} />
+          <ToolButton label="Fit curves to the selected contours, or to every contour when nothing is selected" icon={<FitCurvesIcon />} disabled={!p.canFitCurves || !!p.curvesNote} onClick={p.onFitCurves} shortcut="F" note={p.curvesNote} />
           <Divider />
         </>
       )}

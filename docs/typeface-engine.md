@@ -25,7 +25,7 @@ Geometry is independent of rendering and of the font file: `generate.ts` returns
 
 - Font units, **y up**, baseline at 0, **1000 units per em**. A glyph's ink starts at its left side bearing; the origin is the left edge of the advance.
 - TrueType contour direction: **outer contours clockwise, counters counter-clockwise**.
-- Contours are lists of on-curve points with whole-unit coordinates. Curves are flattened to polylines at generation time (see limitations).
+- Contours are lists of points with whole-unit coordinates, on-curve or off-curve (quadratic control points). The generator emits only on-curve points (curves are flattened to polylines at generation time, see limitations); hand edits may add curves.
 
 `deriveMetrics(dna)` gives the metrics used by every glyph, so they are consistent across the family:
 
@@ -95,11 +95,11 @@ Measured on the dev machine: generating and validating all 95 characters from sc
 
 ## Known limitations
 
-- **Polyline outlines.** Curves are flattened (6–16 segments per quarter) rather than stored as quadratic Béziers: rounded shapes carry more points than hand-drawn curves (rounded family averages 92 points per glyph) and are not as smooth under extreme zoom. A curve-fitting pass is future work.
+- **Polyline outlines.** The generator flattens curves (6–16 segments per quarter) rather than storing quadratic Béziers: rounded shapes carry more points than hand-drawn curves (rounded family averages 92 points per glyph). The glyph editor's *Fit curves* replaces them with a few curves on demand (`glyph-editor.md`); generation itself still emits polylines.
 - **Round terminals** can leave a tiny spur on the lowercase `e` and `s` at small sizes, and at extreme settings (heavy stroke, near-square bowls) the `s` can collide with itself and is then reported as invalid.
 - Several glyphs are simple constructions (single-storey a and g, a stacked-bowl S, plain 1 and 4, ASCII-only symbols). `#`, `*` and `+` look heavy in the modular family because chamfers eat small features.
 - No kerning is generated. Pairs can be added from the Quality view's suggestions (and are written to the font); there is no pair-by-pair kerning editor.
-- Per-glyph overrides cover shape parameters, spacing and (Phase 4) a hand-edited outline: a **point editor** for the polylines, not a Bézier editor (`glyph-editor.md`). A hand-edited glyph is frozen and ignores global shape changes until reset.
+- Per-glyph overrides cover shape parameters, spacing and (Phase 4) a hand-edited outline: a **point and quadratic-curve editor** (`glyph-editor.md`). A hand-edited glyph is frozen and ignores global shape changes until reset.
 - No hinting, no OpenType features beyond kerning, no variable fonts. Output is TrueType (`.ttf`) or OpenType/CFF (`.otf`); see `font-export-validation.md`.
 - Not tested in design applications other than via fontTools / fontkit / CoreText / Chromium (see `font-export-validation.md` for exactly what was and was not tested).
 

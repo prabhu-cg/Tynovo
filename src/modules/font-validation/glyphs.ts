@@ -1,7 +1,6 @@
 import type { Contour, FontMetrics, Glyph } from '../brand-projects/schema'
+import { contoursBounds, flattenContour, signedArea, type XY } from '../glyph-editor/geometry'
 import { findIntersections } from '../typeface-engine/geometry/clean'
-import { area } from '../typeface-engine/geometry/soften'
-import type { Pt } from '../typeface-engine/geometry/shapes'
 
 export type Severity = 'error' | 'warning' | 'info'
 
@@ -12,7 +11,7 @@ export interface GlyphIssue {
   char: string
 }
 
-function pointInContour(x: number, y: number, c: Contour): boolean {
+function pointInRing(x: number, y: number, c: readonly XY[]): boolean {
   let inside = false
   for (let i = 0, j = c.length - 1; i < c.length; j = i++) {
     const a = c[i]!
@@ -22,13 +21,15 @@ function pointInContour(x: number, y: number, c: Contour): boolean {
   return inside
 }
 
-const asRing = (c: Contour): Pt[] => c.map((p) => [p.x, p.y])
+/** Contours as polygons (curves flattened), so every geometric test below sees the shape that is drawn. */
+const rings = (contours: Contour[]): XY[][] => contours.map((c) => flattenContour(c))
 
 /** How many other contours enclose this one: 0 = outer, 1 = counter, 2 = island inside a counter... */
 export function nestingDepths(contours: Contour[]): number[] {
-  return contours.map((c, i) => {
-    const probe = c[0]!
-    return contours.reduce((d, other, j) => (j !== i && pointInContour(probe.x, probe.y, other) ? d + 1 : d), 0)
+  const polys = rings(contours)
+  return polys.map((ring, i) => {
+    const probe = ring[0]!
+    return polys.reduce((d, other, j) => (j !== i && pointInRing(probe.x, probe.y, other) ? d + 1 : d), 0)
   })
 }
 
@@ -75,38 +76,31 @@ function compute(glyph: Glyph, m: FontMetrics): GlyphIssue[] {
   }
   if (issues.some((i) => i.severity === 'error')) return issues
 
-  const areas = glyph.contours.map((c) => area(asRing(c)))
+  const areas = glyph.contours.map((c) => signedArea(c))
   glyph.contours.forEach((_, ci) => {
     if (Math.abs(areas[ci]!) < 1) add('error', 'glyph.zero-area', `Contour ${ci + 1} has no area.`)
   })
 
-  if (findIntersections(glyph.contours).length > 0) {
+  const polys = rings(glyph.contours)
+  if (findIntersections(polys.map((ring) => ring.map((p) => ({ x: p.x, y: p.y, onCurve: true })))).length > 0) {
     add('error', 'glyph.self-intersection', 'The outline crosses or touches itself.')
   }
 
   const depths = nestingDepths(glyph.contours)
-  glyph.contours.forEach((c, ci) => {
+  glyph.contours.forEach((_, ci) => {
     const clockwise = areas[ci]! < 0
     const wantClockwise = depths[ci]! % 2 === 0
     if (clockwise !== wantClockwise) {
       add('error', 'glyph.winding', `Contour ${ci + 1} runs the wrong way (outer contours clockwise, counters counter-clockwise).`)
     }
-    if (depths[ci]! % 2 === 1 && !c.every((p) => glyph.contours.some((o, j) => j !== ci && pointInContour(p.x, p.y, o)))) {
+    if (depths[ci]! % 2 === 1 && !polys[ci]!.every((p) => polys.some((o, j) => j !== ci && pointInRing(p.x, p.y, o)))) {
       add('error', 'glyph.counter-outside', `Counter ${ci + 1} is not fully inside solid area.`)
     }
   })
 
-  let minX = Infinity
-  let maxX = -Infinity
-  let minY = Infinity
-  let maxY = -Infinity
-  for (const c of glyph.contours)
-    for (const p of c) {
-      minX = Math.min(minX, p.x)
-      maxX = Math.max(maxX, p.x)
-      minY = Math.min(minY, p.y)
-      maxY = Math.max(maxY, p.y)
-    }
+  // Where the ink reaches: curves are measured at their turning points, so a control point beyond the metrics is not an error by itself.
+  const bounds = contoursBounds(glyph.contours)!
+  const { minX, maxX, minY, maxY } = bounds
   if (maxY > m.ascender + 1 || minY < m.descender - 1) {
     add('error', 'glyph.outside-metrics', `Outline spans ${minY} to ${maxY} but the font's vertical metrics are ${m.descender} to ${m.ascender}.`)
   }

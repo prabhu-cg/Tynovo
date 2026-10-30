@@ -5,7 +5,7 @@ Everything outstanding that a user, a reviewer or a maintainer should know befor
 ## The product
 
 - **Typeface generator.** Draws all **95 printable ASCII characters**. **Latin only, by decision:** no accented letters and no other scripts (Greek, Cyrillic, Arabic, Indic, CJK). The website says so.
-- **Glyph editor.** A *point* editor for straight-segment outlines; **no Bézier curve editing**.
+- **Glyph editor.** Points and **quadratic** Bézier curves (TrueType's curve type): control points, split, smooth, and *Fit curves* for the short straight sides a generated letter is drawn with. **No cubic handles**; OpenType/CFF export converts each quadratic curve to a cubic of the same shape, with control points rounded to whole units (a unit or so of difference at most). Generated glyphs are still drawn as straight sides until curves are fitted or added.
 - **Export formats.** TrueType (`.ttf`) and OpenType/CFF (`.otf`). **No WOFF or WOFF2** (not validated). The **PDF specimen** is drawn by Tynovo in the browser with real text; it embeds your typeface and the bundled catalog fonts it uses, and draws any font you only named in Helvetica (it cannot embed a font it does not have).
 - **Font catalog.** 52 fixed families, all SIL OFL 1.1 (not every font: the set is chosen, and bundling a family is a deliberate step, see `npm run catalog`). A font named from the user's device is checked by a **heuristic** ("detected" / "not detected"), not proof.
 - **Brand direction, roles, pairing.** Fixed, readable scoring rules, not an AI model; suggestions are an aid, not a verdict.

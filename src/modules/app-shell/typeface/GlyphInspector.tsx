@@ -36,6 +36,17 @@ export interface InspectorProps {
   onStepPoint: (dir: 1 | -1) => void
   onInsert: () => void
   onDelete: () => void
+  canCurve: boolean
+  canStraighten: boolean
+  canSmooth: boolean
+  canFitCurves: boolean
+  onFitCurves: () => void
+  onCurve: () => void
+  onStraighten: () => void
+  onSmooth: () => void
+  /** Set when the plan leaves out curve editing. */
+  curvesNote?: string | undefined
+  curvesHidden?: boolean
   /** 'parametric': the glyph still follows the design, so spacing is stored as overrides. 'outline': it is hand-edited. */
   mode: 'parametric' | 'outline'
   advance: number
@@ -96,7 +107,7 @@ export function GlyphInspector(p: InspectorProps) {
       <Section id="gi-point" title="Selected point">
         {pt && only ? (
           <>
-            <p className="text-xs text-ink-soft">Point {only.p + 1} of {p.contours[only.c]!.length} in contour {only.c + 1} of {p.contours.length}</p>
+            <p className="text-xs text-ink-soft" data-testid="point-kind">{pt.onCurve ? 'On-curve point' : 'Control point: it shapes the curve but is not on it'}. Point {only.p + 1} of {p.contours[only.c]!.length} in contour {only.c + 1} of {p.contours.length}</p>
             <div className="flex flex-wrap gap-3">
               <NumberField label="X" value={pt.x} min={-1000} max={4000} onCommit={(v) => p.onSetPoint(only.c, only.p, v, pt.y)} />
               <NumberField label="Y" value={pt.y} min={-1500} max={2500} onCommit={(v) => p.onSetPoint(only.c, only.p, pt.x, v)} />
@@ -114,6 +125,15 @@ export function GlyphInspector(p: InspectorProps) {
           {p.structureHidden ? null : <Button disabled={keys.length === 0 || !!p.structureNote} onClick={p.onDelete}>Delete {keys.length > 1 ? 'points' : 'point'}</Button>}
         </div>
         {p.structureNote && !p.structureHidden ? <p data-testid="locked" className="text-xs text-ink-soft">{p.structureNote}</p> : null}
+        {p.curvesHidden ? null : (
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Curve tools">
+            <Button disabled={!p.canCurve || !!p.curvesNote} onClick={p.onCurve}>Make curve</Button>
+            <Button disabled={!p.canStraighten || !!p.curvesNote} onClick={p.onStraighten}>Make line</Button>
+            <Button disabled={!p.canSmooth || !!p.curvesNote} onClick={p.onSmooth}>Smooth point</Button>
+            <Button disabled={!p.canFitCurves || !!p.curvesNote} onClick={p.onFitCurves}>Fit curves</Button>
+          </div>
+        )}
+        {p.curvesNote && !p.curvesHidden ? <p data-testid="locked" className="text-xs text-ink-soft">{p.curvesNote}</p> : null}
       </Section>
 
       <Section id="gi-spacing" title="Spacing">

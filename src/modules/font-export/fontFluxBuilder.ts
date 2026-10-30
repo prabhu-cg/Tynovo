@@ -1,9 +1,9 @@
 import { analyzeTypeface } from '../font-validation/coverage'
-import { contoursBounds } from '../glyph-editor/geometry'
 import { deriveMetrics } from '../typeface-engine/dna'
 import { LICENSE_PLACEHOLDER } from '../typeface-engine/typeface'
 import { loadFontFlux } from './loadFontFlux'
 import { assertBytesAre, FORMATS } from './formats'
+import { fileLeftSideBearing } from './sidebearing'
 import { patchOs2 } from './sfntPatch'
 import type { FontBuilder, FontBuildInput, FontBuildResult } from './types'
 
@@ -39,6 +39,11 @@ export const fontFluxBuilder: FontBuilder = {
       ...(typeface.license.url ? { licenseURL: typeface.license.url } : {}),
     })
 
+    // The missing-character box. The library's own has a side bearing of 0 although its outline starts at 50, which
+    // FreeType-based renderers draw 50 units off; this one says where its ink starts, like every other glyph.
+    const notdef = [{ x: 50, y: 0, onCurve: true }, { x: 50, y: 700, onCurve: true }, { x: 450, y: 700, onCurve: true }, { x: 450, y: 0, onCurve: true }]
+    font.addGlyph({ name: '.notdef', advanceWidth: 500, leftSideBearing: 50, contours: [format === 'otf' ? [...notdef].reverse() : notdef] })
+
     const byChar = new Map<string, string>()
     // Only glyphs that passed validation go into the font; the rest are reported, never silently shipped.
     for (const g of analyzeTypeface(typeface).supported) {
@@ -49,9 +54,10 @@ export const fontFluxBuilder: FontBuilder = {
         advanceWidth: g.advanceWidth,
         // hmtx must say where the ink starts. Left at 0, FreeType-based renderers (Chrome, Android, Linux) shift every
         // glyph left by its xMin, while CoreText follows head.flags: the same file would render differently.
-        leftSideBearing: contoursBounds(g.contours)?.minX ?? 0,
+        leftSideBearing: fileLeftSideBearing(g.contours, format),
         // The generator uses TrueType winding (outer contours clockwise). PostScript/CFF fonts use the opposite
-        // direction, so CFF outlines are written reversed; the drawn shape is identical.
+        // direction, so CFF outlines are written reversed; the drawn shape is identical. Off-curve points are quadratic
+        // control points: TrueType keeps them as they are, and Font Flux turns each into the equivalent cubic for CFF.
         contours: g.contours.map((c) => (format === 'otf' ? [...c].reverse() : c).map((p) => ({ x: p.x, y: p.y, onCurve: p.onCurve }))),
       })
     }
