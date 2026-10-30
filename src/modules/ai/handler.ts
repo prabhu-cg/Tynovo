@@ -8,6 +8,8 @@ import { aiRequestSchema, sanitizeBrand, sanitizeTypeface, type AiError, type Ai
  */
 export const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 export const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+/** Tried in order, after GROQ_MODEL if it is set, when Groq says a model does not exist for this key (retired, renamed, or not enabled for the project). */
+export const FALLBACK_MODELS = ['openai/gpt-oss-120b', 'llama-3.1-8b-instant'] as const
 /** Largest request body accepted, in bytes: a brief of the maximum length with room for the JSON around it. */
 const MAX_BODY = 4096
 const TIMEOUT_MS = 20_000
@@ -91,27 +93,31 @@ export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fe
   const req = aiRequestSchema.safeParse(parsed)
   if (!req.success) return fail('bad-request')
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-  let res: Response
-  try {
-    res = await deps.fetch(GROQ_URL, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: env.GROQ_MODEL || DEFAULT_MODEL,
-        messages: buildMessages(req.data.task, req.data.text),
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        max_tokens: 600,
-      }),
-      signal: controller.signal,
-    })
-  } catch (e) {
-    return fail(e instanceof DOMException && e.name === 'AbortError' ? 'timeout' : 'unavailable')
-  } finally {
-    clearTimeout(timer)
+  const models = [...new Set([env.GROQ_MODEL, DEFAULT_MODEL, ...FALLBACK_MODELS].filter((m): m is string => !!m))]
+  const messages = buildMessages(req.data.task, req.data.text)
+  let res: Response | null = null
+  for (const model of models) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    try {
+      res = await deps.fetch(GROQ_URL, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ model, messages, response_format: { type: 'json_object' }, temperature: 0.4, max_tokens: 600 }),
+        signal: controller.signal,
+      })
+    } catch (e) {
+      return fail(e instanceof DOMException && e.name === 'AbortError' ? 'timeout' : 'unavailable')
+    } finally {
+      clearTimeout(timer)
+    }
+    if (res.status !== 404) {
+      if (res.ok) console.info(`ai: answered by ${model}`)
+      break
+    }
+    console.error(`ai: Groq has no model ${model} for this key; trying the next`)
   }
+  if (!res) return fail('unavailable')
   if (res.status === 429) return fail('rate-limited')
   if (!res.ok) {
     // For the operator, never the visitor: the status and Groq's error type and code (not its message, not the key, not the brief).
@@ -123,7 +129,7 @@ export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fe
       /* not JSON: the status alone is enough */
     }
     console.error(`ai: Groq answered ${res.status}${detail}`)
-    return fail('unavailable') // a bad key, a retired model, 5xx and the rest look the same to the visitor; the status is not passed on
+    return fail('unavailable') // a bad key, no usable model, 5xx and the rest look the same to the visitor; the status is not passed on
   }
 
   let content: unknown

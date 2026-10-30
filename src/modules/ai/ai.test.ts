@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { DNA_CONTROLS } from '../typeface-engine/dna'
-import { DEFAULT_MODEL, GROQ_URL, handleAi, RATE, RateLimiter, type AiDeps } from './handler'
+import { DEFAULT_MODEL, FALLBACK_MODELS, GROQ_URL, handleAi, RATE, RateLimiter, type AiDeps } from './handler'
 import { buildMessages } from './prompts'
 import { aiRequestSchema, MAX_BRIEF, sanitizeBrand, sanitizeTypeface, SUGGESTED_KEYS } from './schemas'
 
@@ -148,6 +148,27 @@ describe('the function', () => {
     const res = await handleAi(post(BRIEF), {}, deps(groqSays({})))
     expect(res.status).toBe(503)
     expect(await res.json()).toMatchObject({ ok: false, error: 'unavailable' })
+  })
+
+  it('tries the next model when Groq says one does not exist for this key, and stops at the first that answers', async () => {
+    const tried: string[] = []
+    const f = (async (_u: string, init: RequestInit) => {
+      const model = JSON.parse(init.body as string).model as string
+      tried.push(model)
+      return model === FALLBACK_MODELS[0] ? groqSays({ personality: ['warm'] })('', init) : new Response(JSON.stringify({ error: { type: 'invalid_request_error', code: 'model_not_found' } }), { status: 404 })
+    }) as AiDeps['fetch']
+    const res = await handleAi(post(BRIEF), env, deps(f))
+    expect(res.status).toBe(200)
+    expect(tried).toEqual([DEFAULT_MODEL, FALLBACK_MODELS[0]])
+    // A named model goes first; the same model is never tried twice.
+    tried.length = 0
+    await handleAi(post(BRIEF), { ...env, GROQ_MODEL: FALLBACK_MODELS[0] }, deps(f))
+    expect(tried).toEqual([FALLBACK_MODELS[0]])
+  })
+
+  it('is unavailable, not crashing, when no model exists for the key', async () => {
+    const res = await handleAi(post(BRIEF), env, deps((async () => new Response(JSON.stringify({ error: { type: 'invalid_request_error', code: 'model_not_found' } }), { status: 404 })) as AiDeps['fetch']))
+    expect(res.status).toBe(503)
   })
 
   it('never leaks the key or Groq’s own error text, whatever Groq answers', async () => {
