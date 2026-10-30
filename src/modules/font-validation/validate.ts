@@ -1,4 +1,5 @@
 import type { CustomTypeface } from '../brand-projects/schema'
+import { innerSfnt } from '../font-export/container'
 import { loadFontFlux } from '../font-export/loadFontFlux'
 import { dnaIssues } from '../typeface-engine/dna'
 import { ENGINE_VERSION } from '../typeface-engine/version'
@@ -73,7 +74,9 @@ export function validateTypeface(face: CustomTypeface): ValidationSummary {
 /** Checks on exported bytes, using the exporter library's structural validator on the final file. */
 export async function validateFontBinary(bytes: Uint8Array): Promise<ValidationSummary> {
   const { FontFlux } = await loadFontFlux()
-  const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
+  // A web font is checked on the font inside its container; the container itself is checked by the read-back.
+  const sfnt = await innerSfnt(bytes)
+  const buffer = sfnt.buffer.slice(sfnt.byteOffset, sfnt.byteOffset + sfnt.byteLength) as ArrayBuffer
   const report = FontFlux.diagnose(buffer)
   const issues: ValidationIssue[] = report.issues.map((i) => ({
     severity: (i.severity as Severity) ?? 'info',

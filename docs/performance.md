@@ -22,7 +22,7 @@ The check also fails if `font-flux-js`, `TypefacePage`, `ExportPage`, `Typograph
 
 - The website and the dashboard never fetch the font writer, its wasm, or a catalog font. Only the interface font loads.
 - The font writer stays out of every page that has no typeface (overview, font catalog, typography). It is fetched **once**, when the typeface editor needs a real font (its Preview tab draws the actual exported font next to the editor's drawing) or the export page builds one, and reused after that.
-- Its 1 MB `brotli_wasm_bg.wasm` is present in `dist/` (Font Flux's WOFF2 support, which Tynovo does not use) but is **never requested**.
+- Its 1 MB `brotli_wasm_bg.wasm` is present in `dist/` (Font Flux's own WOFF2 support, which Tynovo does not use: the page's content security policy has no `'wasm-unsafe-eval'`, so no WebAssembly runs) but is **never requested**. WOFF2 export uses the pure-JavaScript `brotli` package, loaded as two chunks (encoder 233 KB gzip, mostly its base64 memory image; decoder 59 KB) only when a WOFF2 is built and read back. That is the price of not weakening the CSP; a WebAssembly build would be smaller (the same wasm Font Flux ships is 575 KB gzip) and needs `'wasm-unsafe-eval'`.
 - Scrolling the entire font catalog downloads at most 40 font files of the 150+ it ships; fonts load only when previewed or used, a bounded number stay loaded, and failures are reported (`font-catalog/loader.ts`).
 
 ## Runtime (large projects)

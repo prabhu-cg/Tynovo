@@ -534,6 +534,8 @@ test.describe('font export formats', () => {
   for (const [label, ext, mime, magic] of [
     ['TrueType', '.ttf', 'font/ttf', [0, 1, 0, 0]],
     ['OpenType, CFF', '.otf', 'font/otf', [0x4f, 0x54, 0x54, 0x4f]],
+    ['WOFF (.woff)', '.woff', 'font/woff', [0x77, 0x4f, 0x46, 0x46]],
+    ['WOFF2 (.woff2)', '.woff2', 'font/woff2', [0x77, 0x4f, 0x46, 0x32]],
   ] as const) {
     test(`${ext}: right file name, media type and signature; a real font; recorded in the history`, async ({ page }) => {
       await startTypeface(page, 'Rounded')
@@ -556,16 +558,50 @@ test.describe('font export formats', () => {
       await saved(page)
       await expect(page.getByText(`ExportCheck-Regular${ext}`).first()).toBeVisible()
       const history = (await readProjects(page))[0]!['exportHistory']
-      expect(history[0].kind).toBe(ext === '.ttf' ? 'font-ttf' : 'font-otf')
+      expect(history[0].kind).toBe(`font-${ext.slice(1)}`)
     })
   }
 
-  test('switching format clears a previous result and WOFF is not offered', async ({ page }) => {
+  test('all four formats are offered, and switching format clears a previous result', async ({ page }) => {
     await startTypeface(page)
     await page.getByRole('link', { name: 'Export…' }).click()
-    await expect(page.getByRole('radio', { name: /woff/i })).toHaveCount(0)
-    await expect(page.getByText('WOFF and WOFF2 are not offered')).toBeVisible()
+    for (const name of ['TrueType (.ttf)', 'OpenType, CFF outlines (.otf)', 'WOFF (.woff)', 'WOFF2 (.woff2)']) await expect(page.getByRole('radio', { name })).toBeVisible()
+    await page.getByRole('button', { name: /Check and build \.ttf/ }).click()
+    await expect(page.getByRole('complementary', { name: 'Font export' })).toContainText('Built a')
+    await page.getByRole('button', { name: 'Close' }).click()
+    await page.getByText('WOFF2 (.woff2)').first().click()
+    await expect(page.getByRole('button', { name: /Check and build \.woff2/ })).toBeVisible()
+    await expect(page.getByText('brotli-compressed web container')).toBeVisible()
   })
+
+  for (const [label, ext] of [['WOFF (.woff)', '.woff'], ['WOFF2 (.woff2)', '.woff2']] as const) {
+    test(`a browser really loads the exported ${ext} as a font and draws with it`, async ({ page }) => {
+      await startTypeface(page)
+      await page.getByLabel('Typeface name').fill('Web Check')
+      await page.getByRole('link', { name: 'Export…' }).click()
+      await page.getByText(label).first().click()
+      await page.getByRole('button', { name: new RegExp(`Check and build \\${ext}`) }).click()
+      const drawer = page.getByRole('complementary', { name: 'Font export' })
+      await expect(drawer).toContainText('Built a')
+      const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: new RegExp(`Download WebCheck-Regular\\${ext}`) }).click()])
+      const bytes = readFileSync(await download.path())
+      // The browser's own decoder (not ours) must accept the file, and a glyph from it must have the width the design says.
+      const result = await page.evaluate(async (b64) => {
+        const data = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
+        const face = new FontFace('WebCheck', data)
+        await face.load()
+        document.fonts.add(face)
+        const canvas = document.createElement('canvas').getContext('2d')!
+        canvas.font = '1000px WebCheck'
+        const withFont = canvas.measureText('H').width
+        canvas.font = '1000px monospace'
+        return { status: face.status, wide: withFont, mono: canvas.measureText('H').width }
+      }, bytes.toString('base64'))
+      expect(result.status).toBe('loaded')
+      expect(result.wide).toBeGreaterThan(300)
+      expect(result.wide).not.toBe(result.mono)
+    })
+  }
 
   test('a failure during export is reported and recoverable: no file, nothing recorded, and a retry works', async ({ page }) => {
     await page.addInitScript(() => {

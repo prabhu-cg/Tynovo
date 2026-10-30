@@ -17,6 +17,25 @@ const servePrerenderedRoutes: Plugin = {
   },
 }
 
+/**
+ * The pure-JavaScript Brotli encoder (the `brotli` package, an Emscripten build) loads its memory image through
+ * `readBinary` only when it thinks it runs under Node or a bare shell; in a browser it falls through to a code path
+ * that needs an Emscripten runtime object the build left out ("Browser is not defined"). The package already carries
+ * the right loader (its own base64 `mem.js`), so the browser branch is pointed at it, and the module object is exported
+ * for the browser as it is for Node. The edit fails the build if the package changes under it, and the WOFF2 export is tested in a real browser (e2e/editor.spec.ts).
+ */
+const BROTLI_BRANCH = ',v||x){var Ta=b.readBinary(W)'
+const patchBrotliEncoder: Plugin = {
+  name: 'patch-brotli-encoder',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!/[\\/]brotli[\\/]build[\\/]encode\.js$/.test(id)) return null
+    if (!code.includes(BROTLI_BRANCH)) throw new Error('patch-brotli-encoder: the brotli package changed; review vite.config.ts before upgrading it.')
+    // The build exports its module object only on its Node branch, so the browser gets an empty object without the second edit.
+    return { code: `${code.replace(BROTLI_BRANCH, ',true){var Ta=b.readBinary(W)')}\n;"undefined"!==typeof module&&(module.exports=b);`, map: null }
+  },
+}
+
 /** `vite preview` serves the same headers as production, read from vercel.json, so tests run under the real CSP. */
 const productionHeaders = (): Record<string, string> => {
   const config = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')) as {
@@ -28,7 +47,9 @@ const productionHeaders = (): Record<string, string> => {
 
 export default defineConfig({
   preview: { headers: productionHeaders() },
-  plugins: [react(), tailwindcss(), servePrerenderedRoutes],
+  plugins: [react(), tailwindcss(), servePrerenderedRoutes, patchBrotliEncoder],
+  // The dev server pre-bundles dependencies with its own pipeline, so the same edit is applied there.
+  optimizeDeps: { rolldownOptions: { plugins: [patchBrotliEncoder] } },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

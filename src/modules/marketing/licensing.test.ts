@@ -16,6 +16,7 @@ describe('the licensing page states what is really bundled', () => {
       Zod: ['zod'],
       idb: ['idb'],
       'polygon-clipping': ['polygon-clipping'],
+      brotli: ['brotli'],
     }
     expect(SOFTWARE.map((s) => s.name).sort()).toEqual(Object.keys(declared).sort())
     for (const s of SOFTWARE) for (const name of declared[s.name]!) expect(pkg(name).license, name).toBe(s.license)
@@ -23,7 +24,7 @@ describe('the licensing page states what is really bundled', () => {
 
   it('covers every runtime dependency that is not a font', () => {
     const deps = Object.keys((JSON.parse(readFileSync('package.json', 'utf8')) as { dependencies: Record<string, string> }).dependencies).filter((d) => !d.startsWith('@fontsource'))
-    const listed = new Set(['font-flux-js', 'react', 'react-dom', 'react-router', 'zod', 'idb', 'polygon-clipping'])
+    const listed = new Set(['font-flux-js', 'react', 'react-dom', 'react-router', 'zod', 'idb', 'polygon-clipping', 'brotli'])
     expect(deps.sort()).toEqual([...listed].sort())
   })
 

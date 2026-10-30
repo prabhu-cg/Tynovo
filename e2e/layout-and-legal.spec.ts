@@ -147,7 +147,8 @@ test.describe('legal pages are complete', () => {
     }
     await expect(rows.filter({ hasText: 'Manrope' })).toHaveCount(1)
     const software = page.locator('#app li')
-    expect(await software.count()).toBe(6)
+    expect(await software.count()).toBe(7)
+    await expect(software.filter({ hasText: 'brotli' })).toHaveCount(1)
     await expect(page.getByRole('link', { name: 'LICENSE file' })).toHaveAttribute('href', 'https://github.com/prabhu-cg/Tynovo/blob/main/LICENSE')
   })
 
