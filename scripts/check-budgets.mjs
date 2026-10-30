@@ -11,7 +11,7 @@ const BUDGETS = {
   /** Everything a first visit to any page downloads before it can run: the entry script and what it preloads. */
   firstLoadJs: 190 * KB,
   /** The stylesheet (Tailwind output for the whole site and app). */
-  css: 16 * KB,
+  css: 17 * KB, // 16 until the workflow bar's motion and arrival styles (about 0.8 KB gzip) were added on 2026-10-31
   /** The one font file preloaded on every page (Manrope, Latin). */
   firstLoadFont: 30 * KB,
   /** Any lazily loaded route or feature chunk. */

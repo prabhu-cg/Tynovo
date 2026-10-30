@@ -110,6 +110,8 @@ test.describe('AI assist: brand direction', () => {
     await assist.getByLabel('Describe the brand in a few sentences').fill('A small roastery that sells coffee by subscription.')
     await assist.getByRole('button', { name: 'Suggest a direction' }).click()
     await expect(page.getByTestId('brand-suggestion')).toBeVisible()
+    await page.evaluate(() => scrollTo(0, 0)) // scrolled, rows pass under the sticky workflow bar, which axe counts as obscured; that is what scrolling is
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))) // axe reads colours mid-animation, so let the entrances finish
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(results.violations.map((v) => `${v.id}: ${v.nodes[0]?.target}`)).toEqual([])
   })

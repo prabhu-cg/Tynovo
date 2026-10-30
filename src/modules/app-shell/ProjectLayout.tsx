@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useBlocker, useNavigate, useParams } from 'react-router'
+import { Link, NavLink, Outlet, useBlocker, useLocation, useNavigate, useParams } from 'react-router'
 import { downloadBytes } from '@/modules/font-export/download'
 import { useProjectFont } from '@/modules/font-export/useProjectFont'
 import { Banner, Button, ButtonLink, LockIcon } from '@/modules/shared-ui'
@@ -11,6 +11,9 @@ import { useProjectFonts } from './useProjectFonts'
 import { useStudio } from './studio'
 import { useProjectEditor } from './useProjectEditor'
 import { describeError } from './errors'
+import { useContentRevision } from './useRevision'
+import { workflowSteps } from '@/modules/brand-system/workflow'
+import { WorkflowBar } from './workflow/WorkflowBar'
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-semibold whitespace-nowrap transition-colors md:min-h-10 ${isActive ? 'border-accent text-ink-strong' : 'border-transparent text-ink-soft hover:text-ink-strong'}`
@@ -22,6 +25,8 @@ export function ProjectLayout() {
   const navigate = useNavigate()
   const editor = useProjectEditor(service, projectId)
   const { draft, state } = editor
+  const { pathname } = useLocation()
+  const revision = useContentRevision(editor.saved)
   // Registered once for the whole project, so Typography, Export and the typeface views all see the same font.
   const customFont = useProjectFont(draft?.customTypeface ?? null)
   const fonts = useProjectFonts(draft)
@@ -147,6 +152,8 @@ export function ProjectLayout() {
         </nav>
       </header>
 
+      <WorkflowBar steps={workflowSteps(draft, revision)} projectId={draft.id} />
+
       <div className="mt-4 grid gap-3 empty:hidden">
         {editor.readOnly ? (
           <Banner
@@ -223,7 +230,10 @@ export function ProjectLayout() {
       </div>
 
       <div className="mt-8">
+        {/* Keyed by the screen, so switching tabs settles the new content in; moving between #anchors on one screen does not replay it. */}
+        <div key={pathname} className="route-enter">
         <Outlet context={{ draft, editor, readOnly: editor.readOnly, customFont, fonts, setGuard }} />
+        </div>
       </div>
     </div>
   )

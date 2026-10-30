@@ -375,6 +375,7 @@ test('typography and export screens have no serious accessibility violations', a
   await integrated(page, 'Café')
   await expect(fontStatus(page)).toHaveAttribute('data-state', 'ready')
   const check = async (where: string) => {
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))) // axe reads colours mid-animation, so let the entrances finish
     const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
     expect(r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${where}: ${v.id} ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([])
   }

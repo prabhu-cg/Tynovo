@@ -115,6 +115,7 @@ test.describe('glyph editor', () => {
     await startTypeface(page)
     const canvas = await openGlyph(page, 'H')
     const point = page.locator('[data-pt="0:0"]')
+    await point.scrollIntoViewIfNeeded() // the workflow bar takes a row, so the canvas can start below the first screen
     const box = (await point.boundingBox())!
     const cx = box.x + box.width / 2
     const cy = box.y + box.height / 2

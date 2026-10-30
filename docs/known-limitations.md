@@ -43,3 +43,7 @@ Everything outstanding that a user, a reviewer or a maintainer should know befor
 
 - `npm run lint` reports **3 warnings, no errors** (`react-hooks`/`react-refresh` rules: two `set-state-in-effect` in `DashboardPage.tsx` and `useProjectEditor.ts`, one `only-export-components` in `LicensingPage.tsx`). Each predates Phase 7 and is a style rule, not a defect.
 - The browser tests need ports 4173 free and run only in Chromium.
+
+## Navigation
+
+- The **workflow bar** (`app-shell/workflow/`) is on every screen of a project, sticky under the top bar. It reads the same eight steps as the Overview list (`brand-system/workflow.ts`); which step is "current" follows the screen and the `#section`, and Validate and Export both live on the Export screen, so only Export is marked there. Motion: the bar and list use short fades and one arrival wash; with reduced motion the movements stop and the wash is a plain fade. A page's own `scroll-padding` keeps anything focused or jumped to below the two sticky bars (`index.css`).
