@@ -43,6 +43,7 @@ export const APPLICATIONS = [
   { id: 'editorial', label: 'Editorial' },
   { id: 'product', label: 'Product interface' },
   { id: 'poster', label: 'Poster' },
+  { id: 'document', label: 'Printed document' },
 ] as const
 export type ApplicationId = (typeof APPLICATIONS)[number]['id']
 
@@ -107,6 +108,32 @@ export function applicationSlots(project: Pick<Project, 'name' | 'brand'>, copy:
         s('subhead', 'h3', copy.subhead),
         s('caption', 'caption', copy.caption),
       ]
+    case 'document': {
+      // A report or letter on paper: letterhead, title block, running text with headings, a table of figures, a footnote, a footer.
+      const [first = '', second = ''] = copy.longform.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+      return [
+        s('letterhead', 'heading', brand),
+        s('letterhead-meta', 'caption', copy.caption),
+        s('title', 'h1', copy.headline),
+        s('deck', 'body-lg', copy.subhead),
+        s('p-0', 'body', first),
+        s('h2', 'h2', 'Summary of work'),
+        s('p-1', 'body', second || copy.body),
+        s('th-item', 'ui', 'Item'),
+        s('th-qty', 'ui', 'Qty'),
+        s('th-amount', 'ui', 'Amount (USD)'),
+        s('td-1', 'body-sm', 'Type system review'),
+        s('td-1-qty', 'body-sm', '1'),
+        s('td-1-amount', 'body-sm', '1,200.00'),
+        s('td-2', 'body-sm', 'Specimen pages'),
+        s('td-2-qty', 'body-sm', '12'),
+        s('td-2-amount', 'body-sm', '840.50'),
+        s('total-label', 'ui', 'Total'),
+        s('total-amount', 'ui', '2,040.50'),
+        s('note', 'body-sm', 'Amounts exclude tax. Figures are examples set to show tables of numbers in print.'),
+        s('footer', 'caption', `${brand} - page 1 of 1`),
+      ]
+    }
   }
 }
 

@@ -61,8 +61,8 @@ export const CAPABILITIES: readonly Capability[] = [
     id: 'previews',
     mode: 'system',
     title: 'Brand application previews',
-    body: 'See the system as a website, an editorial page with long-form text, a product screen and a poster, on a light or dark surface at phone, tablet or fitted width, with sample text you can edit and keep. Previews read the same project data as the exported CSS and show the same sizes. A printed document layout is not built yet.',
-    status: 'early',
+    body: 'See the system as a website, an editorial page with long-form text, a product screen, a poster and a printed document (an A4 page with letterhead, headings, running text and a table of figures), on a light or dark surface at phone, tablet or fitted width, with sample text you can edit and keep. Previews read the same project data as the exported CSS and show the same sizes. The printed document is always on white paper and is shown scaled to fit; it is a preview, not a print job.',
+    status: 'available',
   },
   {
     id: 'tokens',

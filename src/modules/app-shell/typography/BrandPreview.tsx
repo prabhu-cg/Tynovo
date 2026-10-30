@@ -20,6 +20,8 @@ const COPY_FIELDS: ReadonlyArray<{ key: keyof PreviewCopy; label: string; rows: 
 type Surface = 'light' | 'dark'
 type Size = 'phone' | 'tablet' | 'fit'
 const SIZE_PX = { phone: 390, tablet: 768 } as const
+/** A4 (210 x 297 mm) at 96 pixels to the inch: the printed document is drawn at this width and scaled to fit. */
+const A4_PX = 794
 
 const THEMES = {
   light: { bg: '#ffffff', fg: '#262626', soft: '#6b6b6b', line: '#e3e3e0', sheet: '#f6f6f5' },
@@ -42,8 +44,11 @@ export function BrandPreview() {
   const missing = useMemo(() => previewMissing(draft, slots), [draft, slots])
   const face = draft.customTypeface
   const usingCustom = rolesUsingCustom(draft)
-  const width = size === 'fit' ? Math.max(280, Math.round(fitWidth) || 800) : SIZE_PX[size]
-  const t = THEMES[surface]
+  const isDoc = app === 'document'
+  // On paper the width is the page's, whatever the screen is; the sizes are the ones that print.
+  const width = isDoc ? A4_PX : size === 'fit' ? Math.max(280, Math.round(fitWidth) || 800) : SIZE_PX[size]
+  const docScale = Math.min(1, Math.max(0.3, (Math.round(fitWidth) || A4_PX) / A4_PX))
+  const t = THEMES[isDoc ? 'light' : surface] // paper is white
   const hasSaved = Object.keys(draft.brand.sampleCopy).length > 0
 
   const byId = new Map(slots.map((s) => [s.id, s]))
@@ -82,11 +87,17 @@ export function BrandPreview() {
     <div className="grid min-w-0 gap-5" data-testid="brand-preview" data-app={app} data-surface={surface} data-viewport={width} data-custom-font-state={customFont.state} data-custom-font-revision={customFont.revision}>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)]">
         <Segmented label="Context" value={app} options={APPLICATIONS.map((a) => ({ value: a.id, label: a.label }))} onChange={setApp} />
-        <Segmented label="Surface" value={surface} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} onChange={setSurface} />
-        <Segmented label="Width" value={size} options={[{ value: 'phone', label: 'Phone 390' }, { value: 'tablet', label: 'Tablet 768' }, { value: 'fit', label: 'Fit' }]} onChange={setSize} />
+        {isDoc ? (
+          <p data-testid="paper-note" className="text-sm text-ink-soft md:col-span-1 xl:col-span-2">Printed on white paper, A4 (210 × 297 mm). Sizes are as they print, at 96 pixels to the inch; the page is scaled to fit the screen.</p>
+        ) : (
+          <>
+            <Segmented label="Surface" value={surface} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} onChange={setSurface} />
+            <Segmented label="Width" value={size} options={[{ value: 'phone', label: 'Phone 390' }, { value: 'tablet', label: 'Tablet 768' }, { value: 'fit', label: 'Fit' }]} onChange={setSize} />
+          </>
+        )}
       </div>
       <p role="status" className="tnum text-sm text-ink-soft">
-        Showing {label.toLowerCase()} at {width}px wide{draft.typography.responsive.enabled ? ', with fluid sizes for this width' : ''}.
+        Showing {label.toLowerCase()} at {width}px wide{isDoc ? ' (A4)' : ''}{draft.typography.responsive.enabled ? ', with fluid sizes for this width' : ''}.
         {face && usingCustom.length > 0 ? (customFont.state === 'ready' ? <> Your typeface <strong className="text-ink-strong">{face.familyName}</strong> is drawn in {usingCustom.map((r) => r.name).join(', ')} from your current design.</> : customFont.state === 'failed' ? ' The custom typeface could not be built, so those roles show in the fallback font.' : ' Building the custom typeface for this preview…') : null}
       </p>
 
@@ -106,7 +117,7 @@ export function BrandPreview() {
 
       <div ref={widthRef} className="min-w-0">
         <div className="overflow-x-auto">
-          <section aria-label={`${label} preview`} data-testid="preview-surface" className="mx-auto min-w-0 overflow-hidden rounded-md border" style={{ width, maxWidth: size === 'fit' ? '100%' : undefined, background: t.bg, color: t.fg, borderColor: t.line }}>
+          <section aria-label={`${label} preview`} data-testid="preview-surface" className="mx-auto min-w-0 overflow-hidden rounded-md border" style={{ width, maxWidth: size === 'fit' && !isDoc ? '100%' : undefined, background: t.bg, color: t.fg, borderColor: t.line, ...(isDoc ? { zoom: docScale } : {}) }}>
             {app === 'website' ? (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b px-5 py-3" style={{ borderColor: t.line }}>
@@ -151,6 +162,42 @@ export function BrandPreview() {
                   <div className="border-t" style={{ borderColor: t.line }} />
                   {text('caption', '', { style: soft })}
                 </div>
+              </div>
+            ) : null}
+            {app === 'document' ? (
+              <div data-testid="paper" className="relative grid content-start gap-5 px-16 pt-16 pb-24" style={{ minHeight: Math.round(A4_PX * (297 / 210)) }}>
+                <div className="flex items-baseline justify-between gap-6 border-b pb-3" style={{ borderColor: t.line }}>
+                  {text('letterhead', '', { as: 'span' })}
+                  {text('letterhead-meta', '', { as: 'span', style: soft })}
+                </div>
+                <div className="grid gap-2 pt-4">{text('title')}{text('deck', '', { color: t.soft })}</div>
+                {text('p-0')}
+                {text('h2', 'mt-2')}
+                {text('p-1')}
+                <table className="w-full border-collapse" style={{ color: t.fg }}>
+                  <thead>
+                    <tr className="border-b" style={{ borderColor: t.fg }}>
+                      <th className="py-1.5 text-left">{text('th-item', '', { as: 'span' })}</th>
+                      <th className="py-1.5 text-right">{text('th-qty', '', { as: 'span' })}</th>
+                      <th className="py-1.5 text-right">{text('th-amount', '', { as: 'span' })}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(['td-1', 'td-2'] as const).map((r) => (
+                      <tr key={r} className="border-b" style={{ borderColor: t.line }}>
+                        <td className="py-1.5">{text(r, '', { as: 'span' })}</td>
+                        <td className="py-1.5 text-right tabular-nums">{text(`${r}-qty`, '', { as: 'span' })}</td>
+                        <td className="py-1.5 text-right tabular-nums">{text(`${r}-amount`, '', { as: 'span' })}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td className="py-2" colSpan={2}>{text('total-label', '', { as: 'span' })}</td>
+                      <td className="py-2 text-right tabular-nums">{text('total-amount', '', { as: 'span' })}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                {text('note', '', { color: t.soft })}
+                <div className="absolute inset-x-16 bottom-10 border-t pt-3" style={{ borderColor: t.line }}>{text('footer', '', { style: soft })}</div>
               </div>
             ) : null}
             {app === 'poster' ? (

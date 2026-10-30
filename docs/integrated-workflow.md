@@ -56,7 +56,7 @@ v2 → v3 (`migrations.ts`): `fontSourceId` becomes `font`, roles get `kind` (in
 
 ## Not done / not tested
 
-- Roles cannot be added or removed; no wider font catalogue; no uploaded font files; no printed-document preview.
+- Roles cannot be added or removed; no wider font catalogue; no uploaded font files.
 - The CSS/specimen/tokens were checked by tests and in Chromium only, not in design or build tools.
 - Licences of existing fonts are what the user (or the bundled catalogue) says; nothing is verified.
 

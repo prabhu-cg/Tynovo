@@ -176,9 +176,22 @@ describe('does the custom typeface suit a role?', () => {
 describe('brand previews', () => {
   it('default copy is plain ASCII so only the user\'s own words can trigger a missing-character warning', () => {
     const p = integratedProject()
-    const slots = (['website', 'product', 'poster'] as const).flatMap((a) => applicationSlots(p, defaultCopy(p), a))
+    const slots = (['website', 'product', 'poster', 'document'] as const).flatMap((a) => applicationSlots(p, defaultCopy(p), a))
     for (const s of slots) expect(s.text, s.id).toMatch(/^[\x20-\x7e]*$/)
     expect(previewMissing(p, slots)).toEqual([])
+  })
+
+  it('the printed document uses every role kind a page needs, and a table of figures', () => {
+    const p = integratedProject()
+    const slots = applicationSlots(p, defaultCopy(p), 'document')
+    const styles = new Set(slots.map((s) => s.style))
+    for (const style of ['heading', 'caption', 'h1', 'h2', 'body-lg', 'body', 'ui', 'body-sm']) expect(styles, style).toContain(style)
+    expect(slots.filter((s) => /^td-\d-amount$/.test(s.id)).map((s) => s.text)).toEqual(['1,200.00', '840.50'])
+    expect(slots.find((s) => s.id === 'footer')!.text).toBe('Northwind - page 1 of 1')
+    // It reads the saved long-form text, so a person's own paragraphs reach the page.
+    const own = applicationSlots(p, { ...defaultCopy(p), longform: 'First of mine.\n\nSecond of mine.' }, 'document')
+    expect(own.find((s) => s.id === 'p-0')!.text).toBe('First of mine.')
+    expect(own.find((s) => s.id === 'p-1')!.text).toBe('Second of mine.')
   })
 
   it('warns, per role, about characters the typeface lacks in the text on screen', () => {

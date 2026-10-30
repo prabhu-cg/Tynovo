@@ -437,11 +437,34 @@ test('the preview draws exactly what the exported CSS describes, at every width,
   await expect(async () => expect(await preview.locator('[data-slot="p-0"]').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThan(before)).toPass()
 })
 
-test('the preview environment: four contexts, light and dark surfaces, widths, and saved sample text', async ({ page }) => {
+test('the printed document is an A4 page on white paper, set in the project\'s own sizes, and says so', async ({ page }) => {
+  await createProject(page, 'Paper', 'Brand Typography System')
+  const preview = page.getByTestId('brand-preview')
+  await preview.getByText('Printed document', { exact: true }).click()
+  await expect(preview).toHaveAttribute('data-app', 'document')
+  await expect(preview).toHaveAttribute('data-viewport', '794') // A4 at 96 dpi, whatever the screen
+  await expect(preview.getByTestId('paper-note')).toContainText('A4 (210 × 297 mm)')
+  // Paper has no dark mode and no phone width: those controls are not offered here.
+  await expect(preview.getByText('Dark', { exact: true })).toHaveCount(0)
+  await expect(preview.getByText('Phone 390', { exact: true })).toHaveCount(0)
+  const paper = preview.getByTestId('paper')
+  const box = (await paper.boundingBox())!
+  expect(box.height / box.width).toBeGreaterThanOrEqual(297 / 210 - 0.02) // at least the A4 proportion
+  expect(await preview.getByTestId('preview-surface').evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(255, 255, 255)')
+  for (const slot of ['letterhead', 'title', 'deck', 'p-0', 'h2', 'p-1', 'td-1-amount', 'total-amount', 'note', 'footer']) await expect(preview.locator(`[data-slot="${slot}"]`)).toBeVisible()
+  // Sizes come from the same scale as every other context: the title is the heading-1 style, larger than the body.
+  const px = (slot: string) => preview.locator(`[data-slot="${slot}"]`).evaluate((e) => parseFloat(getComputedStyle(e).fontSize))
+  expect(await px('title')).toBeGreaterThan(await px('p-0'))
+  // Back to another context, the surface choice returns.
+  await preview.getByText('Website', { exact: true }).click()
+  await expect(preview.getByText('Dark', { exact: true })).toBeVisible()
+})
+
+test('the preview environment: five contexts, light and dark surfaces, widths, and saved sample text', async ({ page }) => {
   await createProject(page, 'Env', 'Brand Typography System')
   const preview = page.getByTestId('brand-preview')
   const surface = preview.getByTestId('preview-surface')
-  for (const [name, slot] of [['Website', 'headline'], ['Editorial', 'title'], ['Product interface', 'title'], ['Poster', 'headline']] as const) {
+  for (const [name, slot] of [['Website', 'headline'], ['Editorial', 'title'], ['Product interface', 'title'], ['Poster', 'headline'], ['Printed document', 'title']] as const) {
     await preview.getByText(name, { exact: true }).click()
     await expect(surface).toBeVisible()
     await expect(preview.locator(`[data-slot="${slot}"]`)).toBeVisible()
