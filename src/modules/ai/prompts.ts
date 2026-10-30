@@ -1,6 +1,6 @@
-import { CORNER_STYLES, FAMILIES, TERMINALS, TONES, USE_CASES } from '../brand-projects/schema'
-import { DNA_CONTROLS, FAMILY_LABELS, type Family } from '../typeface-engine/dna'
-import { SUGGESTED_KEYS, type AiTask } from './schemas'
+import { CORNER_STYLES, FAMILIES, TERMINALS, TONES, USE_CASES } from '../brand-projects/schema.ts'
+import { DNA_CONTROLS, FAMILY_LABELS, type Family } from '../typeface-engine/dna.ts'
+import { SUGGESTED_KEYS, type AiTask } from './schemas.ts'
 
 /**
  * The instructions sent to the model. The ranges come from the same controls the typeface editor uses, so the

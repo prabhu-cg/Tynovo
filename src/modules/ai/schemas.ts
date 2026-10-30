@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { CORNER_STYLES, FAMILIES, TERMINALS, TONES, USE_CASES, type Dna, type Tone, type UseCase } from '../brand-projects/schema'
-import { DNA_CONTROLS } from '../typeface-engine/dna'
+import { CORNER_STYLES, FAMILIES, TERMINALS, TONES, USE_CASES, type Dna, type Tone, type UseCase } from '../brand-projects/schema.ts'
+import { DNA_CONTROLS } from '../typeface-engine/dna.ts'
 
 /**
  * What goes between the page, the server function and the model. Shared by both ends, pure (zod only), so the page

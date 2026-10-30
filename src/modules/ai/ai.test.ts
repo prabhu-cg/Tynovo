@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { execFileSync } from 'node:child_process'
+import { resolve } from 'node:path'
 import { DNA_CONTROLS } from '../typeface-engine/dna'
 import { DEFAULT_MODEL, GROQ_URL, handleAi, RATE, RateLimiter, type AiDeps } from './handler'
 import { buildMessages } from './prompts'
@@ -191,5 +193,16 @@ describe('the function', () => {
     expect(l.allow('a', 1000)).toBe(false)
     expect(l.allow('b', 1000)).toBe(true) // another address is unaffected
     expect(l.allow('a', RATE.windowMs + 1)).toBe(true)
+  })
+})
+
+describe('the deployed function loads', () => {
+  it('under plain Node ESM, as it does on Vercel (no bundler: every import in its closure needs its .ts extension and no alias)', () => {
+    // A missing extension here once made every call to the live function fail with ERR_MODULE_NOT_FOUND while all other tests passed.
+    const entry = resolve('api/ai.ts')
+    const script = `const m = await import(${JSON.stringify(entry)}); const r = await m.POST(new Request('https://x.test/api/ai', { method: 'POST', headers: { origin: 'https://x.test' }, body: '{}' })); console.log(JSON.stringify({ status: r.status, body: await r.json(), get: m.GET().status }))`
+    const out = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', env: { PATH: process.env['PATH'] ?? '' } })
+    const result = JSON.parse(out.trim().split('\n').pop()!)
+    expect(result).toMatchObject({ status: 503, get: 405, body: { ok: false, error: 'unavailable' } }) // no key in this environment: it answers rather than crashing
   })
 })

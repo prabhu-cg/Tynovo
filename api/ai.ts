@@ -1,4 +1,4 @@
-import { handleAi } from '../src/modules/ai/handler'
+import { handleAi } from '../src/modules/ai/handler.ts'
 
 /**
  * POST /api/ai: forwards a brief to Groq with the key held in the GROQ_API_KEY environment variable and returns a
