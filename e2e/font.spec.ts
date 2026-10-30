@@ -35,14 +35,12 @@ test('font lab builds a genuine TrueType file the browser accepts and renders', 
 test.describe('custom typeface creator', () => {
   test('starts from a family and reports honest coverage', async ({ page }) => {
     await startTypeface(page)
-    await expect(page.getByText('90 of 95 characters supported')).toBeVisible()
+    await expect(page.getByText('95 of 95 characters supported')).toBeVisible()
     await page.getByRole('button', { name: 'Coverage', exact: true }).click()
-    await expect(page.getByRole('status').filter({ hasText: '90 of 95 target characters supported' })).toBeVisible()
+    await expect(page.getByRole('status').filter({ hasText: '95 of 95 target characters supported' })).toBeVisible()
     await expect(page.getByRole('row', { name: /Uppercase A–Z 26 \/ 26/ })).toBeVisible()
-    await expect(page.getByRole('row', { name: /Punctuation and symbols 27 \/ 32/ })).toBeVisible()
-    const missing = page.getByRole('region', { name: 'Not in the font' }).or(page.locator('section[aria-labelledby="miss-h"]'))
-    for (const c of ['&', '@', '{', '}', '~']) await expect(missing.getByText(c, { exact: true })).toBeVisible()
-    await expect(missing.getByText('Not designed yet').first()).toBeVisible()
+    await expect(page.getByRole('row', { name: /Punctuation and symbols 32 \/ 32/ })).toBeVisible()
+    await expect(page.getByText('Every target character is supported.')).toBeVisible()
     await expect(page.getByText('Every generated glyph passes validation.')).toBeVisible()
   })
 
@@ -101,15 +99,6 @@ test.describe('custom typeface creator', () => {
     await page.getByRole('complementary', { name: 'Inspector for H' }).getByRole('button', { name: 'Remove every override on this glyph' }).click()
     await page.getByRole('button', { name: 'All glyphs' }).click()
     await expect(page.getByRole('button', { name: 'H, supported', exact: true })).toBeVisible()
-  })
-
-  test('a character without a design shows a clear missing state', async ({ page }) => {
-    await startTypeface(page)
-    await page.getByRole('button', { name: 'Glyphs', exact: true }).click()
-    await page.getByRole('button', { name: '~, missing' }).click()
-    await expect(page.getByText(/no design yet/)).toBeVisible()
-    await expect(page.getByRole('slider')).toHaveCount(0) // nothing to override on a glyph that does not exist
-    await expect(page.getByRole('application')).toHaveCount(0)
   })
 
   test('variants are deterministic, can be saved as favourites, applied and undone', async ({ page }) => {
@@ -181,16 +170,16 @@ test.describe('export', () => {
     await page.getByRole('button', { name: /Check and build/ }).click()
     const drawer = page.getByRole('complementary', { name: 'Font export' })
     await expect(drawer).toContainText('Built a TrueType (.ttf) file')
-    await expect(drawer).toContainText('90 of 95')
+    await expect(drawer).toContainText('95 characters map to 95 glyphs')
     await expect(drawer.getByRole('link', { name: 'Open the quality report' })).toBeVisible()
     const [download] = await Promise.all([page.waitForEvent('download'), drawer.getByRole('button', { name: /Download TestDisplay-Regular\.ttf/ }).click()])
     const bytes = readFileSync(await download.path())
     expect(bytes.readUInt32BE(0)).toBe(0x00010000)
     const font = fontkit.create(bytes) as fontkit.Font
     expect(font.familyName).toBe('Test Display')
-    expect(font.numGlyphs).toBe(91) // 90 supported + .notdef
-    for (const c of 'AHZaxz09.?!') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(true)
-    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(false)
+    expect(font.numGlyphs).toBe(96) // 95 supported + .notdef
+    for (const c of 'AHZaxz09.?!&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(true)
+    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(true)
     expect(font.glyphForCodePoint('I'.codePointAt(0)!).bbox.minY).toBe(0)
     await expect(page.getByText(/SHA-256 [0-9a-f]{64}/)).toBeVisible()
     await saved(page)
@@ -257,7 +246,7 @@ test('a Phase-0/1 project (schema v1) opens, is migrated and generates a full ty
   await page.getByRole('link', { name: 'Legacy project' }).click()
   await page.getByRole('link', { name: 'Custom Typeface Creator' }).click()
   await expect(page.getByLabel('Typeface name')).toHaveValue('Proof Sans')
-  await expect(page.getByText('90 of 95 characters supported')).toBeVisible()
+  await expect(page.getByText('95 of 95 characters supported')).toBeVisible()
   await expect(params(page).getByLabel('Stroke thickness')).toHaveAttribute('aria-valuetext', '130')
   await page.getByRole('button', { name: 'Glyphs', exact: true }).click()
   await expect(page.getByRole('button', { name: 'H, supported, has overrides' })).toBeVisible() // advance override survived

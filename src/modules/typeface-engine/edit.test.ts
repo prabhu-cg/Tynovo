@@ -96,7 +96,7 @@ describe('glyph overrides', () => {
     expect(f.overrides['O']!.leftBearing).toBe(20)
     expect(resetGlyph(f, 'O').overrides['O']).toBeUndefined()
     expect(resetGlyph(base, 'O')).toBe(base)
-    expect(freezeGlyph(base, '~')).toBe(base) // cannot freeze a glyph that does not exist
+    expect(freezeGlyph(base, 'é')).toBe(base) // cannot freeze a glyph that does not exist
   })
 
   it('resetAllOverrides clears everything and is a no-op when empty', () => {

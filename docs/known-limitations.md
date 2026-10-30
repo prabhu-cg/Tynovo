@@ -4,7 +4,7 @@ Everything outstanding that a user, a reviewer or a maintainer should know befor
 
 ## The product
 
-- **Typeface generator.** Draws letters, digits and most ASCII punctuation: **90 of the 95 target characters**. `& @ { } ~` are not designed. Latin only: no accented letters or other scripts.
+- **Typeface generator.** Draws all **95 printable ASCII characters**. **Latin only, by decision:** no accented letters and no other scripts (Greek, Cyrillic, Arabic, Indic, CJK). The website says so.
 - **Glyph editor.** A *point* editor for straight-segment outlines; **no Bézier curve editing**.
 - **Export formats.** TrueType (`.ttf`) and OpenType/CFF (`.otf`). **No WOFF or WOFF2** (not validated). **No generated PDF**: the HTML specimen prints cleanly to PDF from the browser.
 - **Font catalog.** 24 fixed families, all SIL OFL 1.1. A font named from the user's device is checked by a **heuristic** ("detected" / "not detected"), not proof.

@@ -159,7 +159,7 @@ describe('does the custom typeface suit a role?', () => {
   it('finds characters the typeface cannot draw in a given text', () => {
     const f = face()
     expect(missingChars(f, 'Cafe 12')).toEqual([])
-    expect(missingChars(f, 'Café\nA&B')).toEqual(['é', '&'])
+    expect(missingChars(f, 'Café\nA&B')).toEqual(['é'])
   })
 
   it('states its limits from the design, not from a fixed list', () => {
@@ -169,7 +169,7 @@ describe('does the custom typeface suit a role?', () => {
     expect(limits).toMatch(/basic Latin only/)
     expect(limits).toMatch(/0 pairs/)
     expect(typefaceLimits({ ...f, kerning: [{ left: 'A', right: 'V', value: -20 }] }).join('\n')).toMatch(/1 pair\)/)
-    expect(limits).toMatch(/Not designed yet: .*&/) // the engine does not draw '&' yet
+    expect(limits).not.toMatch(/Not designed yet/) // every target character has a design
   })
 })
 

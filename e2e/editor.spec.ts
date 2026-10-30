@@ -301,8 +301,8 @@ test.describe('text preview', () => {
   test('says which characters are not in the typeface', async ({ page }) => {
     await startTypeface(page)
     await page.getByRole('button', { name: 'Preview', exact: true }).click()
-    await page.getByLabel('Preview text').fill('Fish & chips')
-    await expect(page.getByRole('status').filter({ hasText: 'Not in this typeface' })).toContainText('&')
+    await page.getByLabel('Preview text').fill('Café chips')
+    await expect(page.getByRole('status').filter({ hasText: 'Not in this typeface' })).toContainText('é')
   })
 })
 
@@ -409,7 +409,7 @@ test.describe('font export formats', () => {
       expect(types).toContain(mime)
       const font = fontkit.create(bytes) as fontkit.Font
       expect(font.familyName).toBe('Export Check')
-      expect(font.numGlyphs).toBe(91)
+      expect(font.numGlyphs).toBe(96)
       await saved(page)
       await expect(page.getByText(`ExportCheck-Regular${ext}`).first()).toBeVisible()
       const history = (await readProjects(page))[0]!['exportHistory']

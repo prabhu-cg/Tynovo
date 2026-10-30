@@ -79,7 +79,7 @@ export const CAPABILITIES: readonly Capability[] = [
     id: 'generator',
     mode: 'typeface',
     title: 'Procedural typeface generator',
-    body: 'Three construction families (geometric, rounded and modular) draw letters, digits and most punctuation from design parameters: stroke, width, roundness, corners, terminals, spacing and more. A few symbols are not designed yet; the coverage report says exactly which.',
+    body: 'Three construction families (geometric, rounded and modular) draw all 95 printable ASCII characters (letters, digits, punctuation and symbols) from design parameters: stroke, width, roundness, corners, terminals, spacing and more. The script is Latin only: no accented letters and no other scripts. The coverage report lists exactly what is in your font.',
     status: 'early',
   },
   {
@@ -126,9 +126,6 @@ export const CAPABILITIES: readonly Capability[] = [
   },
 ]
 
-/** Symbols the generator does not design yet. A test keeps this equal to what the engine really reports as missing. */
-export const UNSUPPORTED_SYMBOLS = '&@{}~'
-
 export const byMode = (mode: Capability['mode']) => CAPABILITIES.filter((c) => c.mode === mode)
 
 export interface Faq {
@@ -149,7 +146,7 @@ export const FAQS: readonly Faq[] = [
   { group: 'Fonts and licensing', q: 'Can I use a font I export commercially?', a: 'That depends on the licence you choose for it. You set the licence and copyright for your typeface and they are written into the file. Tynovo does not verify licences and nothing here is legal advice.' },
   { group: 'Fonts and licensing', q: 'Why is the app GPL-3.0?', a: 'Tynovo bundles Font Flux JS, which is GPL-3.0-only, so the app is distributed under the same licence. Fonts you export are your own work and are not covered by the app’s licence.' },
   { group: 'Fonts and licensing', q: 'Can I use existing fonts in a project?', a: 'Yes. Browse 24 bundled fonts under the SIL Open Font License 1.1, or name a font installed on your device (Tynovo checks whether it can find it) and record its licence. Exports name these fonts but never include their files, so you supply them separately. The catalog is small and fixed: it is not every font.' },
-  { group: 'Limitations', q: 'Which characters can the generator draw?', a: `Uppercase and lowercase letters, digits and most ASCII punctuation. These symbols are not designed yet: ${[...UNSUPPORTED_SYMBOLS].join(' ')}. Inside the app, the Coverage view lists exactly what is in your font and why anything is missing.` },
+  { group: 'Limitations', q: 'Which characters can the generator draw?', a: 'All 95 printable ASCII characters: uppercase and lowercase letters, digits, punctuation and symbols. The script is Latin only, and only basic Latin: there are no accented letters (é, ñ, ü) and no Greek, Cyrillic, Arabic, Indic, CJK or other scripts. Inside the app, the Coverage view lists exactly what is in your font.' },
   { group: 'Limitations', q: 'Which file formats can I export?', a: 'TrueType (.ttf) and OpenType with CFF outlines (.otf) for your generated typeface (only glyphs that pass validation are included), and a project file for any project. WOFF and WOFF2 are not offered: the font library can write them, but they have not been validated here.' },
   { group: 'Limitations', q: 'Will the exported font work in my design tool?', a: 'Exported files have been checked with fontTools, fontkit and Font Flux’s own validator, rendered in Chromium and compared with the preview, and opened by macOS CoreText. They have not been tested in Figma, Illustrator, Glyphs, Windows applications, Firefox or Safari, so test the file in your own tools before relying on it.' },
   { group: 'Limitations', q: 'Can I export a PDF?', a: 'Tynovo does not generate PDFs. The HTML specimen is built to print cleanly, so printing it to PDF from your browser gives you one.' },

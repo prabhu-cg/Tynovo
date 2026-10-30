@@ -1,7 +1,6 @@
 // @vitest-environment node
 import type { CustomTypeface, Dna, Glyph } from '../brand-projects/schema'
 import { analyzeTypeface } from '../font-validation/coverage'
-import { UNSUPPORTED_SYMBOLS } from '../marketing/content'
 import { isClockwise } from '../glyph-editor/geometry'
 import { defaultDna, deriveMetrics, DNA_CONTROLS, type Family } from './dna'
 import { patchDna, resetGlyph, setGlyphParams, setGlyphSpacing, freezeGlyph } from './edit'
@@ -48,18 +47,14 @@ describe('character coverage', () => {
     expect(byId['lower']).toMatchObject({ supported: 26, total: 26, invalid: [], missing: [] })
     expect(byId['digits']).toMatchObject({ supported: 10, total: 10, invalid: [], missing: [] })
     expect(byId['space']).toMatchObject({ supported: 1, total: 1 })
-    // The symbols documented as not designed are precisely the ones the engine reports as missing.
-    expect(byId['punctuation']!.missing.sort()).toEqual([...UNSUPPORTED_SYMBOLS].sort())
-    expect(byId['punctuation']!.invalid).toEqual([])
-    expect(a.supportedCount).toBe(95 - UNSUPPORTED_SYMBOLS.length)
+    expect(byId['punctuation']).toMatchObject({ supported: 32, total: 32, invalid: [], missing: [] })
+    expect(a.supportedCount).toBe(95)
     expect(a.supported).toHaveLength(a.supportedCount)
   })
 
-  it('names a missing glyph and says why', () => {
-    const r = generateGlyph(defaultDna('geometric'), '~')
-    expect(r).toMatchObject({ ok: false, reason: 'no-recipe' })
-    const a = analyzeTypeface(faceOf('geometric'))
-    expect(a.reports.get('~')).toMatchObject({ status: 'missing', reason: 'no-recipe', glyph: null })
+  it('names a character outside the Latin ASCII set as having no recipe, and says why', () => {
+    for (const c of ['é', 'ñ', 'Ω', 'あ']) expect(generateGlyph(defaultDna('geometric'), c), c).toMatchObject({ ok: false, reason: 'no-recipe' })
+    expect(generateGlyph(defaultDna('geometric'), 'é')).toMatchObject({ message: expect.stringContaining('No recipe') })
   })
 
   it('a frozen outline that fails validation is reported as invalid, not hidden or exported', () => {
@@ -165,6 +160,37 @@ function areaOf(c: Glyph['contours'][number]) {
   }
   return s / 2
 }
+
+describe('symbols & @ { } ~', () => {
+  const dna = defaultDna('geometric')
+  const m = deriveMetrics(dna)
+  const holes = (g: Glyph) => g.contours.filter((c) => !isClockwise(c)).length
+
+  it.each(['&', '@', '{', '}', '~'])('%s stays inside the font’s vertical metrics', (ch) => {
+    const b = bbox(glyphOf(dna, ch))
+    expect(b.maxY).toBeLessThanOrEqual(m.ascender)
+    expect(b.minY).toBeGreaterThanOrEqual(m.descender)
+  })
+
+  it('& is two bowls (two counters), @ has the inner bowl counter, braces and tilde are solid', () => {
+    expect(holes(glyphOf(dna, '&'))).toBeGreaterThanOrEqual(2)
+    expect(holes(glyphOf(dna, '@'))).toBeGreaterThanOrEqual(1)
+    for (const ch of ['{', '}', '~']) expect(holes(glyphOf(dna, ch)), ch).toBe(0)
+  })
+
+  it('} is { turned round: same height and same ink width', () => {
+    const l = bbox(glyphOf(dna, '{'))
+    const r = bbox(glyphOf(dna, '}'))
+    expect(r.maxY - r.minY).toBe(l.maxY - l.minY)
+    expect(r.maxX - r.minX).toBe(l.maxX - l.minX)
+  })
+
+  it('the tilde sits around the middle of the x-height, between the baseline and the x-height line', () => {
+    const b = bbox(glyphOf(dna, '~'))
+    expect(b.minY).toBeGreaterThan(0)
+    expect(b.maxY).toBeLessThan(m.xHeight)
+  })
+})
 
 describe('parameters reach the glyphs they should', () => {
   const visible = (face: CustomTypeface) => analyzeTypeface(face).supported.filter((g) => g.char !== ' ')

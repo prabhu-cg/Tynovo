@@ -60,7 +60,7 @@ describe('Font Flux TrueType export (generated typeface)', () => {
     // The font contains exactly the glyphs that passed validation: every one present, every missing one absent.
     const analysis = analyzeTypeface(typeface)
     for (const g of analysis.supported) expect(font.hasGlyphForCodePoint(g.char.codePointAt(0)!), g.char).toBe(true)
-    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(false)
+    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(true)
     // Advance widths in the file equal the generator's.
     for (const g of analysis.supported) expect(font.glyphForCodePoint(g.char.codePointAt(0)!).advanceWidth, g.char).toBe(g.advanceWidth)
 
@@ -77,7 +77,7 @@ describe('Font Flux TrueType export (generated typeface)', () => {
     const { FontFlux } = await import('font-flux-js')
     const f = FontFlux.open(result.bytes)
     expect(f.info.familyName).toBe('Test Display')
-    expect(f.glyphCount).toBe(90 + 1) // every supported glyph + .notdef
+    expect(f.glyphCount).toBe(95 + 1) // every supported glyph + .notdef
     expect(f.getKerning('A', 'T')).toBe(-60)
   })
 

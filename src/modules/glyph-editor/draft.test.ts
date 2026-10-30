@@ -11,7 +11,7 @@ describe('draft bridge', () => {
     expect(appliedDraft(face(), 'H')).toEqual(generatedDraft(face(), 'H'))
   })
   it('characters with no design have no draft', () => {
-    expect(appliedDraft(face(), '~')).toBeNull()
+    expect(appliedDraft(face(), 'é')).toBeNull()
   })
   it('applying an edit freezes the glyph with the edited outline and advance, and the project then reproduces it', () => {
     const f = face()
