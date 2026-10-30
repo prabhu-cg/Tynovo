@@ -72,7 +72,7 @@ test.describe('glyph editor', () => {
     await expect(ask).toBeHidden()
 
     // Leaving through the project navigation asks too.
-    await page.getByRole('link', { name: 'Overview' }).click()
+    await page.getByRole('link', { name: 'Brand', exact: true }).click()
     const leave = page.getByRole('alert').filter({ hasText: 'outline changes that are not applied' })
     await expect(leave).toBeVisible()
     await leave.getByRole('button', { name: 'Keep editing' }).click()
@@ -104,7 +104,7 @@ test.describe('glyph editor', () => {
     await canvas.focus()
     await page.keyboard.press(']')
     await page.keyboard.press('ArrowRight')
-    await page.getByRole('link', { name: 'Overview' }).click()
+    await page.getByRole('link', { name: 'Brand', exact: true }).click()
     await page.getByRole('alert').getByRole('button', { name: 'Apply and leave' }).click()
     await expect(page).toHaveURL(/\/projects\/[^/]+$/)
     await saved(page)

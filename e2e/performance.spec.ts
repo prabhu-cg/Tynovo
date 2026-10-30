@@ -31,16 +31,16 @@ test.describe('what is downloaded, and when', () => {
   test('the font writer stays out of every page that has no typeface, loads once where a real font is needed, and its wasm never loads', async ({ page }) => {
     const net = transfers(page)
     await createProject(page, 'Lazy', 'Overview')
-    const sections = page.getByRole('navigation', { name: 'Project sections' })
-    for (const section of ['Font catalog', 'Brand Typography System']) {
-      await sections.getByRole('link', { name: section }).click()
+    const sections = page.getByRole('navigation', { name: 'Workflow steps' })
+    for (const section of ['Fonts', 'Roles']) {
+      await sections.getByRole('link', { name: section, exact: true }).click()
       await expect(page.getByRole('main')).toBeVisible()
     }
     await page.waitForTimeout(1500) // a lazy load would have started by now
     expect(net.any(/font-flux/)).toBe(false)
 
     // The typeface editor draws the real exported font next to its own drawing, so it needs the writer.
-    await sections.getByRole('link', { name: 'Custom Typeface Creator' }).click()
+    await sections.getByRole('link', { name: 'Typeface', exact: true }).click()
     await page.getByRole('button', { name: /Start with Rounded/ }).click()
     await expect(page.getByLabel('Typeface name')).toBeVisible()
     await expect.poll(() => net.count(/font-flux/)).toBe(1)
@@ -55,7 +55,7 @@ test.describe('what is downloaded, and when', () => {
   test('scrolling the whole font catalog downloads a bounded number of font files, not all of them', async ({ page }) => {
     const net = transfers(page)
     await createProject(page, 'Catalog', 'Overview')
-    await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Font catalog' }).click()
+    await page.getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Fonts', exact: true }).click()
     await expect(page.getByRole('main')).toBeVisible()
     for (let i = 0; i < 40; i++) {
       await page.mouse.wheel(0, 1200)

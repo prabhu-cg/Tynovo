@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
-import { Banner, CloseIcon, Logo, MenuIcon, ScrollToTop, ThemeMenu } from '@/modules/shared-ui'
+import { Banner, CloseIcon, HelpIcon, Logo, MenuIcon, ScrollToTop, ThemeMenu } from '@/modules/shared-ui'
 import { useCapabilities } from './entitlements'
+import { HelpPanel } from './help/HelpPanel'
+import { announcePanel } from './panels'
 import { StudioProvider } from './StudioContext'
 import { useStudio } from './studio'
 
@@ -28,6 +30,25 @@ function Shell() {
   const { storageWarning, storageKind } = useStudio()
   const caps = useCapabilities()
   const [open, setOpen] = useState(false)
+  const [help, setHelp] = useState(false)
+  const toggleHelp = () => {
+    if (!help) announcePanel('help')
+    setHelp(!help)
+  }
+  // ? opens and closes Help from anywhere, except while typing.
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey || t?.closest('input, textarea, select, [contenteditable="true"]')) return
+      e.preventDefault()
+      setHelp((h) => {
+        if (!h) announcePanel('help')
+        return !h
+      })
+    }
+    window.addEventListener('keydown', on)
+    return () => window.removeEventListener('keydown', on)
+  }, [])
   return (
     <div className="min-h-dvh bg-paper md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
       <a href="#app-main" className="sr-only z-50 rounded-md bg-ink-strong px-4 py-2 text-paper focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
@@ -49,10 +70,11 @@ function Shell() {
               <Link to="/" className="flex min-h-11 items-center"><Logo size="sm" tagline={false} /><span className="sr-only">, go to the website</span></Link>
             </div>
             <div className="hidden md:block" />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <p className="hidden text-xs text-ink-soft sm:block">
                 Storage: <span className="font-semibold">{storageKind === 'indexeddb' ? 'this browser (IndexedDB)' : 'memory only'}</span>
               </p>
+              <button type="button" aria-label="Help" aria-expanded={help} aria-haspopup="dialog" aria-keyshortcuts="?" onClick={toggleHelp} className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold text-ink-strong transition-colors hover:bg-sheet-deep md:min-h-9"><HelpIcon /><span className="hidden sm:inline">Help</span></button>
               <ThemeMenu />
             </div>
           </header>
@@ -69,6 +91,8 @@ function Shell() {
       </main>
       </div>
       <ScrollToTop />
+      {/* Outside the sticky, blurred top bar: that blur would clip a fixed panel placed inside it. */}
+      <HelpPanel open={help} onClose={() => setHelp(false)} />
     </div>
   )
 }

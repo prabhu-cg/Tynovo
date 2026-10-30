@@ -13,7 +13,7 @@ const COVERS_PAGE = '(max-width: 640px)'
  */
 export function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLElement>(null)
-  const { mounted, closing } = usePresence(open, 170) // long enough for the exit animation in index.css
+  const { mounted, closing } = usePresence(open, 230) // long enough for the exit animation in index.css (220ms)
 
   useEffect(() => {
     if (!open) return

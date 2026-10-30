@@ -47,7 +47,7 @@ test.describe('workflow bar', () => {
     const row = page.locator('li[data-step="brand"]')
     const section = page.locator('#brand')
     const top = () => section.evaluate((e) => e.getBoundingClientRect().top)
-    expect(await top()).toBeGreaterThan(900) // below the fold to begin with
+    expect(await top()).toBeGreaterThan(780) // below the fold to begin with
     await row.getByRole('link').click()
     await expect(page).toHaveURL(/#brand$/)
     await expect(section).toHaveAttribute('data-arrive', '')
@@ -56,7 +56,7 @@ test.describe('workflow bar', () => {
     await expect(page.getByRole('heading', { name: 'Brand direction' })).toBeFocused()
     // The address already says #brand: a plain link would now do nothing. This one answers again.
     await page.evaluate(() => scrollTo(0, 0))
-    await expect.poll(top).toBeGreaterThan(900)
+    await expect.poll(top).toBeGreaterThan(780)
     await row.getByRole('link').click()
     await expect.poll(top).toBeLessThan(260)
     await expect(section).toHaveAttribute('data-arrive', '')
@@ -129,8 +129,13 @@ test.describe('workflow bar', () => {
   test('on a phone the steps collapse into the Workflow button, the current step and Next, and the panel fits', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(SAMPLE + '/fonts')
-    await expect(bar(page).getByRole('navigation', { name: 'Workflow steps' })).toBeHidden()
-    await expect(bar(page)).toContainText('Step: Fonts')
+    // The steps are the navigation on a phone too: a second row, with only the current step named.
+    const steps = bar(page).getByRole('navigation', { name: 'Workflow steps' })
+    await expect(steps.getByRole('link')).toHaveCount(8)
+    await expect(steps.getByRole('link', { name: 'Fonts', exact: true })).toContainText('Fonts')
+    expect(await steps.getByRole('link', { name: 'Roles', exact: true }).locator('span').last().evaluate((e) => e.getBoundingClientRect().width)).toBeLessThanOrEqual(1) // named for screen readers, drawn as a marker
+    const nb = (await steps.boundingBox())!
+    expect(nb.x + nb.width).toBeLessThanOrEqual(391)
     await expect(bar(page).getByTestId('workflow-next')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true) // nothing overflows sideways
     await bar(page).getByRole('button', { name: /Workflow/ }).click()

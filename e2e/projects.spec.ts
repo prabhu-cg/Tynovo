@@ -34,8 +34,8 @@ test('edits autosave and survive a reload', async ({ page }) => {
 test('switching section right after typing still saves the edit', async ({ page }) => {
   await createProject(page, 'Quick')
   await page.getByRole('textbox', { name: 'Project name', exact: true }).fill('Quick renamed')
-  await page.getByRole('link', { name: 'Brand Typography System' }).click() // before the autosave pause elapses
-  await expect(page).toHaveURL(/\/typography$/)
+  await page.getByRole('link', { name: 'Roles', exact: true }).click() // before the autosave pause elapses
+  await expect(page).toHaveURL(/\/typography#roles$/)
   await page.reload()
   await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue('Quick renamed')
 })

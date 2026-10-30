@@ -79,8 +79,9 @@ export function RolesEditor() {
                 data-font-origin={font.origin}
                 data-font-state={usesCustom ? customFont.state : 'n/a'}
                 data-font-revision={usesCustom ? customFont.revision : undefined}
-                className="min-w-0 truncate whitespace-nowrap text-ink-strong"
-                style={{ ...styleProps(draft, styles.get(role.id) ?? null, draft.typography.responsive.maxViewportPx), fontSize: Math.min(spec.maxPx, 72) }}
+                className="min-w-0 overflow-hidden pb-[0.18em] text-ellipsis whitespace-nowrap text-ink-strong"
+                // A tight line height (a display role's 1.05) would cut the descender of g, p and y off at the box: this sample is a specimen, so it always gets room for them.
+                style={{ ...styleProps(draft, styles.get(role.id) ?? null, draft.typography.responsive.maxViewportPx), fontSize: Math.min(spec.maxPx, 72), lineHeight: 1.3 }}
               >
                 Hamburgefonstiv 0123456789
               </p>
