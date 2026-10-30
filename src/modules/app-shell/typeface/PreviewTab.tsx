@@ -63,9 +63,9 @@ export function PreviewTab({ face }: { face: CustomTypeface }) {
           <RangeField label="Word spacing" value={settings.wordSpacing} min={-200} max={600} step={10} format={fmtEm} defaultValue={0} onChange={(v) => set('wordSpacing', v)} />
           <RangeField label="Line height" value={settings.lineHeight} min={1} max={2} step={0.05} format={(v) => v.toFixed(2)} defaultValue={DEFAULTS.lineHeight} onChange={(v) => set('lineHeight', v)} />
         </div>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
           <label className="flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-strong md:min-h-9"><input type="checkbox" checked={guides} onChange={(e) => setGuides(e.target.checked)} className="size-4 accent-accent" />Baselines</label>
-          <div className="w-full sm:w-80"><Segmented label="Show" value={show} options={[{ value: 'both', label: 'Both' }, { value: 'editor', label: 'Editor preview' }, { value: 'file', label: 'Exported file' }]} onChange={setShow} /></div>
+          <div className="w-full sm:w-[26rem]"><Segmented label="Show" value={show} options={[{ value: 'both', label: 'Both' }, { value: 'editor', label: 'Editor preview' }, { value: 'file', label: 'Exported file' }]} onChange={setShow} /></div>
           {spacingChanged ? <Button variant="ghost" onClick={() => setSettings((s) => ({ ...s, tracking: 0, wordSpacing: 0 }))}>Reset spacing</Button> : null}
         </div>
         <p className="max-w-3xl text-xs text-ink-soft">Letter and word spacing here change only how this preview is drawn. They are not saved and not written into the font; set a glyph’s own spacing in the glyph editor, and kerning pairs under Quality.</p>
