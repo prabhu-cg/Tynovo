@@ -19,7 +19,7 @@ test.describe('with motion allowed', () => {
   test('the drawer slides in from the right edge (right to left) in about 360ms, and is not instant', async ({ page }) => {
     const drawer = await openDrawer(page)
     expect(await anim(drawer)).toEqual({ name: 'drawer-in', ms: 360 })
-    const early = await drawer.evaluate(async (e) => { await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const c = getComputedStyle(e); return { opacity: parseFloat(c.opacity), x: new DOMMatrix(c.transform).m41 } })
+    const early = await drawer.evaluate((e) => { const a = e.getAnimations()[0]!; a.pause(); a.currentTime = 20; const x = new DOMMatrix(getComputedStyle(e).transform).m41; a.play(); return { x } }) // 20ms in, whatever the machine's speed
     expect(early.x, 'still travelling in from the right, with most of its width to go').toBeGreaterThan(150)
     await expect.poll(async () => drawer.evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m41)).toBe(0) // and it settles in place
   })

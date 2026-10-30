@@ -32,6 +32,18 @@ export function Drawer({ open, title, onClose, children }: { open: boolean; titl
       undo?.()
     }
   }, [open])
+  // Pressing anywhere outside closes it. Its opener is left alone (aria-expanded, or data-drawer-opener for a list of things that each open it), as is anything in a dialog on top.
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      const t = e.target
+      if (!(t instanceof Element) || ref.current?.contains(t)) return
+      if (t.closest('[aria-expanded="true"], [role="dialog"], [role="alertdialog"], [data-drawer], [data-drawer-opener]')) return
+      onClose()
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [open, onClose])
   useReturnFocus(open) // after the effect above: the page must not be inert when focus goes back
 
   if (!mounted) return null

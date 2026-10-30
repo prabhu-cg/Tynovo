@@ -72,9 +72,11 @@ test.describe('help', () => {
     const drawer = page.getByRole('complementary', { name: 'Help' })
     await expect(drawer.getByTestId('help-screen')).toContainText('Brand Typography System')
     await expect(drawer.getByTestId('help-screen')).toContainText('Roles, pairing, the type scale')
-    // Still open on another screen, now explaining that one.
+    // Pressing outside closes it; opened again on another screen it explains that one.
     await page.getByTestId('workflow-bar').getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Fonts', exact: true }).click()
     await expect(page).toHaveURL(/\/fonts$/)
+    await expect(drawer).toHaveCount(0)
+    await open.click()
     await expect(drawer.getByTestId('help-screen')).toContainText('Font catalog')
     // Topics open on demand.
     await drawer.locator('[data-topic="keys"] summary').click()
@@ -141,4 +143,15 @@ test.describe('help', () => {
       expect(r.violations.map((v) => `${theme} ${v.id}: ${v.nodes[0]?.target}`)).toEqual([])
     }
   })
+})
+
+test('pressing anywhere outside a drawer closes it, and pressing inside does not', async ({ page }) => {
+  await createProject(page, 'Outside')
+  await page.getByRole('button', { name: /^Workflow/ }).click()
+  const drawer = page.getByRole('complementary', { name: 'Workflow' })
+  await expect(drawer).toBeVisible()
+  await drawer.getByRole('heading', { name: 'Workflow' }).click()
+  await expect(drawer).toBeVisible()
+  await page.getByRole('main').click({ position: { x: 5, y: 5 } })
+  await expect(drawer).toHaveCount(0)
 })
