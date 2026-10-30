@@ -74,7 +74,7 @@ export function workflowSteps(project: Project, currentRevision: string | null):
       id: 'preview',
       title: 'Preview',
       state: withFont.length > 0 ? 'done' : 'todo',
-      detail: withFont.length > 0 ? 'Website, editorial, product interface and poster, light and dark.' : 'Assign a font to see previews.',
+      detail: withFont.length > 0 ? 'Website, editorial, product interface, poster and printed document, light and dark.' : 'Assign a font to see previews.',
       to: 'typography#previews',
     },
     {

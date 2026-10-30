@@ -9,7 +9,7 @@ Everything outstanding that a user, a reviewer or a maintainer should know befor
 - **Export formats.** TrueType (`.ttf`) and OpenType/CFF (`.otf`). **No WOFF or WOFF2** (not validated). The **PDF specimen** is drawn by Tynovo in the browser with real text; it embeds your typeface and the bundled catalog fonts it uses, and draws any font you only named in Helvetica (it cannot embed a font it does not have).
 - **Font catalog.** 52 fixed families, all SIL OFL 1.1 (not every font: the set is chosen, and bundling a family is a deliberate step, see `npm run catalog`). A font named from the user's device is checked by a **heuristic** ("detected" / "not detected"), not proof.
 - **Brand direction, roles, pairing.** Fixed, readable scoring rules, not an AI model; suggestions are an aid, not a verdict.
-- **Previews.** Website, editorial, product screen and poster. **No printed-document layout.**
+- **Previews.** Website, editorial, product screen, poster and a printed document (an A4 page, always on white paper; a preview, not a print job).
 - **No accounts, sync, server or payments.** Paid plans do not exist (`docs/monetisation-architecture.md`). Everything shipped is free.
 
 ## Where it has and has not been tested

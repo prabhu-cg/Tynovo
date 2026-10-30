@@ -28,7 +28,7 @@ Base size and ratio; heading levels H1–H6 and body large/small as steps (`typo
 
 ## Preview
 
-Contexts: website (navigation, hero, buttons, editorial card), editorial (long-form text with headings, notes), product interface, poster. Light/dark surfaces; widths phone 390, tablet 768, fit. Sample copy is editable and **saved** (`brand.sampleCopy`), and the specimen uses it. All previews render from `typeStyles()` (`typography-system/tokens.ts`), the same description the CSS and tokens are generated from.
+Contexts: website (navigation, hero, buttons, editorial card), editorial (long-form text with headings, notes), product interface, poster, printed document (A4 on white paper at 96 dpi, scaled to fit; no surface or width choice). Light/dark surfaces; widths phone 390, tablet 768, fit. Sample copy is editable and **saved** (`brand.sampleCopy`), and the specimen uses it. All previews render from `typeStyles()` (`typography-system/tokens.ts`), the same description the CSS and tokens are generated from.
 
 ## Exports
 
@@ -36,4 +36,4 @@ As in `integrated-workflow.md`, plus: brand direction, heading/body sizes, respo
 
 ## Not done
 
-Fonts beyond the 24 (no live font APIs by design), non-Latin subsets, italic weights other than 400, variable-font axes, uploaded font files, a printed-document preview, localised sample text.
+Fonts beyond the 24 (no live font APIs by design), non-Latin subsets, italic weights other than 400, variable-font axes, uploaded font files, localised sample text.
