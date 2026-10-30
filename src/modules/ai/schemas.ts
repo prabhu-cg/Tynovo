@@ -32,7 +32,8 @@ export interface BrandSuggestion {
   rationale: string
 }
 
-const asArray = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
+/** A list from the model: a JSON array, or (as some models write it) one string with the items separated by commas, semicolons or lines. */
+const asArray = (v: unknown): unknown[] => (Array.isArray(v) ? v : typeof v === 'string' ? v.split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean) : [])
 const clampInt = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '')
 const oneOf = <T extends string>(values: readonly T[], list: unknown[]): T[] => [...new Set(list.filter((x): x is T => typeof x === 'string' && (values as readonly string[]).includes(x.toLowerCase())).map((x) => x.toLowerCase() as T))]

@@ -21,6 +21,8 @@ function brandSystem(): string {
     '- "readabilityPriority": integer 1 to 5, how much the type must carry long, small text (articles, documentation, forms).',
     '- "displayPriority": integer 1 to 5, how much the type must carry large, expressive text (headlines, posters).',
     '- "rationale": one or two plain sentences saying why.',
+    'Lists must be JSON arrays of strings, never one comma-separated string. Example of the exact shape:',
+    '{"personality":["warm","unhurried","literate"],"useCases":["consumer","editorial"],"tones":["friendly","elegant"],"readabilityPriority":4,"displayPriority":2,"rationale":"..."}',
   ].join('\n')
 }
 
