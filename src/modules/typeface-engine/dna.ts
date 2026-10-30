@@ -1,4 +1,4 @@
-import { dnaSchema, type Dna, type FontMetrics, type GlyphParams } from '../brand-projects/schema'
+import { dnaSchema, type Dna, type FontMetrics, type GlyphParams } from '../brand-projects/schema.ts'
 
 export type Family = Dna['family']
 
