@@ -24,7 +24,7 @@ describe('a fresh typeface (what the checks say about the generator’s own outp
   it.each(['geometric', 'rounded', 'modular'] as const)('%s: nothing blocking, and no unexplained geometry findings', (family) => {
     const r = run(base(family))
     expect(r.counts.blocking).toBe(0)
-    const known = ['metadata.copyright', 'metadata.license', 'coverage.not-designed', 'spacing.loose-pairs']
+    const known = ['metadata.copyright', 'metadata.license', 'spacing.loose-pairs']
     // The rounded family’s e dips below the baseline overshoot (documented in typeface-engine.md); the checker reports it.
     if (family === 'rounded') known.push('metrics.baseline')
     expect(ids(r).sort()).toEqual(known.sort())
@@ -34,9 +34,9 @@ describe('a fresh typeface (what the checks say about the generator’s own outp
     expect(ids(run(createTypeface('x', 'geometric')))).toContain('metadata.placeholder-name')
   })
 
-  it('reports the five undesigned symbols and every finding carries what, numbers and why', () => {
+  it('finds nothing missing in a fresh typeface and every finding carries what, numbers and why', () => {
     const r = run(base())
-    expect(get(r, 'coverage.not-designed')!.glyphs.join('')).toBe('&@{}~')
+    expect(get(r, 'coverage.not-designed')).toBeUndefined()
     for (const f of r.findings) {
       expect(f.title, f.id).not.toBe('')
       expect(f.detail, f.id).not.toBe('')
@@ -206,10 +206,10 @@ describe('metrics, widths and spacing', () => {
   })
 
   it('kerning values and dangling pairs are checked', () => {
-    const f = { ...setKerning(setKerning(base(), 'A', 'V', -300), 'A', '~', -20), kerning: [{ left: 'A', right: 'V', value: -300 }, { left: 'A', right: '~', value: -20 }] }
+    const f = { ...setKerning(setKerning(base(), 'A', 'V', -300), 'A', 'é', -20), kerning: [{ left: 'A', right: 'V', value: -300 }, { left: 'A', right: 'é', value: -20 }] }
     const r = run(f)
     expect(get(r, 'spacing.extreme-kerning')!.evidence).toEqual(['AV: -300'])
-    expect(get(r, 'kerning.missing-glyph')!.evidence).toEqual(['A~: -20'])
+    expect(get(r, 'kerning.missing-glyph')!.evidence).toEqual(['Aé: -20'])
   })
 })
 

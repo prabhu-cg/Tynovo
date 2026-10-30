@@ -71,7 +71,7 @@ Identical DNA + overrides + engine version always produce byte-identical glyphs:
 
 Target set: the 95 printable ASCII characters (A–Z, a–z, 0–9, 32 punctuation/symbols, space). A character is **supported** only when a recipe exists *and* its outline passes validation. The app shows supported / invalid / missing per group and per character; exports contain exactly the supported glyphs.
 
-**Not designed yet: `& @ { } ~`** (90 of 95 supported in every family). `marketing/content.ts` holds this list and a test fails if it drifts from what the engine reports. Characters outside ASCII (accents, symbols) are out of scope for this phase.
+**All 95 target characters are designed in every family.** The script is Latin only, basic ASCII: accents and other scripts are out of scope, and the website says so (`marketing/content.ts`).
 
 ## Validation (every glyph)
 
@@ -106,6 +106,5 @@ Measured on the dev machine: generating and validating all 95 characters from sc
 ## Adding a glyph
 
 1. Write a `spec((g) => shape, leftClass, rightClass)` in the right file under `glyphs/`, using only `Geo` primitives and `g.W()` for widths. Coordinates start anywhere; spacing is derived from the ink.
-2. Remove the character from `UNSUPPORTED_SYMBOLS` if it was listed.
-3. Run `npx tsx scripts/contact-sheet.ts` and look at all three families (`FOCUS='x' ONLY=modular` for a close-up).
-4. `npm test`: the sweeps will tell you if the recipe breaks at any parameter extreme. If you change geometry for existing glyphs, bump `ENGINE_VERSION`.
+2. Run `npx tsx scripts/contact-sheet.ts` and look at all three families (`FOCUS='x' ONLY=modular` for a close-up).
+3. `npm test`: the sweeps will tell you if the recipe breaks at any parameter extreme. If you change geometry for existing glyphs, bump `ENGINE_VERSION`.

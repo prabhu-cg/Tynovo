@@ -68,7 +68,7 @@ describe.each(FORMAT_IDS)('%s export', (format) => {
       expect(glyph.id, g.char).toBeGreaterThan(0)
       expect(glyph.advanceWidth, g.char).toBe(g.advanceWidth)
     }
-    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(false)
+    for (const c of '&@{}~') expect(font.hasGlyphForCodePoint(c.codePointAt(0)!), c).toBe(true)
     expect(font['OS/2'].winAscent).toBe(font.ascent)
     expect(font['OS/2'].vendorID).toBe('NONE')
   })

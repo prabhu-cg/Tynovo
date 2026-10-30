@@ -36,7 +36,7 @@ Run `npm run spike` to write `spikes/output/FormatTest-Regular.ttf` and `.otf` f
 |---|---|---|---|
 | Opens; strict table and whole-file checksums | fontTools 4.60.2, `checkChecksums=2` (`scripts/verify-font.py`) | pass | pass |
 | cmap, glyph names, `.notdef`, hmtx side bearings = outline xMin, outline winding, name/version/style flags, Windows metrics | `scripts/verify-font.py` | pass | pass (one exception, below) |
-| Opens, maps the 90 ASCII characters, advance widths equal hmtx | **macOS CoreText** (`scripts/coretext-check.swift`, `verify-font.py --coretext`) | pass | pass |
+| Opens, maps all 95 ASCII characters, advance widths equal hmtx | **macOS CoreText** (`scripts/coretext-check.swift`, `verify-font.py --coretext`) | pass | pass |
 | Renders text | CoreText to PNG (looked at) | pass | pass |
 | Independent parse: names, metrics, widths, bounds, revision, kerning through GPOS | fontkit (Vitest, `formats.test.ts`) | pass | pass |
 | Structural validation | Font Flux `diagnose` | 0 errors | 0 errors |

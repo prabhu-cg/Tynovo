@@ -37,7 +37,7 @@ export function InteractiveSpecimen() {
         <RangeField label="Stroke thickness" value={stroke} min={40} max={160} step={4} onChange={setStroke} />
         <RangeField label="Width" value={width} min={0.7} max={1.4} step={0.02} format={(v) => v.toFixed(2)} onChange={setWidth} />
       </div>
-      <p id={`${id}-hint`} className="mt-3 text-xs text-ink-soft">Early engine: letters, digits and most punctuation work, a few symbols do not yet, and characters without a glyph are skipped.</p>
+      <p id={`${id}-hint`} className="mt-3 text-xs text-ink-soft">Early engine: all 95 printable ASCII characters work (Latin only, no accents), and characters without a glyph are skipped.</p>
     </div>
   )
 }

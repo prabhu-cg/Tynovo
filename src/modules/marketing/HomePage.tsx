@@ -12,7 +12,7 @@ const page = PUBLIC_PAGES[0]!
 
 const PROMISES: Array<{ title: string; body: string; status: Status }> = [
   { title: 'Build a brand typography system from licensed fonts.', body: 'Describe the brand, browse 24 licensed fonts with their sources, set roles and a pairing, and tune a fluid type scale. A licence note is kept for every font. The catalog is small and fixed; a font you name is checked, never assumed.', status: 'early' },
-  { title: 'Create and refine an original typeface.', body: 'Pick a construction family and adjust its parameters, and every glyph redraws. Edit outline points in the glyph editor, explore seeded variations and run quality checks. Three families draw letters, digits and most punctuation; curve editing is not built yet.', status: 'early' },
+  { title: 'Create and refine an original typeface.', body: 'Pick a construction family and adjust its parameters, and every glyph redraws. Edit outline points in the glyph editor, explore seeded variations and run quality checks. Three families draw the 95 printable ASCII characters (Latin script only); curve editing is not built yet.', status: 'early' },
   { title: 'Use your typeface inside the system.', body: 'Assign your generated typeface to display, heading, body or interface roles when its characters and readability suit them. When they do not, you are told why, with the numbers.', status: 'early' },
   { title: 'Preview, check and export.', body: 'See the system on a website, an editorial page, a product screen and a poster, light or dark. Export a specification, CSS, tokens, a specimen, a licence manifest and real TrueType or OpenType files.', status: 'early' },
 ]

@@ -6,7 +6,7 @@ A point editor for the engine's outlines, a text preview that shows the same gly
 
 The engine's geometry model is **polylines**: contours of straight segments between whole-unit points (`typeface-engine.md`). The editor edits exactly that: select, move, insert and delete points; no Bézier handles, no curve fitting, no off-curve points. A Bézier editor would require changing the model (and the generator's curve flattening), and was not needed to make glyphs editable.
 
-Coordinates are whole font units (1000 per em), clamped to x −1000…4000 and y −1500…2500. A contour keeps at least three points. Editing is available for every glyph the engine can build (90 of 95 ASCII characters); the five without a design (`& @ { } ~`) say so and are not editable.
+Coordinates are whole font units (1000 per em), clamped to x −1000…4000 and y −1500…2500. A contour keeps at least three points. Editing is available for every glyph the engine can build (all 95 target ASCII characters).
 
 ## Model
 

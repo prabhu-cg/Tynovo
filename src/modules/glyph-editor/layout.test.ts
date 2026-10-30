@@ -19,8 +19,8 @@ describe('layoutText', () => {
     expect(width).toBe(xs[2]! + adv('H') + 10)
   })
   it('reports characters the typeface does not have and skips them', () => {
-    const r = layoutText(face(), 'H~H')
-    expect(r.missing).toEqual(['~'])
+    const r = layoutText(face(), 'HéH')
+    expect(r.missing).toEqual(['é'])
     expect(r.lines[0]!.items.map((i) => i.char)).toEqual(['H', 'H'])
   })
   it('breaks lines at spaces when a word would pass the maximum width, and on newlines', () => {

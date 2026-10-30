@@ -68,7 +68,7 @@ test.describe('what is downloaded, and when', () => {
 })
 
 test.describe('a large project stays responsive', () => {
-  const GLYPHS = [...Array.from({ length: 94 }, (_, i) => String.fromCharCode(33 + i))].filter((c) => !'&@{}~'.includes(c))
+  const GLYPHS = [...Array.from({ length: 94 }, (_, i) => String.fromCharCode(33 + i))]
   const ring = (r: number, n: number, clockwise: boolean) =>
     Array.from({ length: n }, (_, i) => {
       const a = ((clockwise ? -1 : 1) * 2 * Math.PI * i) / n

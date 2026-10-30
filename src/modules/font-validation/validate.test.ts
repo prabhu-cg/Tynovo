@@ -14,14 +14,11 @@ const withContours = (char: string, contours: Contour[]): CustomTypeface => ({ .
 const codes = (f: CustomTypeface) => validateTypeface(f).issues.map((i) => `${i.code}:${i.glyph ?? ''}`)
 
 describe('validateTypeface', () => {
-  it('a fresh typeface is exportable, reports missing symbols as a warning, and has no errors', () => {
+  it('a fresh typeface is exportable, covers every target character, and has no errors', () => {
     const r = validateTypeface(face())
     expect(r.exportable).toBe(true)
     expect(r.errorCount).toBe(0)
-    const missing = r.issues.find((i) => i.code === 'coverage.missing')!
-    expect(missing.severity).toBe('warning')
-    expect(missing.message).toContain('90 of 95')
-    expect(missing.message).toContain('& @ { } ~')
+    expect(r.issues.some((i) => i.code === 'coverage.missing')).toBe(false)
     expect(r.issues.some((i) => i.code === 'license.unverified')).toBe(true)
   })
 
@@ -45,7 +42,7 @@ describe('validateTypeface', () => {
   })
 
   it('warns about kerning for glyphs that are not in the font and about unverified licences', () => {
-    const f = { ...face(), kerning: [{ left: 'A', right: '~', value: -10 }] }
+    const f = { ...face(), kerning: [{ left: 'A', right: 'é', value: -10 }] }
     expect(codes(f)).toContain('kerning.missing-glyph:')
     expect(codes({ ...f, license: { name: 'OFL', verified: true } })).not.toContain('license.unverified:')
   })
@@ -68,8 +65,8 @@ describe('coverage analysis', () => {
     const a = analyzeTypeface(f)
     expect(a.reports.get('H')!.status).toBe('invalid')
     expect(a.supported.map((g) => g.char)).not.toContain('H')
-    expect(a.supportedCount).toBe(89)
-    expect(describeCoverage(a)).toContain('89 of 95')
+    expect(a.supportedCount).toBe(94)
+    expect(describeCoverage(a)).toContain('94 of 95')
     expect(a.groups.find((g) => g.id === 'upper')!.invalid).toEqual(['H'])
   })
 
