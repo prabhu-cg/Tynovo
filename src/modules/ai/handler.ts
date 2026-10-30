@@ -72,7 +72,10 @@ function sameSite(request: Request): boolean {
 export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fetch, now: Date.now }): Promise<Response> {
   if (request.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: { allow: 'POST' } })
   if (!sameSite(request)) return fail('forbidden')
-  if (!env.GROQ_API_KEY) return fail('unavailable')
+  if (!env.GROQ_API_KEY) {
+    console.error('ai: GROQ_API_KEY is not set in this environment')
+    return fail('unavailable')
+  }
 
   const ip = (request.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0]!.trim()
   if (!limiter.allow(ip, deps.now())) return fail('rate-limited', { 'retry-after': String(Math.ceil(RATE.windowMs / 1000)) })
@@ -110,7 +113,18 @@ export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fe
     clearTimeout(timer)
   }
   if (res.status === 429) return fail('rate-limited')
-  if (!res.ok) return fail('unavailable') // 401 (a bad key), 5xx and the rest look the same to the visitor; the status is not passed on
+  if (!res.ok) {
+    // For the operator, never the visitor: the status and Groq's error type and code (not its message, not the key, not the brief).
+    let detail = ''
+    try {
+      const err = (await res.json()) as { error?: { type?: unknown; code?: unknown } }
+      detail = ` ${String(err.error?.type ?? '').slice(0, 60)} ${String(err.error?.code ?? '').slice(0, 60)}`.trimEnd()
+    } catch {
+      /* not JSON: the status alone is enough */
+    }
+    console.error(`ai: Groq answered ${res.status}${detail}`)
+    return fail('unavailable') // a bad key, a retired model, 5xx and the rest look the same to the visitor; the status is not passed on
+  }
 
   let content: unknown
   try {
