@@ -110,8 +110,8 @@ export const CAPABILITIES: readonly Capability[] = [
     id: 'glyphs',
     mode: 'typeface',
     title: 'Glyph editor',
-    body: 'Select any designed glyph and move, add or delete outline points with the pointer or the keyboard, with metric guides, zoom and pan, undo and redo, and a one-click return to the generated shape. Outlines are straight-segment polygons, so this is a point editor, not a Bézier curve editor.',
-    status: 'early',
+    body: 'Select any designed glyph and move, add or delete outline points with the pointer or the keyboard, with metric guides, zoom and pan, undo and redo, and a one-click return to the generated shape. Segments can be turned into quadratic Bézier curves (the curve type TrueType uses; OpenType/CFF export converts them to cubic with the same shape): drag a curve’s control points, split a curve, smooth a point, or fit curves to the short straight sides a generated letter is drawn with. Only quadratic curves are offered, not cubic handles.',
+    status: 'available',
   },
   {
     id: 'preview',

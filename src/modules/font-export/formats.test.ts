@@ -4,6 +4,7 @@ import * as fontkit from 'fontkit'
 import { verifyFontBytes } from '@/modules/font-validation/readback'
 import { validateFontBinary } from '@/modules/font-validation/validate'
 import { analyzeTypeface } from '@/modules/font-validation/coverage'
+import { fitCurves } from '@/modules/glyph-editor/fit'
 import { signedArea } from '@/modules/glyph-editor/geometry'
 import { setGlyphOutline } from '@/modules/typeface-engine/edit'
 import { createTypeface } from '@/modules/typeface-engine/typeface'
@@ -236,4 +237,93 @@ describe('exportTypeface', () => {
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r).toMatchObject({ stage: 'file' })
   })
+})
+
+describe.each(FORMAT_IDS)('%s export of curved outlines', (format) => {
+  const on = (x: number, y: number) => ({ x, y, onCurve: true })
+  const off = (x: number, y: number) => ({ x, y, onCurve: false })
+  /** An outer contour with squared-off curves (controls at the corners), clockwise, and a counter inside it, counter-clockwise. */
+  const outer = [on(100, 350), off(100, 700), on(300, 700), off(500, 700), on(500, 350), off(500, 0), on(300, 0), off(100, 0)]
+  const counter = [on(200, 350), off(200, 100), on(300, 100), off(400, 100), on(400, 350), off(400, 600), on(300, 600), off(200, 600)]
+  /** A bump whose control point sticks out well past its curve (ink reaches x = 0, the control point x = -100). */
+  const bump = [on(100, 0), off(-100, 300), on(100, 600), on(500, 600), on(500, 0)]
+
+  const curved = () => {
+    let t = face()
+    t = setGlyphOutline(t, 'O', [outer, counter], 600)
+    t = setGlyphOutline(t, 'H', [bump], 600)
+    return t
+  }
+
+  it('passes the library validator, our read-back and the design checks', async () => {
+    const t = curved()
+    const a = analyzeTypeface(t)
+    expect(a.reports.get('O')!.status, JSON.stringify(a.reports.get('O')!.issues)).toBe('supported')
+    expect(a.reports.get('H')!.status, JSON.stringify(a.reports.get('H')!.issues)).toBe('supported')
+    const r = await build(format, t)
+    expect((await validateFontBinary(r.bytes)).errorCount).toBe(0)
+    expect((await verifyFontBytes(r.bytes, t, format, '1.002')).issues).toEqual([])
+  })
+
+  it('writes real curves: quadratic in TrueType, cubic in CFF, drawing the same shape as the design', async () => {
+    const t = curved()
+    const r = await build(format, t)
+    const font = fontkit.create(Buffer.from(r.bytes)) as fontkit.Font
+    const cmds = font.glyphForCodePoint(79).path.commands.map((c) => c.command)
+    if (format === 'ttf') expect(cmds).toContain('quadraticCurveTo')
+    else expect(cmds).toContain('bezierCurveTo')
+    // The file's ink bounds are the curve's, not the control box's.
+    const bump = font.glyphForCodePoint(72).bbox
+    expect(bump.minX).toBeGreaterThanOrEqual(format === 'ttf' ? -100 : -2) // a TrueType glyph header records the control box
+    expect(bump.minY).toBe(0)
+    expect(bump.maxY).toBe(600)
+  })
+
+  it('records the left side bearing each format needs for a curve whose control point sticks out', async () => {
+    const t = curved()
+    const r = await build(format, t)
+    const { FontFlux } = await import('font-flux-js')
+    expect(FontFlux.open(r.bytes).getGlyph('H')!.leftSideBearing).toBe(format === 'ttf' ? -100 : 0)
+  })
+
+  it('is deterministic', async () => {
+    expect((await build(format, curved())).bytes).toEqual((await build(format, curved())).bytes)
+  })
+})
+
+/** Every glyph of a typeface with its curves fitted: the heaviest real use of the curve path, 95 glyphs a family. */
+function fittedTypeface(family: 'geometric' | 'rounded' | 'modular') {
+  let t = createTypeface('f1', family, 'Fitted Test')
+  const analysis = analyzeTypeface(t)
+  for (const [char, report] of analysis.reports) {
+    const glyph = report.glyph
+    if (!glyph || glyph.contours.length === 0) continue
+    const r = fitCurves(glyph.contours, new Set())
+    if (r.ok) t = setGlyphOutline(t, char, r.contours, glyph.advanceWidth)
+  }
+  return t
+}
+
+describe.each(['geometric', 'rounded', 'modular'] as const)('%s typeface with curves fitted to every glyph', (family) => {
+  const t = fittedTypeface(family)
+  it('has curves, every glyph still passes the checks, and both formats pass the library validator and the read-back', async () => {
+    const a = analyzeTypeface(t)
+    expect(a.supportedCount).toBe(95)
+    expect([...a.reports.values()].filter((r) => r.glyph?.contours.flat().some((p) => !p.onCurve)).length).toBeGreaterThan(family === 'modular' ? 0 : 30) // the modular family has chamfers, not arcs, so few glyphs have bends to fit
+    for (const format of FORMAT_IDS) {
+      const r = await fontFluxBuilder.build({ typeface: t, timestamp: TIMESTAMP, version: '1.002', format })
+      expect((await validateFontBinary(r.bytes)).errorCount, format).toBe(0)
+      expect((await verifyFontBytes(r.bytes, t, format, '1.002')).issues, format).toEqual([])
+    }
+  }, 60_000)
+})
+
+it('writes the curve-fitted files for manual inspection when WRITE_SPIKE_OUTPUT is set', async () => {
+  if (!process.env['WRITE_SPIKE_OUTPUT']) return
+  mkdirSync('spikes/output', { recursive: true })
+  const t = fittedTypeface('rounded')
+  for (const f of FORMAT_IDS) {
+    const r = await fontFluxBuilder.build({ typeface: t, timestamp: TIMESTAMP, version: '1.002', format: f })
+    writeFileSync(`spikes/output/Curves-${r.filename}`, r.bytes)
+  }
 })

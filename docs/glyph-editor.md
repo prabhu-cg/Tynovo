@@ -1,10 +1,18 @@
 # Glyph editor (Phase 4)
 
-A point editor for the engine's outlines, a text preview that shows the same glyphs two ways, and quality checks.
+A point and curve editor for the engine's outlines, a text preview that shows the same glyphs two ways, and quality checks.
 
 ## Scope
 
-The engine's geometry model is **polylines**: contours of straight segments between whole-unit points (`typeface-engine.md`). The editor edits exactly that: select, move, insert and delete points; no Bézier handles, no curve fitting, no off-curve points. A Bézier editor would require changing the model (and the generator's curve flattening), and was not needed to make glyphs editable.
+The generator draws polylines: contours of straight segments between whole-unit points (`typeface-engine.md`). The project model has always allowed more: a point is **on-curve or off-curve**, and an off-curve point is the control point of a **quadratic Bézier** curve (TrueType semantics, two off-curve points in a row imply an on-curve point halfway between them). The editor works with both:
+
+- **Curve** (C) turns the straight segment after each selected on-curve point into a curve. The control point (a diamond on the canvas) starts on the line, so the shape does not change until it is dragged.
+- **Line** (L) turns a curve back into a straight segment.
+- **Smooth** (M) lines up the two control points of a point so the curve has no kink there, keeping their lengths.
+- **Fit curves** (F) replaces runs of short straight sides with a few curves, within 1.5 units (`glyph-editor/fit.ts`): least-squares control points over a chord-length parametrisation, corners (a turn over 32°) and long straight edges kept. A rounded `O` goes from 128 points to 28.
+- Double-click or **Insert** on a curve splits it with de Casteljau, so the halves keep the exact shape (new points rounded to whole units).
+
+Only quadratic curves are offered, not cubic handles: that is what the file format (TrueType) stores, and what the model stores. OpenType/CFF export converts each quadratic into the equivalent cubic (Font Flux does this; control points land on whole units, so the CFF shape can differ by a unit or so, which the read-back check allows for curved glyphs and nothing else).
 
 Coordinates are whole font units (1000 per em), clamped to x −1000…4000 and y −1500…2500. A contour keeps at least three points. Editing is available for every glyph the engine can build (all 95 target ASCII characters).
 
@@ -12,7 +20,9 @@ Coordinates are whole font units (1000 per em), clamped to x −1000…4000 and 
 
 | Module | Role |
 |---|---|
-| `glyph-editor/outline.ts` | Pure operations: move, set, insert (midpoint or at a click), delete (refuses to leave a contour under three points; selecting a whole contour removes it), picking, marquee, stepping, remove stacked points, fix winding. |
+| `glyph-editor/outline.ts` | Pure operations: move, set, insert (midpoint or at a click, on lines and curves), delete (refuses to leave a contour under three points; selecting a whole contour removes it), curve / straighten / smooth, picking, marquee, stepping, remove stacked points, fix winding. |
+| `glyph-editor/geometry.ts` | Segments (lines and quadratics, TrueType rules), flattening, exact bounds along curves, the box around every point (what a TrueType glyph header records), area, SVG paths. |
+| `glyph-editor/fit.ts` | Fit curves to runs of short straight sides. |
 | `glyph-editor/history.ts` | Undo and redo over immutable snapshots; a drag is one step; repeated nudges within 700 ms are one step; 200 steps kept. |
 | `glyph-editor/session.ts` | One editing session on one glyph: working copy (outline + advance width), history, selection, and the last *applied* copy. "Unapplied" means working ≠ applied. |
 | `glyph-editor/draft.ts` | Bridge to the project: `appliedDraft`, `generatedDraft`, `applyDraft`, bearing edits, one-click repairs for the checks. |

@@ -18,6 +18,10 @@ export const PointerIcon = () => <Icon><path d="M5 3v12l3.2-3 2.3 5 2-1-2.3-4.8H
 export const HandIcon = () => <Icon><path d="M7 10V4.5a1.2 1.2 0 0 1 2.4 0V9m0-1.5V3.5a1.2 1.2 0 0 1 2.4 0V9m0-4a1.2 1.2 0 0 1 2.4 0v5m0-3a1.2 1.2 0 0 1 2.4 0v4.5c0 3-2 5-5 5h-1.3c-1.8 0-2.7-.7-3.7-2L4.4 12a1.3 1.3 0 0 1 2-1.6L7 11" /></Icon>
 export const AddPointIcon = () => <Icon><path d="M3 15 8 5l5 6 4-3" /><circle cx="8" cy="5" r="1.2" fill="currentColor" /><path d="M14.5 14.5v4M12.5 16.5h4" /></Icon>
 export const DeletePointIcon = () => <Icon><path d="M3 15 8 5l5 6 4-3" /><circle cx="8" cy="5" r="1.2" fill="currentColor" /><path d="M12.5 16.5h4" /></Icon>
+export const CurveIcon = () => <Icon><path d="M3 16C3 6 14 4 17 4" /><rect x="1.8" y="14.8" width="2.4" height="2.4" fill="currentColor" stroke="none" /><rect x="15.8" y="2.8" width="2.4" height="2.4" fill="currentColor" stroke="none" /><circle cx="3.5" cy="4.5" r="1.4" /></Icon>
+export const FitCurvesIcon = () => <Icon><path d="M3 15c2-1 2.5-4 4-6s4-3 6-3 3 .5 4 1" /><path d="M3 15l1.5-2.2M6 9.5 7 8M10 6.8 11.5 6.2M14 6.8l2.5 1" strokeDasharray="1.4 1.8" /></Icon>
+export const StraightenIcon = () => <Icon><path d="M3.5 16.5 16.5 3.5" /><rect x="2.3" y="15.3" width="2.4" height="2.4" fill="currentColor" stroke="none" /><rect x="15.3" y="2.3" width="2.4" height="2.4" fill="currentColor" stroke="none" /></Icon>
+export const SmoothIcon = () => <Icon><path d="M2.5 13.5c3-7 6-7 7.5-3.5s4.5 3.5 7.5-3" /><path d="M5 7.5h10" strokeDasharray="2 2" /><circle cx="10" cy="10" r="1.3" fill="currentColor" /></Icon>
 export const ChevronLeftIcon = () => <Icon><path d="m12 4-6 6 6 6" /></Icon>
 export const ChevronRightIcon = () => <Icon><path d="m8 4 6 6-6 6" /></Icon>
 export const GuidesIcon = () => <Icon><path d="M2.5 6h15M2.5 11h15M2.5 15.5h15" strokeDasharray="2 2.4" /><path d="M6 3v14" /></Icon>

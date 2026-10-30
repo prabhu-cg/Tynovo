@@ -9,6 +9,10 @@ export type CanvasCommand =
   | { type: 'nudge'; dx: number; dy: number }
   | { type: 'delete' }
   | { type: 'insert' }
+  | { type: 'curve' }
+  | { type: 'straighten' }
+  | { type: 'smooth' }
+  | { type: 'fitCurves' }
   | { type: 'point'; dir: 1 | -1 }
   | { type: 'contour'; dir: 1 | -1 }
   | { type: 'selectAll' }
@@ -232,6 +236,10 @@ export function GlyphCanvas(props: GlyphCanvasProps) {
       case 'Backspace': return cmd({ type: 'delete' })
       case 'Enter':
       case 'i': return cmd({ type: 'insert' })
+      case 'c': return cmd({ type: 'curve' })
+      case 'l': return cmd({ type: 'straighten' })
+      case 'm': return cmd({ type: 'smooth' })
+      case 'f': return cmd({ type: 'fitCurves' })
       case '[': return cmd({ type: 'point', dir: -1 })
       case ']': return cmd({ type: 'point', dir: 1 })
       case '{': return cmd({ type: 'contour', dir: -1 })
@@ -307,25 +315,31 @@ export function GlyphCanvas(props: GlyphCanvasProps) {
       <g transform="scale(1 -1)">
         {ghostPath ? <path d={ghostPath} fill="none" stroke="var(--color-ink-soft)" strokeWidth={1.25} strokeDasharray="5 4" vectorEffect="non-scaling-stroke" opacity={0.8} /> : null}
         <path d={outline} fill="var(--color-ink-strong)" fillOpacity={0.1} fillRule="nonzero" stroke="var(--color-ink-strong)" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {/* Handles: a thin line from each control point to the on-curve points it pulls on. */}
+        {contours.map((contour, c) =>
+          contour.map((pt, p) => {
+            if (pt.onCurve) return null
+            const n = contour.length
+            return [contour[(p - 1 + n) % n]!, contour[(p + 1) % n]!].map((q, k) =>
+              q.onCurve ? <line key={`${c}:${p}:${k}`} x1={pt.x} y1={pt.y} x2={q.x} y2={q.y} stroke="var(--color-ink-soft)" strokeWidth={1} strokeDasharray="3 3" vectorEffect="non-scaling-stroke" pointerEvents="none" /> : null,
+            )
+          }),
+        )}
         {contours.map((contour, c) =>
           contour.map((pt, p) => {
             const key = pointKey(c, p)
             const on = selection.has(key)
+            const stroke = on ? 'var(--color-accent-strong)' : 'var(--color-ink-strong)'
+            const fill = on ? 'var(--color-accent)' : 'var(--color-paper)'
             return (
               <g key={key}>
-                <circle data-pt={key} cx={pt.x} cy={pt.y} r={hit} fill="transparent" style={{ cursor: tool === 'select' ? 'pointer' : undefined }} />
-                <rect
-                  x={pt.x - half}
-                  y={pt.y - half}
-                  width={half * 2}
-                  height={half * 2}
-                  rx={p === 0 ? half : 0}
-                  fill={on ? 'var(--color-accent)' : 'var(--color-paper)'}
-                  stroke={on ? 'var(--color-accent-strong)' : 'var(--color-ink-strong)'}
-                  strokeWidth={1.25}
-                  vectorEffect="non-scaling-stroke"
-                  pointerEvents="none"
-                />
+                <circle data-pt={key} data-kind={pt.onCurve ? 'on' : 'off'} cx={pt.x} cy={pt.y} r={hit} fill="transparent" style={{ cursor: tool === 'select' ? 'pointer' : undefined }} />
+                {pt.onCurve ? (
+                  <rect x={pt.x - half} y={pt.y - half} width={half * 2} height={half * 2} rx={p === 0 ? half : 0} fill={fill} stroke={stroke} strokeWidth={1.25} vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                ) : (
+                  // A control point is a diamond: it shapes the curve but is not on it.
+                  <rect x={pt.x - half * 0.85} y={pt.y - half * 0.85} width={half * 1.7} height={half * 1.7} transform={`rotate(45 ${pt.x} ${pt.y})`} fill={on ? 'var(--color-accent)' : 'var(--color-sheet)'} stroke={on ? 'var(--color-accent-strong)' : 'var(--color-ink-soft)'} strokeWidth={1.25} vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                )}
               </g>
             )
           }),

@@ -137,7 +137,7 @@ describe('variants follow the plan, and never lose what is saved', () => {
 })
 
 describe('glyph editing controls follow the plan', () => {
-  const toolbarProps = { tool: 'select' as const, onTool: vi.fn(), canUndo: false, canRedo: false, onUndo: vi.fn(), onRedo: vi.fn(), canInsert: false, canDelete: false, onInsert: vi.fn(), onDelete: vi.fn(), zoom: 100, onZoomIn: vi.fn(), onZoomOut: vi.fn(), onFit: vi.fn(), onFit2: vi.fn(), snap: 0, onSnap: vi.fn(), guides: false, onGuides: vi.fn(), ghost: false, ghostAvailable: false, onGhost: vi.fn() }
+  const toolbarProps = { tool: 'select' as const, onTool: vi.fn(), canUndo: false, canRedo: false, onUndo: vi.fn(), onRedo: vi.fn(), canInsert: false, canDelete: false, onInsert: vi.fn(), onDelete: vi.fn(), canCurve: false, canStraighten: false, canSmooth: false, canFitCurves: false, onFitCurves: vi.fn(), onCurve: vi.fn(), onStraighten: vi.fn(), onSmooth: vi.fn(), zoom: 100, onZoomIn: vi.fn(), onZoomOut: vi.fn(), onFit: vi.fn(), onFit2: vi.fn(), snap: 0, onSnap: vi.fn(), guides: false, onGuides: vi.fn(), ghost: false, ghostAvailable: false, onGhost: vi.fn() }
 
   it('the point tools are disabled with the reason as their hint, and can be hidden instead', () => {
     const note = 'Add and delete outline points is not included in the Free plan. Paid plans are not available yet.'
@@ -150,6 +150,25 @@ describe('glyph editing controls follow the plan', () => {
     expect(screen.queryByRole('button', { name: /Insert a point/ })).toBeNull()
     expect(screen.getByRole('button', { name: 'Select and move points' })).toBeEnabled() // basic editing is never affected
     expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined()
+  })
+
+  it('the curve tools follow their own feature: disabled with the reason, hidden on request, never touching basic editing', () => {
+    const note = 'Curve editing is not included in the Free plan. Paid plans are not available yet.'
+    const { unmount } = render(<GlyphToolbar {...toolbarProps} canCurve canStraighten canSmooth curvesNote={note} />)
+    const curve = screen.getByRole('button', { name: /Turn the segment after the selected point into a curve/ })
+    expect(curve).toBeDisabled()
+    expect(curve).toHaveAttribute('title', note)
+    unmount()
+    render(<GlyphToolbar {...toolbarProps} canCurve curvesNote={note} curvesHidden />)
+    expect(screen.queryByRole('button', { name: /into a curve/ })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Select and move points' })).toBeEnabled()
+  })
+
+  it('the curve tools are enabled when the plan allows them and the selection gives them something to do', () => {
+    render(<GlyphToolbar {...toolbarProps} canCurve canSmooth />)
+    expect(screen.getByRole('button', { name: /into a curve/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /straight line/ })).toBeDisabled() // nothing to straighten
+    expect(screen.getByRole('button', { name: /Smooth the selected point/ })).toBeEnabled()
   })
 })
 

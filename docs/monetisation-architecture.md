@@ -41,6 +41,7 @@ Implemented, restrictable features and their enforcement points (each also liste
 | `typeface.variants.explore` | flag | `VariantsTab.tsx` |
 | `typeface.variants.maxSaved` | limit (ceiling 60) | `typeface-engine/edit.ts` (`saveVariant`), `VariantsTab.tsx` |
 | `glyph.edit.structure` (add/delete points) | flag | `GlyphWorkspace.tsx` (all routes: buttons, keys, double-click), toolbar, inspector |
+| `glyph.edit.curves` (curve, line, smooth, fit curves) | flag | `GlyphWorkspace.tsx` (every command goes through `run`), toolbar, inspector |
 | `glyph.edit.shape-params` | flag | `GlyphWorkspace.tsx`, `GlyphInspector.tsx` |
 | `quality.extended` | flag | `font-validation/quality.ts` (`extended` option), `QualityTab.tsx`, `FontExportFlow.tsx` |
 | `export.font.ttf` / `export.font.otf` | flag | `FontExportFlow.tsx`, `ExportPage.tsx` |
@@ -48,7 +49,7 @@ Implemented, restrictable features and their enforcement points (each also liste
 
 Checks that guard the *correctness* of an exported file (coverage, geometry, mapping, metadata, the file read-back) are `core` and always run: a plan can drop advice, never a safeguard (tested: with extended checks off, every blocking finding is still reported, and extended checks can never block).
 
-Registered but **not built** (never shown): additional typeface families, additional weights and styles, curve editing, extended specimen options, advanced project organisation. They exist only so a configuration can say who gets them once they do.
+Registered but **not built** (never shown): additional typeface families, additional weights and styles, extended specimen options, advanced project organisation. They exist only so a configuration can say who gets them once they do.
 
 ## Limits of enforcing a paid entitlement without a trusted server
 
