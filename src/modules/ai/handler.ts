@@ -7,9 +7,11 @@ import { aiRequestSchema, sanitizeBrand, sanitizeTypeface, type AiError, type Ai
  * suggestion. It stores nothing and logs nothing from the request: the brief is not kept anywhere here.
  */
 export const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
-export const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
 /** Tried in order, after GROQ_MODEL if it is set, when Groq says a model does not exist for this key (retired, renamed, or not enabled for the project). */
-export const FALLBACK_MODELS = ['openai/gpt-oss-120b', 'llama-3.1-8b-instant'] as const
+export const FALLBACK_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'] as const
+/** A reasoning model spends part of the token budget thinking, so the budget has to cover that and the answer; a short one cut the JSON off. */
+const MAX_TOKENS = 2500
 /** Largest request body accepted, in bytes: a brief of the maximum length with room for the JSON around it. */
 const MAX_BODY = 4096
 const TIMEOUT_MS = 20_000
@@ -103,7 +105,7 @@ export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fe
       res = await deps.fetch(GROQ_URL, {
         method: 'POST',
         headers: { authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, messages, response_format: { type: 'json_object' }, temperature: 0.4, max_tokens: 600 }),
+        body: JSON.stringify({ model, messages, response_format: { type: 'json_object' }, temperature: 0.4, max_tokens: MAX_TOKENS, ...(model.startsWith('openai/gpt-oss') ? { reasoning_effort: 'low' } : {}) }),
         signal: controller.signal,
       })
     } catch (e) {
