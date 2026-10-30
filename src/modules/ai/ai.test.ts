@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { execFileSync } from 'node:child_process'
-import { resolve } from 'node:path'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { DNA_CONTROLS } from '../typeface-engine/dna'
 import { DEFAULT_MODEL, GROQ_URL, handleAi, RATE, RateLimiter, type AiDeps } from './handler'
 import { buildMessages } from './prompts'
@@ -197,12 +198,43 @@ describe('the function', () => {
 })
 
 describe('the deployed function loads', () => {
-  it('under plain Node ESM, as it does on Vercel (no bundler: every import in its closure needs its .ts extension and no alias)', () => {
-    // A missing extension here once made every call to the live function fail with ERR_MODULE_NOT_FOUND while all other tests passed.
-    const entry = resolve('api/ai.ts')
-    const script = `const m = await import(${JSON.stringify(entry)}); const r = await m.POST(new Request('https://x.test/api/ai', { method: 'POST', headers: { origin: 'https://x.test' }, body: '{}' })); console.log(JSON.stringify({ status: r.status, body: await r.json(), get: m.GET().status }))`
-    const out = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', env: { PATH: process.env['PATH'] ?? '' } })
-    const result = JSON.parse(out.trim().split('\n').pop()!)
-    expect(result).toMatchObject({ status: 503, get: 405, body: { ok: false, error: 'unavailable' } }) // no key in this environment: it answers rather than crashing
-  })
+  /**
+   * Vercel compiles every TypeScript file the function reaches to a .js file in the same place and runs the result
+   * under plain Node ESM, with no bundler. So every relative import in the function's closure must name the .js file
+   * (the TypeScript convention), and none may use the "@/" alias. Missing extensions, then ".ts" extensions, each once
+   * made every call to the live function fail with ERR_MODULE_NOT_FOUND while all other tests passed. This builds
+   * the same layout and runs it.
+   */
+  it('compiled file by file as Vercel does, under plain Node ESM, it answers instead of crashing', async () => {
+    const ts = await import('typescript')
+    const root = resolve('.')
+    const out = join(root, 'node_modules', '.tmp', 'vercel-function-sim')
+    rmSync(out, { recursive: true, force: true })
+    const seen = new Set<string>()
+    const queue = ['api/ai.ts']
+    while (queue.length > 0) {
+      const file = queue.pop()!
+      if (seen.has(file)) continue
+      seen.add(file)
+      const source = readFileSync(join(root, file), 'utf8')
+      for (const m of source.matchAll(/(?:import|export)[^'"\n]*?from\s+'([^']+)'/g)) {
+        const spec = m[1]!
+        expect(spec.startsWith('@/'), `${file} imports ${spec}: the alias does not exist at runtime`).toBe(false)
+        if (!spec.startsWith('.')) continue
+        const isTypeOnly = /^import\s+type\b/.test(m[0])
+        if (!isTypeOnly) expect(spec.endsWith('.js'), `${file} imports ${spec}: use the .js extension`).toBe(true)
+        const next = join(dirname(file), spec.replace(/\.js$/, '.ts')).replace(/\\/g, '/')
+        queue.push(next)
+      }
+      const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2023, verbatimModuleSyntax: true } }).outputText
+      const target = join(out, file.replace(/\.ts$/, '.js'))
+      mkdirSync(dirname(target), { recursive: true })
+      writeFileSync(target, js)
+    }
+    const script = `const m = await import(${JSON.stringify(join(out, 'api/ai.js'))}); const r = await m.POST(new Request('https://x.test/api/ai', { method: 'POST', headers: { origin: 'https://x.test' }, body: '{}' })); console.log(JSON.stringify({ status: r.status, body: await r.json(), get: m.GET().status }))`
+    const outText = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8', env: { PATH: process.env['PATH'] ?? '' } })
+    const result = JSON.parse(outText.trim().split('\n').pop()!)
+    expect(result).toMatchObject({ status: 503, get: 405, body: { ok: false, error: 'unavailable' } }) // no key here: it answers rather than crashing
+    rmSync(out, { recursive: true, force: true })
+  }, 60_000)
 })
