@@ -28,7 +28,7 @@ export function SettingsPage() {
         <dt className="text-ink-soft">Storage</dt><dd>{storageKind === 'indexeddb' ? 'This browser (IndexedDB). Cleared if you clear site data.' : 'Memory only. Nothing survives closing the tab.'}</dd>
         <dt className="text-ink-soft">Projects</dt><dd>{count ? `${count.projects}${count.unreadable ? `, plus ${count.unreadable} unreadable` : ''}` : '…'}</dd>
         <dt className="text-ink-soft">Project schema</dt><dd>Version {CURRENT_SCHEMA_VERSION}</dd>
-        <dt className="text-ink-soft">Account</dt><dd>None. There is no sign-in and no server.</dd>
+        <dt className="text-ink-soft">Account</dt><dd>None. There is no sign-in. The only server code is one small function for the optional AI suggestions.</dd>
         <dt className="text-ink-soft">Plan</dt><dd data-testid="plan">{caps.label}. {caps.allows('export.package') ? 'Everything in this version of Tynovo is included.' : 'Some features are not included; they are listed below.'} There is no payment system in Tynovo: nothing here can be bought, and no plan can be switched on from this page.</dd>
         <dt className="text-ink-soft">Always free</dt><dd>Keeping, exporting, importing, upgrading and recovering your own projects. No plan can restrict these.</dd>
         <dt className="text-ink-soft">Licence</dt><dd>GPL-3.0-only. <Link to="/licensing" className="font-semibold text-accent-strong underline underline-offset-4">How licensing works</Link></dd>

@@ -7,7 +7,7 @@ A free, browser-based studio with two connected modes:
 - **Brand Typography System**: describe a brand, choose fonts from a bundled catalog of 24 open-licence families, set roles (display, heading, body, interface, caption), pairing and a fluid type scale, preview the system as a website, an editorial page, a product screen and a poster, and export a specification, CSS, design tokens and an HTML specimen.
 - **Custom Typeface Creator**: generate an original typeface from three construction families (geometric, rounded, modular), refine it glyph by glyph, check its quality, and export real TrueType (`.ttf`) and OpenType/CFF (`.otf`) files. Use it inside the typography system.
 
-There is no account, server, database, tracking or AI service. Projects live in your browser (IndexedDB) and move as files. Licensed **GPL-3.0-only** (see [Licence](#licence)).
+There is no account, database or tracking. Projects live in your browser (IndexedDB) and move as files. The only server code is one small Vercel function (`api/ai.ts`) that holds a Groq key for two optional AI suggestion boxes; see [docs/ai-assist.md](docs/ai-assist.md). Licensed **GPL-3.0-only** (see [Licence](#licence)).
 
 > **Status.** Feature-complete through the planned phases 0 to 6, Phase 7 (production hardening) and Phase 8 (the "Early version" gaps: all 95 ASCII characters, curve editing, a PDF specimen, WOFF and WOFF2, 52 fonts, a printed-document preview) are implemented and verified as far as the automated tooling goes: see [Verification](#verification). Production readiness is **not** claimed: the manual steps in [docs/release-checklist.md](docs/release-checklist.md) (design-tool testing, Safari and Firefox, a screen-reader pass, live-host checks, legal review) have not been done. Two capabilities are still labelled **Early version** on the website (brand direction, and roles and pairing, whose suggestions are fixed rules rather than an AI model); [docs/known-limitations.md](docs/known-limitations.md) lists exactly what is missing.
 
@@ -46,7 +46,7 @@ No environment variable is needed to develop. For production-like builds set `VI
 
 ## Architecture
 
-React 19, TypeScript (strict), Vite, Tailwind CSS v4, React Router. No backend. Domain modules are plain TypeScript with no React; UI modules depend on them, never the reverse.
+React 19, TypeScript (strict), Vite, Tailwind CSS v4, React Router. No backend beyond the one AI function. Domain modules are plain TypeScript with no React; UI modules depend on them, never the reverse.
 
 ```
 src/

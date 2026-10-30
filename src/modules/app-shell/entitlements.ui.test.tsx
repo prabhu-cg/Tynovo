@@ -249,7 +249,7 @@ describe('the settings page tells the truth about plans', () => {
     expect(text).toContain('Free. Everything in this version of Tynovo is included.')
     expect(text).toContain('There is no payment system in Tynovo: nothing here can be bought')
     expect(screen.getByText(/Keeping, exporting, importing, upgrading and recovering your own projects/)).toBeDefined()
-    expect(screen.getByText(/There is no sign-in and no server/)).toBeDefined()
+    expect(screen.getByText(/There is no sign-in/)).toBeDefined()
   })
 
   it('lists what the plan covers, with limits as numbers, and marks what is left out', () => {

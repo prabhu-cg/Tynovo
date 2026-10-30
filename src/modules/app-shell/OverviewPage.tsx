@@ -5,6 +5,7 @@ import { workflowSteps } from '@/modules/brand-system/workflow'
 import { AlertIcon, Button, CheckIcon, Chip, inputClass, RangeField } from '@/modules/shared-ui'
 import { TONES, USE_CASES } from '@/modules/brand-projects/schema'
 import { PRIORITY_LABEL, TONE_LABEL, USE_CASE_LABEL } from '@/modules/brand-system/brand'
+import { BrandBriefAssist } from './ai/BrandBriefAssist'
 import { EditGroup } from './EditGroup'
 import { useContentRevision } from './useRevision'
 import { computeScale } from '@/modules/typography-system/scale'
@@ -66,10 +67,11 @@ export function OverviewPage() {
       <section aria-labelledby="brand-h" className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[12rem_minmax(0,1fr)]">
         <div>
           <h2 id="brand-h" className="text-lg font-bold">Brand direction</h2>
-          <p className="mt-1 text-sm text-ink-soft">Who the brand is and what its type must do. The font catalog uses this to order and filter fonts, with fixed rules you can read: it is not an AI model.</p>
+          <p className="mt-1 text-sm text-ink-soft">Who the brand is and what its type must do. The font catalog uses this to order and filter fonts, with fixed rules you can read. The suggestion box below is optional and uses an AI model; the ordering never does.</p>
         </div>
         <EditGroup>
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+          <BrandBriefAssist />
           <label className="grid max-w-md gap-1 text-sm font-semibold text-ink-strong">
             Brand name
             <input value={draft.brand.name} maxLength={120} placeholder={draft.name} onChange={(e) => editor.patch((p) => ({ ...p, brand: { ...p.brand, name: e.target.value } }))} className={`${inputClass} font-normal`} />

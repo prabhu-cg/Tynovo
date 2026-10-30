@@ -89,7 +89,7 @@ test.describe('application shell', () => {
 
 test.describe('legal pages are complete', () => {
   const PAGES = [
-    { path: '/privacy', title: 'Privacy notice', sections: 12, mentions: ['IndexedDB', 'Vercel', 'No cookies are set', 'Your rights', 'legitimate interest'] },
+    { path: '/privacy', title: 'Privacy notice', sections: 13, mentions: ['IndexedDB', 'Vercel', 'Groq', 'No cookies are set', 'Your rights', 'legitimate interest'] },
     { path: '/terms', title: 'Terms of use', sections: 15, mentions: ['GNU General Public License', 'No warranty', 'Limits on liability', 'Acceptable use', 'do not choose a particular country'] },
     { path: '/licensing', title: 'Licensed separately, on purpose.', sections: 7, mentions: ['SIL Open Font License 1.1', 'GPL-3.0-only', 'Font Flux JS', 'name table'] },
   ] as const

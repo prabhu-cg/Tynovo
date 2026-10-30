@@ -4,6 +4,7 @@ import { defaultDna, DNA_CONTROLS, FAMILY_LABELS, type DnaControl, type Family }
 import { Button, RangeField, Segmented } from '@/modules/shared-ui'
 import { COMMERCE, viewOf, type FeatureId } from '@/modules/entitlements'
 import { useCapabilities } from '../entitlements'
+import { TypefaceBriefAssist } from '../ai/TypefaceBriefAssist'
 import { newStamp, type TypefaceHandle } from './useTypeface'
 
 const GROUPS: DnaControl['group'][] = ['Proportions', 'Strokes', 'Construction', 'Corners', 'Spacing']
@@ -24,6 +25,7 @@ export function DnaPanel({ handle }: { handle: TypefaceHandle }) {
 
   return (
     <div className="grid gap-6" aria-label="Design parameters">
+      <TypefaceBriefAssist handle={handle} />
       <Segmented
         label="Family"
         value={dna.family}
