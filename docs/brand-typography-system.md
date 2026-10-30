@@ -32,7 +32,7 @@ Contexts: website (navigation, hero, buttons, editorial card), editorial (long-f
 
 ## Exports
 
-As in `integrated-workflow.md`, plus: brand direction, heading/body sizes, responsive settings and fallback stacks in the specification; heading levels, body sizes, fluid `clamp()` values and brand under `$extensions` in tokens; `.type-h1…h6`, `.type-body-lg/sm` classes and `clamp()` sizes in CSS; package version, upstream version, source and copyright for each catalog font in the manifest; saved sample text and print styles in the specimen. **PDF:** the studio does not generate one (no reliable permitted client-side route without a new dependency); the specimen is built to print cleanly, so "Print → Save as PDF" in the browser produces one.
+As in `integrated-workflow.md`, plus: brand direction, heading/body sizes, responsive settings and fallback stacks in the specification; heading levels, body sizes, fluid `clamp()` values and brand under `$extensions` in tokens; `.type-h1…h6`, `.type-body-lg/sm` classes and `clamp()` sizes in CSS; package version, upstream version, source and copyright for each catalog font in the manifest; saved sample text and print styles in the specimen. **PDF:** the export centre builds a PDF specimen client-side with a small purpose-built writer (`export-centre/pdf-kit/`, no dependency; layout in `export-centre/pdf.ts`). Text is real, selectable text with a ToUnicode map. The custom typeface and the bundled catalog fonts it draws are embedded whole as TrueType (the catalog fonts are unwrapped from their bundled WOFF files); fonts Tynovo has no file for are drawn in Helvetica with a note.
 
 ## Not done
 

@@ -152,7 +152,7 @@ function FontDetail({ font }: { font: CatalogFont }) {
           <dt className="text-ink-soft">Published at</dt><dd className="break-all"><a href={font.upstream} target="_blank" rel="noopener noreferrer" className="text-accent-strong underline underline-offset-4">{font.upstream}</a></dd>
           <dt className="text-ink-soft">Package</dt><dd className="break-all"><a href={font.page} target="_blank" rel="noopener noreferrer" className="text-accent-strong underline underline-offset-4">{font.distribution}</a> <span className="tnum text-ink-soft">{font.distributionVersion}</span></dd>
         </dl>
-        <p className="text-xs text-ink-soft">The licence is read from the package’s metadata, not from a legal review. Exports name this font but never include its files.</p>
+        <p className="text-xs text-ink-soft">The licence is read from the package’s metadata, not from a legal review. Exports name this font but do not include its files; only the PDF specimen embeds the fonts it draws.</p>
       </section>
 
       <section aria-label="How it is loaded" className="grid gap-1 text-sm">

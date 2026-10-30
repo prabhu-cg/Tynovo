@@ -40,7 +40,7 @@ const SECTIONS: readonly LegalSection[] = [
     body: (
       <>
         <ul>
-          <li><strong>Catalog fonts</strong> are under the SIL Open Font License 1.1. Their licences, copyright lines and sources are listed on the <TextLink to="/licensing">licensing page</TextLink>. Exports name these fonts but never include their files.</li>
+          <li><strong>Catalog fonts</strong> are under the SIL Open Font License 1.1. Their licences, copyright lines and sources are listed on the <TextLink to="/licensing">licensing page</TextLink>. Exports name these fonts but do not include their font files; the PDF specimen embeds the ones it draws, which the licence allows in a document.</li>
           <li><strong>Fonts you name yourself</strong> keep their own licences. Tynovo records the licence you enter and does not verify it. You are responsible for checking that your use, such as on a website, in an app or in a logo, is allowed.</li>
           <li><strong>Typefaces you generate</strong> are yours, and you choose their licence. Tynovo draws them from rules and parameters and does not copy existing fonts, but it cannot promise that a design is unique or free of anyone else’s rights, so check names and designs before you publish or sell a font.</li>
         </ul>

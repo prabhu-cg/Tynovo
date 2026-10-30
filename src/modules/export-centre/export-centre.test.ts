@@ -203,7 +203,7 @@ describe('manifest', () => {
     expect(md).toMatch(/\| Northwind Sans \| Display, Heading \| Custom typeface \| none chosen[^|]*\| no \| `fonts\/NorthwindSans-Regular.ttf` \|/)
     expect(md).toMatch(/\| Manrope \| Body, Caption \| Existing font, bundled \| SIL Open Font License 1.1 \(OFL-1.1\) \| yes \| no: supply separately \|/)
     expect(md).toMatch(/\| Helvetica Neue \| UI \| Existing font, by name \| Not recorded \| no \|/)
-    expect(md).toMatch(/No file of a font made by someone else is included/)
+    expect(md).toMatch(/No font file made by someone else is included in this export, with one exception: the PDF specimen embeds/)
     expect(md).toMatch(/GPL-3.0-only\) is separate from the licence of a font you design/)
     expect(md).toContain('`typography.css` | 10 |')
     expect(md).toMatch(/not legal advice/)
@@ -254,7 +254,7 @@ describe('bundle: every export describes the same saved project', () => {
     const zipPath = join(dir, 'p.zip')
     writeFileSync(zipPath, b.files.package.bytes)
     const names = execFileSync('python3', ['-I', '-c', 'import zipfile,sys;z=zipfile.ZipFile(sys.argv[1]);assert z.testzip() is None;print("\\n".join(sorted(z.namelist())))', zipPath], { encoding: 'utf8' }).trim().split('\n')
-    expect(names).toEqual(['SOURCES-AND-LICENSES.md', 'fonts/NorthwindSans-Regular.ttf', 'northwind.tynovo.json', 'specimen.html', 'tokens.json', 'typography-spec.md', 'typography.css'])
+    expect(names).toEqual(['SOURCES-AND-LICENSES.md', 'fonts/NorthwindSans-Regular.ttf', 'northwind.tynovo.json', 'specimen.html', 'specimen.pdf', 'tokens.json', 'typography-spec.md', 'typography.css'])
   }, 30_000)
 
   it('builds the same font bytes every time for the same design', async () => {

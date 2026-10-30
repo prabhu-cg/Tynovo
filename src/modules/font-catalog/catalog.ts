@@ -12,7 +12,7 @@ export type { FontTags } from './tags'
  * redistribution (the font may not be sold on its own). Facts (category, weights, styles, licence, version,
  * source) are generated from each font package's own metadata; `tags` are Tynovo's judgement and say so.
  *
- * Exports never include these files. They name the font and say where to get it (see export-centre).
+ * Exports do not include these files, except the PDF specimen, which embeds the ones it draws (the OFL allows embedding in a document). Other exports name the font and say where to get it (see export-centre).
  */
 export interface CatalogFont extends CatalogEntry {
   tags: FontTags

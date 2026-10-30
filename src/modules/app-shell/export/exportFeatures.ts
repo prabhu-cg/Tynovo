@@ -12,6 +12,7 @@ export const EXPORT_FEATURE: Record<ExportFileId, FeatureId> = {
   manifest: 'export.docs',
   css: 'export.css',
   specimen: 'export.specimen',
+  pdf: 'export.specimen.pdf',
   package: 'export.package',
   font: 'export.font.ttf',
   project: 'data.export.project-file',

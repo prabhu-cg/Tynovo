@@ -98,7 +98,7 @@ Not covered by that run: other browsers, design-tool testing, screen readers, th
 
 ## Limitations
 
-The short version: all 95 target ASCII characters, Latin only by decision (no accents, no other scripts); point editing with no Bézier curves; TTF and OTF only (no WOFF/WOFF2, no generated PDF); a fixed catalog of 24 fonts; storage is per-browser; tested in Chromium only; no screen-reader testing; legal pages not reviewed by a lawyer. The full list is [docs/known-limitations.md](docs/known-limitations.md).
+The short version: all 95 target ASCII characters, Latin only by decision (no accents, no other scripts); point editing with no Bézier curves; TTF and OTF font export only (no WOFF/WOFF2), plus a generated PDF specimen; a fixed catalog of 24 fonts; storage is per-browser; tested in Chromium only; no screen-reader testing; legal pages not reviewed by a lawyer. The full list is [docs/known-limitations.md](docs/known-limitations.md).
 
 ## Licence
 

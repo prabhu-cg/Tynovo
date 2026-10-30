@@ -54,6 +54,7 @@ export const FEATURES = [
   f({ id: 'quality.extended', title: 'Extended quality diagnostics', description: 'Metric consistency, advance widths and spacing checks. Checks that guard the correctness of an exported file always run.', kind: 'flag', essential: false, guaranteedFree: false, implemented: true, enforcedIn: 'font-validation/quality.ts, app-shell/typeface/QualityTab.tsx' }),
   f({ id: 'export.font.otf', title: 'OpenType (CFF) font export', description: 'A checked .otf file of your typeface.', kind: 'flag', essential: false, guaranteedFree: false, implemented: true, enforcedIn: 'app-shell/FontExportFlow.tsx' }),
   f({ id: 'export.specimen', title: 'HTML specimen export', description: 'A self-contained page showing every role.', kind: 'flag', essential: false, guaranteedFree: false, implemented: true, enforcedIn: 'app-shell/ExportPage.tsx' }),
+  f({ id: 'export.specimen.pdf', title: 'PDF specimen export', description: 'The specimen as a PDF with real text and the fonts embedded.', kind: 'flag', essential: false, guaranteedFree: false, implemented: true, enforcedIn: 'app-shell/ExportPage.tsx' }),
   f({ id: 'export.package', title: 'Package export', description: 'Every export in one zip.', kind: 'flag', essential: false, guaranteedFree: false, implemented: true, enforcedIn: 'app-shell/ExportPage.tsx' }),
 
   /* ----- planned: do not exist yet, never shown ----- */

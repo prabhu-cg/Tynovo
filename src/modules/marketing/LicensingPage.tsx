@@ -76,7 +76,7 @@ const BLOCKS: readonly Block[] = [
       <>
         <p>The {CATALOG.length} fonts in the catalog, including the interface font Manrope and the example fonts Fraunces and IBM Plex Mono, are licensed by their authors under the SIL Open Font License 1.1. The licence text is at <External href="https://openfontlicense.org/open-font-license-official-text/">openfontlicense.org</External>.</p>
         <p className="mt-3">In short, the OFL lets you use these fonts for any purpose, including commercially, and study, change and share them, but not sell them on their own, and a changed version may not use the font’s Reserved Font Name. Tynovo does not change them. They are served from this site, not from a third party, and they load only when you preview or use them.</p>
-        <p className="mt-3">Category, weights, licence, copyright and version are read from each font’s own package metadata, not from a legal review. Tynovo never includes these fonts’ files in your exports: it names them, and the sources and licences file says where each comes from and under what licence.</p>
+        <p className="mt-3">Category, weights, licence, copyright and version are read from each font’s own package metadata, not from a legal review. Tynovo does not include these fonts’ files in your exports: it names them, and the sources and licences file says where each comes from and under what licence. The one exception is the PDF specimen, which embeds the fonts it draws, as the SIL Open Font License allows in a document.</p>
         <FontTable />
       </>
     ),
