@@ -9,7 +9,8 @@ Nothing here is simulated: every result below comes from a file the app built, r
 |---|---|---|---|---|
 | TrueType `.ttf` | yes | quadratic `glyf` (straight segments, and the quadratic curves the glyph editor makes, kept as they are) | `font/ttf` | Validated end to end (below). |
 | OpenType `.otf` | yes | PostScript/CFF | `font/otf` | Validated the same way. The generator's contours are written **reversed**, because CFF uses the opposite winding to TrueType; the shapes are identical (tested by area and bounds). Quadratic curves become cubics (Font Flux, 2/3 rule) with control points on whole units: a curved glyph can differ from the design by a unit or so, so the read-back allows 2 units of bounds and 1% of ink area for glyphs with curves, and nothing for glyphs without. |
-| WOFF / WOFF2 | **no** | – | – | Font Flux can write them, but the OS/2 metrics patch (`sfntPatch.ts`) cannot be applied inside a compressed container, WOFF2 needs a Brotli runtime, and neither was validated. They are not offered rather than offered untested. Wrapping a validated `.ttf` in WOFF is the obvious next step. |
+| WOFF | yes | the `.ttf` tables, each zlib-compressed | `font/woff` | Written by `font-export/container.ts` around the validated `.ttf`; see below. |
+| WOFF2 | yes | the `.ttf` tables, brotli-compressed as one block, no transform | `font/woff2` | Same; see below. |
 | Variable, colour, collections | no | – | – | Out of scope. |
 
 A file is never renamed into another format: `assertBytesAre` compares the first four bytes with the format before a build is returned, and the read-back repeats the check. The download name, the Blob's media type and the signature must agree (e2e test: both formats, name, `Blob.type`, magic bytes).
@@ -48,6 +49,26 @@ Run `npm run spike` to write `spikes/output/FormatTest-Regular.ttf` and `.otf` f
 ### A bug the comparison found
 
 The first run of the preview-vs-file comparison reported widths equal but only 51% pixel agreement. The cause: the library writes every `hmtx` left side bearing as 0 unless told otherwise, while the outlines start at their own `xMin`. FreeType-based renderers (Chrome, Android, Linux) shift each glyph left by that difference; CoreText follows `head.flags` and would not. The same file would have rendered differently in different programs, and fontkit, the library's validator and the earlier fontTools run all passed it. The exporter now passes each glyph's `xMin`, `verifyFontBytes` fails any file where hmtx and outline disagree (`binary.side-bearing`), and a test zeroes every bearing to prove the check bites. After the fix the first line “Hamburgefonstiv” agrees on 100.0% of inked pixels (within 1 px) in all three families, with equal widths; plain intersection-over-union is 96.2% for the rounded family, the rest being anti-aliasing and glyph positions snapped to whole pixels, which is why the app measures agreement within one pixel rather than plain overlap.
+
+### WOFF and WOFF2 (Phase 8)
+
+Font Flux can write both, but it rebuilds the font from its model and drops the OS/2 metrics patch (`sfntPatch.ts`), so its web file would differ from the `.ttf`. `container.ts` instead **wraps the validated `.ttf` bytes**: WOFF compresses each table with zlib; WOFF2 concatenates the tables in tag order with the *null transform* (version 3 for glyf and loca) and brotli-compresses them as one block. Skipping the glyph transform costs some size and removes a class of bugs.
+
+Brotli is the pure-JavaScript `brotli` package (MIT), not a WebAssembly build: Tynovo's content security policy allows no `'wasm-unsafe-eval'` and nothing here is worth weakening it. The package's Emscripten encoder does not run in a browser as shipped (its memory image loads through a Node-only branch, and it exports its module only under Node), so `vite.config.ts` carries a small build-time patch that fails the build if the package changes under it. It was found by exporting a WOFF2 in the production build under the production headers, the first time it would have failed for a real user.
+
+How it is checked (each step is an error that blocks the file if it fails):
+
+| Check | By |
+|---|---|
+| Header says the file's real length, the size of the font inside, and the table count | `verifyFontBytes` (`readback.ts`, `unpackContainer`) |
+| Every table unpacks to the length its directory states; the whole unpacked font has correct table checksums and a correct `head.checkSumAdjustment`, which proves the container neither lost nor changed a byte | same, on the reconstructed sfnt |
+| The font inside passes Font Flux's validator and the same read-back as a `.ttf` (mappings, advance widths, bearings, outlines, kerning, names, metrics) | same |
+| The unpacked bytes equal the `.ttf` the container was made from, byte for byte; WOFF2 is smaller than WOFF, WOFF smaller than the `.ttf` | `container.test.ts` |
+| Independent readers: **fontkit** (JS) opens both and gives the same names, mappings, metrics and widths; **fontTools** (Python, the reference Brotli) opens both with strict checksums and `scripts/verify-font.py` passes | `formats.test.ts`; `verify-font.py` on `spikes/output/*.woff*` (not CoreText: it does not read web fonts) |
+| **Chromium's own decoder** loads the downloaded file as a `FontFace` and a glyph from it has a real width | `e2e/editor.spec.ts`, in the production build under the production CSP |
+| Damage is refused: a cut file, a wrong stated length and a flipped byte in the compressed data each produce an error and no file | `container.test.ts` |
+
+Not tested: Safari and Firefox decoding the files, WOFF2 in older browsers (all current ones read it), and the container inside design tools (which do not take web fonts).
 
 ### Known exception
 

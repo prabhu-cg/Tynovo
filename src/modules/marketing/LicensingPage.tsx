@@ -15,6 +15,7 @@ export const SOFTWARE: ReadonlyArray<{ name: string; license: string; use: strin
   { name: 'React Router', license: 'MIT', use: 'Navigation between pages.', url: 'https://github.com/remix-run/react-router' },
   { name: 'Zod', license: 'MIT', use: 'Checks that project data is valid.', url: 'https://zod.dev' },
   { name: 'idb', license: 'ISC', use: 'Saves projects in your browser.', url: 'https://github.com/jakearchibald/idb' },
+  { name: 'brotli', license: 'MIT', use: 'Compresses WOFF2 web fonts.', url: 'https://github.com/devongovett/brotli.js' },
   { name: 'polygon-clipping', license: 'MIT', use: 'Combines shapes when a typeface is drawn.', url: 'https://github.com/mfogel/polygon-clipping' },
 ]
 

@@ -9,7 +9,8 @@ import { signedArea } from '@/modules/glyph-editor/geometry'
 import { setGlyphOutline } from '@/modules/typeface-engine/edit'
 import { createTypeface } from '@/modules/typeface-engine/typeface'
 import { fontFluxBuilder } from './fontFluxBuilder'
-import { assertBytesAre, FORMATS, FORMAT_IDS, sniffFormat } from './formats'
+import { assertBytesAre, FORMATS, FORMAT_IDS, sniffFormat, type FontFormatId } from './formats'
+import { innerSfnt, readWoff2, unwrapWoff } from './container'
 import { readDirectory, verifyChecksums } from './sfnt'
 import { exportTypeface } from './typefaceExport'
 import type { Project } from '@/modules/brand-projects/schema'
@@ -22,7 +23,7 @@ const face = () => {
   t.license = { name: 'SIL Open Font License 1.1', url: 'https://openfontlicense.org', verified: true }
   return t
 }
-const build = (format: 'ttf' | 'otf', typeface = face()) => fontFluxBuilder.build({ typeface, timestamp: TIMESTAMP, version: '1.002', format })
+const build = (format: FontFormatId, typeface = face()) => fontFluxBuilder.build({ typeface, timestamp: TIMESTAMP, version: '1.002', format })
 
 describe.each(FORMAT_IDS)('%s export', (format) => {
   const spec = FORMATS[format]
@@ -38,9 +39,11 @@ describe.each(FORMAT_IDS)('%s export', (format) => {
 
   it('contains every required table and has correct checksums', async () => {
     const r = await build(format)
-    const tags = readDirectory(r.bytes)!.tables.map((t) => t.tag)
+    // A web font is checked on the tables inside its container.
+    const sfnt = format === 'woff' ? await unwrapWoff(r.bytes) : format === 'woff2' ? (await readWoff2(r.bytes)).sfnt : r.bytes
+    const tags = readDirectory(sfnt)!.tables.map((t) => t.tag)
     for (const t of spec.requiredTables) expect(tags, t).toContain(t)
-    const sums = verifyChecksums(r.bytes)!
+    const sums = verifyChecksums(sfnt)!
     expect(sums.problems).toEqual([])
     expect(sums.wholeFileOk).toBe(true)
   })
@@ -270,11 +273,11 @@ describe.each(FORMAT_IDS)('%s export of curved outlines', (format) => {
     const r = await build(format, t)
     const font = fontkit.create(Buffer.from(r.bytes)) as fontkit.Font
     const cmds = font.glyphForCodePoint(79).path.commands.map((c) => c.command)
-    if (format === 'ttf') expect(cmds).toContain('quadraticCurveTo')
-    else expect(cmds).toContain('bezierCurveTo')
+    if (format === 'otf') expect(cmds).toContain('bezierCurveTo')
+    else expect(cmds).toContain('quadraticCurveTo') // the web formats hold the TrueType file
     // The file's ink bounds are the curve's, not the control box's.
     const bump = font.glyphForCodePoint(72).bbox
-    expect(bump.minX).toBeGreaterThanOrEqual(format === 'ttf' ? -100 : -2) // a TrueType glyph header records the control box
+    expect(bump.minX).toBeGreaterThanOrEqual(format === 'otf' ? -2 : -100) // a TrueType glyph header records the control box
     expect(bump.minY).toBe(0)
     expect(bump.maxY).toBe(600)
   })
@@ -283,7 +286,7 @@ describe.each(FORMAT_IDS)('%s export of curved outlines', (format) => {
     const t = curved()
     const r = await build(format, t)
     const { FontFlux } = await import('font-flux-js')
-    expect(FontFlux.open(r.bytes).getGlyph('H')!.leftSideBearing).toBe(format === 'ttf' ? -100 : 0)
+    expect(FontFlux.open(await innerSfnt(r.bytes)).getGlyph('H')!.leftSideBearing).toBe(format === 'otf' ? 0 : -100)
   })
 
   it('is deterministic', async () => {

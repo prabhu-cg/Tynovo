@@ -1,4 +1,5 @@
 import type { Contour, CustomTypeface } from '../brand-projects/schema'
+import { readWoff2, unwrapWoff } from '../font-export/container'
 import { FORMATS, sniffFormat, type FontFormatId } from '../font-export/formats'
 import { loadFontFlux } from '../font-export/loadFontFlux'
 import { psName } from '../font-export/fontFluxBuilder'
@@ -71,10 +72,22 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
     err('format-mismatch', `The file should be ${spec.label} but its signature says ${sniffed}.`)
     return { issues, passed }
   }
-  passed.push(`File signature is ${format === 'ttf' ? 'TrueType (00 01 00 00)' : 'OpenType/CFF (“OTTO”)'}, matching the ${spec.extension} extension and the ${spec.mimeType} type.`)
+  const SIGNATURE: Record<FontFormatId, string> = { ttf: 'TrueType (00 01 00 00)', otf: 'OpenType/CFF (“OTTO”)', woff: 'WOFF (“wOFF”)', woff2: 'WOFF2 (“wOF2”)' }
+  passed.push(`File signature is ${SIGNATURE[format]}, matching the ${spec.extension} extension and the ${spec.mimeType} type.`)
 
-  // 2. Tables and checksums
-  const dir = readDirectory(bytes)
+  // 2. Tables and checksums. A web font is a container: its tables are unpacked first and everything below is checked on them.
+  let sfnt = bytes
+  if (spec.container) {
+    try {
+      const inner = await unpackContainer(bytes, format)
+      sfnt = inner.sfnt
+      passed.push(inner.passed)
+    } catch (e) {
+      err('container', `The ${spec.label} container is not sound: ${e instanceof Error ? e.message : String(e)}`)
+      return { issues, passed }
+    }
+  }
+  const dir = readDirectory(sfnt)
   if (!dir) {
     err('directory', 'The table directory cannot be read.')
     return { issues, passed }
@@ -83,7 +96,7 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
   const missingTables = spec.requiredTables.filter((t) => !have.has(t))
   if (missingTables.length) err('tables', `Required tables are missing: ${missingTables.join(', ')}.`)
   else passed.push(`All ${spec.requiredTables.length} required tables are present (${spec.requiredTables.join(', ')}).`)
-  const sums = verifyChecksums(bytes)
+  const sums = verifyChecksums(sfnt)
   if (sums && (sums.problems.length || !sums.wholeFileOk)) {
     err('checksum', `Checksum mismatch${sums.problems.length ? ` in ${sums.problems.map((p) => p.table).join(', ')}` : ' for the whole file'}. Some programs reject such files.`)
   } else passed.push('Every table checksum and the whole-file checksum are correct.')
@@ -92,7 +105,8 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
   const { FontFlux } = await loadFontFlux()
   let font: InstanceType<typeof FontFlux>
   try {
-    font = FontFlux.open(bytes)
+    // For a web font, the font inside the container (Font Flux's own WOFF2 reader needs WebAssembly, which the page's content security policy does not allow; the tests read the containers with fontkit and fontTools instead).
+    font = FontFlux.open(sfnt)
   } catch (e) {
     err('reopen', `The file cannot be opened again: ${e instanceof Error ? e.message : String(e)}`)
     return { issues, passed }
@@ -178,7 +192,7 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
   // 4. Metrics
   const info = font.info
   const os2 = dir.tables.find((t) => t.tag === 'OS/2')
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  const view = new DataView(sfnt.buffer, sfnt.byteOffset, sfnt.byteLength)
   let metricsOk = info.unitsPerEm === m.unitsPerEm && info.ascender === m.ascender && info.descender === m.descender
   if (!metricsOk) err('metrics', `Vertical metrics in the file (${info.ascender}/${info.descender} per ${info.unitsPerEm}) differ from the design (${m.ascender}/${m.descender} per ${m.unitsPerEm}).`)
   if (os2 && os2.length >= 90) {
@@ -204,4 +218,23 @@ export async function verifyFontBytes(bytes: Uint8Array, face: CustomTypeface, f
   else passed.push(`Name table matches the project: family “${info.familyName}”, style “${info.styleName}”, PostScript name ${info.postScriptName}, ${info.version}${face.copyright ? ', copyright' : ''}${face.license.name && face.license.name !== LICENSE_PLACEHOLDER ? ', licence' : ''}.`)
 
   return { issues, passed }
+}
+
+/**
+ * Open a WOFF or WOFF2 and check the container itself: the sizes its header states, that every table comes out at
+ * the length its directory says, and (by the caller) that the tables unpacked still carry correct checksums, which
+ * proves the container neither lost nor changed a byte of the font inside.
+ */
+async function unpackContainer(bytes: Uint8Array, format: FontFormatId): Promise<{ sfnt: Uint8Array; passed: string }> {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  if (view.getUint32(8) !== bytes.length) throw new Error(`the header says the file is ${view.getUint32(8)} bytes, but it is ${bytes.length}.`)
+  if (format === 'woff') {
+    const sfnt = await unwrapWoff(bytes)
+    const total = view.getUint32(16)
+    if (total !== sfnt.length) throw new Error(`the header says the unpacked font is ${total} bytes, but it unpacks to ${sfnt.length}.`)
+    return { sfnt, passed: `WOFF container: ${view.getUint16(12)} tables, each unpacked to the length its directory states, ${bytes.length} bytes holding a ${sfnt.length}-byte font.` }
+  }
+  const woff2 = await readWoff2(bytes)
+  if (woff2.totalSfntSize !== woff2.sfnt.length) throw new Error(`the header says the unpacked font is ${woff2.totalSfntSize} bytes, but it unpacks to ${woff2.sfnt.length}.`)
+  return { sfnt: woff2.sfnt, passed: `WOFF2 container: ${woff2.tags.length} tables, brotli-compressed to ${woff2.totalCompressedSize} bytes and unpacked to the sizes its directory states, ${bytes.length} bytes holding a ${woff2.sfnt.length}-byte font.` }
 }

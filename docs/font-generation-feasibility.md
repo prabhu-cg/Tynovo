@@ -43,7 +43,7 @@ Reproduce the file: `npm run spike` writes `spikes/output/ProofSans-Regular.ttf`
 3. **Kerning** is pair-based only. Class kerning, GSUB features (ligatures etc.) exist in the library but are not used yet.
 4. **No TrueType hinting** (instructions). Unhinted fonts render fine on modern systems; very old Windows rasterisers may look rough at small sizes.
 5. **`fsType` is 0** (installable embedding). Embedding permissions are a legal choice and are not yet exposed in the UI.
-6. **TTF and OTF are exported (Phase 4).** WOFF and WOFF2 are supported by the library but not offered: not validated here. See `font-export-validation.md`.
+6. **TTF and OTF are exported (Phase 4); WOFF and WOFF2 since Phase 8** as containers around the validated TrueType file. See `font-export-validation.md`.
 7. **Glyph limits.** Contours are TrueType quadratic only (no cubic); no composite glyphs; no hinting; no variable fonts; no colour fonts. Outer contours must be clockwise and counters counter-clockwise, which `font-validation` checks, along with counters lying inside solid area.
 8. **Bundle cost.** Font Flux is ~416 kB (124 kB gzip) and is lazy-loaded the first time a font is built, so it is not on the critical path of the app shell.
 

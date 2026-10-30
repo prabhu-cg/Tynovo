@@ -2,6 +2,7 @@ import { analyzeTypeface } from '../font-validation/coverage'
 import { deriveMetrics } from '../typeface-engine/dna'
 import { LICENSE_PLACEHOLDER } from '../typeface-engine/typeface'
 import { loadFontFlux } from './loadFontFlux'
+import { wrapWoff, wrapWoff2 } from './container'
 import { assertBytesAre, FORMATS } from './formats'
 import { fileLeftSideBearing } from './sidebearing'
 import { patchOs2 } from './sfntPatch'
@@ -17,6 +18,13 @@ export const fontFluxBuilder: FontBuilder = {
   id: 'font-flux-js',
   async build({ typeface, timestamp, version, format = 'ttf' }: FontBuildInput): Promise<FontBuildResult> {
     const target = FORMATS[format]
+    if (target.container) {
+      // A web font is the validated TrueType file in a compressed container: build the .ttf, then wrap those very bytes.
+      const ttf = await fontFluxBuilder.build({ typeface, timestamp, version, format: 'ttf' })
+      const bytes = format === 'woff' ? await wrapWoff(ttf.bytes) : await wrapWoff2(ttf.bytes)
+      assertBytesAre(bytes, format)
+      return { bytes, filename: `${psName(typeface.familyName, typeface.styleName)}${target.extension}`, mimeType: target.mimeType, format }
+    }
     const { FontFlux } = await loadFontFlux()
     const m = deriveMetrics(typeface.dna)
     const font = FontFlux.create({

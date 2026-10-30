@@ -104,7 +104,7 @@ export function ExportPage() {
         <div>
           {saved.customTypeface ? (
             <>
-              <p className="max-w-xl">Export <strong>{saved.customTypeface.familyName} {saved.customTypeface.styleName}</strong> as TrueType (.ttf) or OpenType/CFF (.otf). The typeface is checked before the file is built, and the finished file is opened again and compared with the design before it is offered.</p>
+              <p className="max-w-xl">Export <strong>{saved.customTypeface.familyName} {saved.customTypeface.styleName}</strong> as TrueType (.ttf), OpenType/CFF (.otf), WOFF or WOFF2. The typeface is checked before the file is built, and the finished file is opened again and compared with the design before it is offered.</p>
               <div className="mt-4"><FontExportFlow /></div>
             </>
           ) : (

@@ -19,10 +19,14 @@ const BUDGETS = {
   /** Chunks allowed to exceed lazyChunk, and by how much. They load only when the person asks for the feature. */
   exceptions: {
     'font-flux-js': 135 * KB, // the font writer, loaded on the first export only
+    // The pure-JavaScript Brotli encoder and decoder (the `brotli` package), loaded only when a WOFF2 is built or read. Most of the
+    // encoder is its 195 KB base64 memory image. A WebAssembly build would be smaller but needs 'wasm-unsafe-eval' in the CSP.
+    compress: 260 * KB,
+    decompress: 68 * KB,
   },
 }
 /** Never part of the first load: they must stay lazy. */
-const MUST_BE_LAZY = ['font-flux-js', 'TypefacePage', 'ExportPage', 'TypographyPage', 'quality']
+const MUST_BE_LAZY = ['font-flux-js', 'TypefacePage', 'ExportPage', 'TypographyPage', 'quality', 'compress', 'decompress', 'pdf']
 
 const dist = new URL('../dist/', import.meta.url).pathname
 if (!existsSync(join(dist, 'index.html'))) {

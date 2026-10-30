@@ -12,13 +12,15 @@ import { useProject } from './project'
 const NOTES: Record<FontFormatId, string> = {
   ttf: 'TrueType outlines. The widest support in desktop programs, operating systems and browsers.',
   otf: 'OpenType with PostScript (CFF) outlines, the same design. Some print and design workflows prefer it. Both files are checked the same way.',
+  woff: 'The TrueType file in a zlib-compressed web container: the same font, smaller for the web. Every table is identical to the .ttf; the check reads the container back and proves it.',
+  woff2: 'The TrueType file in a brotli-compressed web container, the smallest form for the web and supported by every current browser. Every table is identical to the .ttf; the check reads the container back and proves it. Use it with a @font-face rule, not by installing it.',
 }
 
 /** Validate, build, re-open and compare a font file, then offer it for download. Failed files are never offered. */
 export function FontExportFlow() {
   const { editor } = useProject()
   const caps = useCapabilities()
-  const FORMAT_FEATURE: Record<FontFormatId, FeatureId> = { ttf: 'export.font.ttf', otf: 'export.font.otf' }
+  const FORMAT_FEATURE: Record<FontFormatId, FeatureId> = { ttf: 'export.font.ttf', otf: 'export.font.otf', woff: 'export.font.web', woff2: 'export.font.web' }
   const formats = FORMAT_IDS.filter((f) => viewOf(FORMAT_FEATURE[f], caps).allowed)
   const lockedFormats = FORMAT_IDS.filter((f) => !formats.includes(f) && viewOf(FORMAT_FEATURE[f], caps).visible)
   // Files are built from what is saved, never from an unsaved draft, so they always match what a reload shows.
@@ -52,7 +54,7 @@ export function FontExportFlow() {
     <>
       <div className="grid max-w-xl gap-3">
         <Segmented label="File format" value={format} options={formats.map((f) => ({ value: f, label: FORMATS[f].label }))} onChange={(f) => { setFormat(f); setResult(null) }} />
-        <p className="text-xs text-ink-soft">{NOTES[format]} WOFF and WOFF2 are not offered: they have not been validated here.</p>
+        <p className="text-xs text-ink-soft">{NOTES[format]}</p>
         {lockedFormats.length > 0 ? <p data-testid="locked" className="text-xs text-ink-soft">Not included in the {caps.label} plan: {lockedFormats.map((f) => FORMATS[f].label).join(', ')}.{COMMERCE.paymentsAvailable ? '' : ' Paid plans are not available yet.'}</p> : null}
         <div><Button variant="primary" disabled={busy || !settled} onClick={() => void run()}>{busy ? 'Building and checking…' : `Check and build ${spec.extension}…`}</Button></div>
         {!settled ? <p role="status" className="text-xs text-ink-soft">Waiting for your latest changes to be saved, so the file matches the saved project.</p> : null}
