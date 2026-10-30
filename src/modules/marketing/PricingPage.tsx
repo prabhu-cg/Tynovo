@@ -16,7 +16,7 @@ export function PricingPage() {
               <h2 className="text-2xl font-extrabold">Free, now</h2>
               <p className="mt-1 text-4xl font-extrabold text-ink-strong">0</p>
               <ul className="mt-6 grid gap-3">
-                {['Everything that exists in Tynovo today', 'No account and no sign-up', 'Projects stored in your browser', 'The font catalog, roles, pairing, previews and exports', 'All three typeface families, the glyph editor and TrueType and OpenType export', 'Licensed under GPL-3.0'].map((t) => (
+                {['Everything that exists in Tynovo today', 'No account and no sign-up', 'Projects stored in your browser', 'The font catalog, roles, pairing, previews and exports', 'All three typeface families, the glyph editor with curves, a PDF specimen, and TrueType, OpenType, WOFF and WOFF2 export', 'Licensed under GPL-3.0'].map((t) => (
                   <li key={t} className="border-t border-line pt-3">{t}</li>
                 ))}
               </ul>
