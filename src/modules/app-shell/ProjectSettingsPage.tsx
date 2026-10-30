@@ -37,6 +37,10 @@ export function ProjectSettingsPage() {
 
   return (
     <div className="grid gap-10">
+      <header className="grid gap-1">
+        <h2 className="text-2xl font-extrabold tracking-tight text-ink-strong">Project settings</h2>
+        <p className="max-w-2xl text-sm text-ink-soft">Duplicate, back up, inspect or delete <strong className="text-ink-strong">{draft.name}</strong>. Nothing on this page changes your fonts, typeface or exports.</p>
+      </header>
       {error ? <Banner tone="error">{error}</Banner> : null}
       <section aria-labelledby="dup-h" className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-6">
         <h2 id="dup-h" className="text-lg font-bold">Duplicate</h2>

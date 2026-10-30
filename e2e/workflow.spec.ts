@@ -22,7 +22,7 @@ async function integrated(page: Page, project = 'Northwind') {
   await page.getByRole('button', { name: /Start with Geometric/ }).click()
   await page.getByLabel('Typeface name').fill('Northwind Sans')
   await saved(page)
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await fontOf(page, 'Display').selectOption('custom')
   await fontOf(page, 'Heading').selectOption('custom')
   await fontOf(page, 'Body').selectOption({ label: 'Manrope' })
@@ -56,13 +56,13 @@ test('one project carries a custom typeface from design to preview to export', a
   // Changing the design changes the typography previews, without any reload or button.
   const displaySample = page.locator('[data-role-sample="Display"]')
   const widthBefore = await textWidth(displaySample)
-  await page.getByRole('link', { name: 'Custom Typeface Creator', exact: true }).click()
+  await page.getByRole('link', { name: 'Typeface', exact: true }).click()
   await expect(page.getByTestId('typeface-usage')).toContainText('Used in Display, Heading')
   const stroke = page.getByRole('slider', { name: 'Stroke thickness' })
   await stroke.focus()
   for (let i = 0; i < 12; i++) await page.keyboard.press('ArrowRight')
   await saved(page)
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(async () => {
     expect(Number(await page.getByTestId('brand-preview').getAttribute('data-custom-font-revision'))).toBeGreaterThan(rev1)
   }).toPass()
@@ -125,7 +125,7 @@ test('one project carries a custom typeface from design to preview to export', a
   await expect(history.locator('[data-sync="stale"]')).toHaveCount(0)
 
   // A later change marks earlier exports out of date.
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await page.getByLabel('Line height of Body').fill('1.9')
   await saved(page)
   await page.getByRole('link', { name: 'Export', exact: true }).first().click()
@@ -214,7 +214,7 @@ test('the custom typeface is only offered for roles it suits, with the reason', 
 
 test('removing the typeface unassigns its roles after asking', async ({ page }) => {
   await integrated(page)
-  await page.getByRole('link', { name: 'Custom Typeface Creator', exact: true }).click()
+  await page.getByRole('link', { name: 'Typeface', exact: true }).click()
   await page.getByRole('button', { name: 'Remove typeface from project…' }).click()
   await expect(page.getByRole('group', { name: 'Confirm removing the typeface' })).toContainText('Display, Heading will have no font assigned')
   await page.getByRole('button', { name: 'Remove typeface', exact: true }).click()
@@ -222,7 +222,7 @@ test('removing the typeface unassigns its roles after asking', async ({ page }) 
   const stored = (await readProjects(page))[0]!
   expect(stored['customTypeface']).toBeNull()
   expect(stored['typography'].roles.map((r: { font: unknown }) => r.font === null)).toEqual([true, true, false, true, true])
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(page.getByRole('listitem', { name: 'Display' }).locator('[data-origin="none"]')).toBeVisible()
   await expect(page.getByRole('listitem', { name: 'Body' }).locator('[data-origin="catalog"]')).toBeVisible()
 })
@@ -256,13 +256,13 @@ test('duplicating and deleting projects leave other projects intact; a backup re
   await expect(name(page)).toHaveValue('Alpha (copy)')
 
   // Change the copy only.
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await fontOf(page, 'Display').selectOption('')
   await page.getByLabel('Line height of Body').fill('2.2')
   await saved(page)
   await page.goto('/app/projects')
   await page.getByRole('link', { name: 'Alpha', exact: true }).click()
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(fontOf(page, 'Display')).toHaveValue('custom')
   await expect(page.getByLabel('Line height of Body')).toHaveValue('1.55')
 
@@ -287,7 +287,7 @@ test('duplicating and deleting projects leave other projects intact; a backup re
   await page.locator('input[type=file]').setInputFiles(backupPath)
   await expect(page.getByRole('link', { name: 'Alpha (copy)' })).toBeVisible()
   await page.getByRole('link', { name: 'Alpha (copy)' }).click()
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(fontOf(page, 'Heading')).toHaveValue('custom')
   await expect(page.getByLabel('Line height of Body')).toHaveValue('2.2')
   await expect(fontOf(page, 'Display')).toHaveValue('')
@@ -318,7 +318,7 @@ test('a project stored by an older version is upgraded on opening, with the orig
   const [dl] = await Promise.all([page.waitForEvent('download'), banner.getByRole('button', { name: 'Download the original' }).click()])
   expect(JSON.parse(readFileSync(await dl.path(), 'utf8')).schemaVersion).toBe(2)
 
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(fontOf(page, 'Body')).toHaveValue(/^source:/) // the old link became a typed link
   await expect(page.getByRole('listitem', { name: 'Body' })).toContainText('Fraunces')
   await page.getByLabel('Weight of Body').fill('500')
@@ -355,7 +355,7 @@ test('a damaged project can be recovered into a new one without touching the dam
   expect((await readProjects(page)).map((r) => r['id']).includes('broken-3')).toBe(true) // the damaged record is still there
   await page.getByRole('link', { name: 'Half broken (recovered)' }).click()
   await expect(name(page)).toHaveValue('Half broken (recovered)')
-  await page.getByRole('link', { name: 'Brand Typography System' }).click()
+  await page.getByRole('link', { name: 'Roles', exact: true }).click()
   await expect(fontOf(page, 'Display')).toHaveValue('')
 })
 

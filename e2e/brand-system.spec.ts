@@ -7,7 +7,9 @@ import { createProject, readProjects, saved, writeProjects } from './helpers'
 const N = CATALOG_DATA.length
 
 const fontOf = (page: Page, role: string) => page.getByLabel(`Font of ${role}`, { exact: true })
-const tab = (page: Page, name: string) => page.getByRole('link', { name, exact: true }).first()
+/** The screens are reached through the workflow bar, whose steps carry short names. */
+const SCREEN_LINK: Record<string, string> = { Overview: 'Brand', 'Font catalog': 'Fonts', 'Brand Typography System': 'Roles', 'Custom Typeface Creator': 'Typeface' }
+const tab = (page: Page, name: string) => page.getByRole('link', { name: SCREEN_LINK[name] ?? name, exact: true }).first()
 
 async function download(page: Page, button: string) {
   const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: button, exact: true }).click()])

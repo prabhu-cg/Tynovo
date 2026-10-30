@@ -83,8 +83,8 @@ test.describe('under the policy', () => {
     await expect(page.getByLabel('Typeface name')).toBeVisible()
     await page.getByLabel('Typeface name').fill('Policy Test')
 
-    for (const name of ['Font catalog', 'Brand Typography System']) {
-      await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name }).click()
+    for (const name of ['Fonts', 'Roles']) {
+      await page.getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name, exact: true }).click()
       await expect(page.getByRole('main')).toBeVisible()
     }
     await page.getByRole('link', { name: 'Export', exact: true }).first().click()
@@ -128,7 +128,7 @@ test.describe('untrusted files', () => {
     const payload = '<img src=x onerror="window.__xss=1"><script>window.__xss=2</script>'
     await createProject(page, payload)
     await expect(page.getByRole('main').getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(payload)
-    await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Brand Typography System' }).click()
+    await page.getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Roles', exact: true }).click()
     await expect(page.getByRole('main')).toBeVisible()
     expect(await page.evaluate(() => (window as unknown as Record<string, unknown>)['__xss'])).toBeUndefined()
     expect(await page.locator('main img[src="x"]').count()).toBe(0)

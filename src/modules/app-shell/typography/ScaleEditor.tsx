@@ -40,7 +40,7 @@ export function ScaleEditor() {
             return (
               <li key={s.step} className="flex items-baseline gap-4 overflow-hidden px-4 py-2">
                 <span className="tnum w-36 shrink-0 text-xs text-ink-soft">Step {s.step} · {sizeText(spec.minPx, spec.maxPx)}</span>
-                <span className="truncate whitespace-nowrap text-ink-strong" style={{ fontSize: Math.min(spec.maxPx, 72), lineHeight: 1.2 }}>Hamburgefonstiv</span>
+                <span className="truncate whitespace-nowrap text-ink-strong" style={{ fontSize: Math.min(spec.maxPx, 72), lineHeight: 1.3, paddingBottom: '0.15em' }}>Hamburgefonstiv</span>
               </li>
             )
           })}

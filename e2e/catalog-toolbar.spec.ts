@@ -9,7 +9,7 @@ const N = CATALOG_DATA.length
 /** The catalog's search and filters: one compact row, a Filter panel, a Sort menu, applied filters as chips. */
 async function openCatalog(page: Page) {
   await createProject(page, 'Toolbar')
-  await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Font catalog' }).click()
+  await page.getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Fonts', exact: true }).click()
   await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
 }
 const filterButton = (page: Page) => page.getByRole('button', { name: /^Filter/ })

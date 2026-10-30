@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useBlocker, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Outlet, useBlocker, useLocation, useNavigate, useParams } from 'react-router'
 import { downloadBytes } from '@/modules/font-export/download'
 import { useProjectFont } from '@/modules/font-export/useProjectFont'
 import { Banner, Button, ButtonLink, LockIcon } from '@/modules/shared-ui'
@@ -14,9 +14,6 @@ import { describeError } from './errors'
 import { useContentRevision } from './useRevision'
 import { workflowSteps } from '@/modules/brand-system/workflow'
 import { WorkflowBar } from './workflow/WorkflowBar'
-
-const tab = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-semibold whitespace-nowrap transition-colors md:min-h-10 ${isActive ? 'border-accent text-ink-strong' : 'border-transparent text-ink-soft hover:text-ink-strong'}`
 
 /** Shared header, save status and error recovery for every section of a project. */
 export function ProjectLayout() {
@@ -144,12 +141,6 @@ export function ProjectLayout() {
             <ButtonLink to="settings" variant="ghost">Settings</ButtonLink>
           </div>
         </div>
-        <nav aria-label="Project sections" className="-mb-px flex gap-5 overflow-x-auto border-b border-line">
-          <NavLink to="." end className={tab}>Overview</NavLink>
-          <NavLink to="fonts" className={tab}>Font catalog</NavLink>
-          <NavLink to="typography" className={tab}><span className="sr-only md:not-sr-only">Brand Typography System</span><span aria-hidden="true" className="md:hidden">Typography</span></NavLink>
-          <NavLink to="typeface" className={tab}><span className="sr-only md:not-sr-only">Custom Typeface Creator</span><span aria-hidden="true" className="md:hidden">Typeface</span></NavLink>
-        </nav>
       </header>
 
       <WorkflowBar steps={workflowSteps(draft, revision)} projectId={draft.id} />

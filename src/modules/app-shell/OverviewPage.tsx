@@ -8,7 +8,6 @@ import { PRIORITY_LABEL, TONE_LABEL, USE_CASE_LABEL } from '@/modules/brand-syst
 import { BrandBriefAssist } from './ai/BrandBriefAssist'
 import { Progress } from './workflow/Progress'
 import { StepLink } from './workflow/StepLink'
-import { nextStep } from '@/modules/brand-system/workflow'
 import { EditGroup } from './EditGroup'
 import { useContentRevision } from './useRevision'
 import { computeScale } from '@/modules/typography-system/scale'
@@ -51,13 +50,7 @@ export function OverviewPage() {
           <p className="mt-1 text-sm text-ink-soft">One project, both modes. Work top to bottom, or jump in anywhere. Every row opens its step.</p>
         </div>
         <div className="grid min-w-0 gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <Progress steps={steps_} />
-          {(() => {
-            const next = nextStep(steps_)
-            return next ? <StepLink to={next.to} data-testid="overview-next" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-3.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover md:min-h-9">Continue with {next.short.toLowerCase()}<ArrowRightIcon /></StepLink> : null
-          })()}
-        </div>
+        <Progress steps={steps_} />
         <ol aria-label="Brand workflow" className="stagger divide-y divide-line border-y border-line">
           {steps_.map((s, i) => (
             // Below xl the row stacks (number and title, then status and detail, then the link). From xl it is five columns with

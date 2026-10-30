@@ -49,9 +49,9 @@ for (const scheme of ['light', 'dark'] as const) test.describe(`axe, WCAG 2.2 AA
         await expect(page.getByRole('button', { name: view, exact: true })).toHaveAttribute('aria-current', 'page')
         found.push(...(await violations(page, `${size.name} typeface/${view}`)))
       }
-      const nav = page.getByRole('navigation', { name: 'Project sections' })
-      for (const section of ['Overview', 'Font catalog', 'Brand Typography System']) {
-        await nav.getByRole('link', { name: section }).click()
+      const nav = page.getByRole('navigation', { name: 'Workflow steps' })
+      for (const [section, step] of [['Overview', 'Brand'], ['Font catalog', 'Fonts'], ['Brand Typography System', 'Roles']] as const) {
+        await nav.getByRole('link', { name: step, exact: true }).click()
         await expect(page.getByRole('main')).toBeVisible()
         found.push(...(await violations(page, `${size.name} ${section}`)))
       }
@@ -95,7 +95,7 @@ for (const scheme of ['light', 'dark'] as const) test.describe(`axe, busy states
       found.push(...(await violations(page, `${size.name} delete confirmation dialog`)))
       await page.keyboard.press('Escape')
       await page.getByRole('link', { name: 'Busy' }).click()
-      await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Custom Typeface Creator' }).click()
+      await page.getByRole('navigation', { name: 'Workflow steps' }).getByRole('link', { name: 'Typeface', exact: true }).click()
       await page.getByRole('button', { name: /Start with Rounded/ }).click()
       await expect(page.getByLabel('Typeface name')).toBeVisible()
 
@@ -104,15 +104,15 @@ for (const scheme of ['light', 'dark'] as const) test.describe(`axe, busy states
       await expect(page.getByRole('application', { name: 'Outline of H' })).toBeVisible()
       found.push(...(await violations(page, `${size.name} glyph editor with H selected`)))
 
-      const sections = page.getByRole('navigation', { name: 'Project sections' })
-      await sections.getByRole('link', { name: 'Overview' }).click()
+      const sections = page.getByRole('navigation', { name: 'Workflow steps' })
+      await sections.getByRole('link', { name: 'Brand', exact: true }).click()
       await page.getByText('SaaS and software', { exact: true }).click() // the checkbox is visually hidden inside its label: click the label text
       await page.getByText('Technical', { exact: true }).click()
-      await sections.getByRole('link', { name: 'Brand Typography System' }).click()
+      await sections.getByRole('link', { name: 'Roles', exact: true }).click()
       await expect(page.getByRole('region', { name: 'Suggested pairings' }).locator('[data-pairing]').first()).toBeVisible()
       found.push(...(await violations(page, `${size.name} brand direction with suggested pairings`)))
 
-      await sections.getByRole('link', { name: 'Font catalog' }).click()
+      await sections.getByRole('link', { name: 'Fonts', exact: true }).click()
       found.push(...(await violations(page, `${size.name} font catalog with brand ordering`)))
 
       await page.getByRole('link', { name: 'Export', exact: true }).first().click()

@@ -23,6 +23,7 @@ export const FitCurvesIcon = () => <Icon><path d="M3 15c2-1 2.5-4 4-6s4-3 6-3 3 
 export const StraightenIcon = () => <Icon><path d="M3.5 16.5 16.5 3.5" /><rect x="2.3" y="15.3" width="2.4" height="2.4" fill="currentColor" stroke="none" /><rect x="15.3" y="2.3" width="2.4" height="2.4" fill="currentColor" stroke="none" /></Icon>
 export const SmoothIcon = () => <Icon><path d="M2.5 13.5c3-7 6-7 7.5-3.5s4.5 3.5 7.5-3" /><path d="M5 7.5h10" strokeDasharray="2 2" /><circle cx="10" cy="10" r="1.3" fill="currentColor" /></Icon>
 export const ListIcon = () => <Icon><path d="M7 5.5h10M7 10h10M7 14.5h10" /><circle cx="3.5" cy="5.5" r="1" fill="currentColor" stroke="none" /><circle cx="3.5" cy="10" r="1" fill="currentColor" stroke="none" /><circle cx="3.5" cy="14.5" r="1" fill="currentColor" stroke="none" /></Icon>
+export const HelpIcon = () => <Icon><circle cx="10" cy="10" r="7.5" /><path d="M7.9 7.8a2.2 2.2 0 1 1 3.1 2c-.7.4-1 .8-1 1.5M10 14.1v.1" /></Icon>
 export const ChevronLeftIcon = () => <Icon><path d="m12 4-6 6 6 6" /></Icon>
 export const ChevronRightIcon = () => <Icon><path d="m8 4 6 6-6 6" /></Icon>
 export const GuidesIcon = () => <Icon><path d="M2.5 6h15M2.5 11h15M2.5 15.5h15" strokeDasharray="2 2.4" /><path d="M6 3v14" /></Icon>

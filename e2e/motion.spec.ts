@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test'
 import { cardAction, createProject } from './helpers'
 
 /**
- * Overlay motion. The drawer slides in over 300ms with a long deceleration and leaves in 160ms; the modal rises from a
+ * Overlay motion. The drawer slides in from the right over 360ms with a long deceleration and goes back out to the right in 220ms; the modal rises from a
  * scrim; under reduced motion both are a plain fade (never nothing). Exits are real: the element stays, inert, until it
  * has finished leaving, and focus has already gone back to the opener.
  */
@@ -16,13 +16,12 @@ const openDrawer = async (page: Page) => {
 }
 
 test.describe('with motion allowed', () => {
-  test('the drawer slides and fades in, in about 300ms, and is not instant', async ({ page }) => {
+  test('the drawer slides in from the right edge (right to left) in about 360ms, and is not instant', async ({ page }) => {
     const drawer = await openDrawer(page)
-    expect(await anim(drawer)).toEqual({ name: 'drawer-in', ms: 300 })
+    expect(await anim(drawer)).toEqual({ name: 'drawer-in', ms: 360 })
     const early = await drawer.evaluate(async (e) => { await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const c = getComputedStyle(e); return { opacity: parseFloat(c.opacity), x: new DOMMatrix(c.transform).m41 } })
-    expect(early.opacity, 'still fading in a couple of frames after it appeared').toBeLessThan(1)
-    expect(early.x, 'still travelling').toBeGreaterThan(0)
-    await expect.poll(async () => drawer.evaluate((e) => getComputedStyle(e).opacity)).toBe('1')
+    expect(early.x, 'still travelling in from the right, with most of its width to go').toBeGreaterThan(150)
+    await expect.poll(async () => drawer.evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m41)).toBe(0) // and it settles in place
   })
 
   test('the drawer leaves with its own faster animation, stays inert while it goes, and focus is back at once', async ({ page }) => {
@@ -32,7 +31,7 @@ test.describe('with motion allowed', () => {
     await expect(opener).toBeFocused() // not waiting for the animation
     await expect(drawer).toHaveAttribute('data-closing', 'true')
     await expect(drawer).toHaveAttribute('inert', '')
-    expect(await anim(drawer)).toEqual({ name: 'drawer-out', ms: 160 })
+    expect(await anim(drawer)).toEqual({ name: 'drawer-out', ms: 220 })
     await expect(drawer).toHaveCount(0) // and then it is gone
   })
 

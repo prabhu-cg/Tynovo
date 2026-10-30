@@ -206,7 +206,7 @@ test.describe('export', () => {
 
   test('without a typeface the export page offers nothing to download', async ({ page }) => {
     await createProject(page, 'No face')
-    await page.getByRole('link', { name: 'Export', exact: true }).click()
+    await page.getByRole('link', { name: 'Export', exact: true }).first().click()
     await expect(page.getByText('This project has no custom typeface yet.')).toBeVisible()
     await expect(page.getByRole('button', { name: /Check and build/ })).toHaveCount(0)
   })
@@ -244,7 +244,7 @@ test('a Phase-0/1 project (schema v1) opens, is migrated and generates a full ty
   ])
   await page.reload()
   await page.getByRole('link', { name: 'Legacy project' }).click()
-  await page.getByRole('link', { name: 'Custom Typeface Creator' }).click()
+  await page.getByRole('link', { name: 'Typeface', exact: true }).click()
   await expect(page.getByLabel('Typeface name')).toHaveValue('Proof Sans')
   await expect(page.getByText('95 of 95 characters supported')).toBeVisible()
   await expect(params(page).getByLabel('Stroke thickness')).toHaveAttribute('aria-valuetext', '130')

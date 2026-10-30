@@ -8,7 +8,9 @@ const N = CATALOG_DATA.length
 
 const SAMPLE = '/app/projects/sample-fieldnote'
 const card = (page: Page, name: string) => page.locator(`li[data-project="${name}"]`)
-const tab = (page: Page, name: string) => page.getByRole('link', { name, exact: true }).first()
+/** The screens are reached through the workflow bar, whose steps carry short names. */
+const SCREEN_LINK: Record<string, string> = { Overview: 'Brand', 'Font catalog': 'Fonts', 'Brand Typography System': 'Roles', 'Custom Typeface Creator': 'Typeface' }
+const tab = (page: Page, name: string) => page.getByRole('link', { name: SCREEN_LINK[name] ?? name, exact: true }).first()
 
 test.describe('projects as cards', () => {
   test('each project is a card with its key facts, and every action sits under one menu', async ({ page }) => {
@@ -309,6 +311,7 @@ test.describe('Doxa-matched app styling', () => {
     await page.getByRole('button', { name: /New project|Create your first project/ }).first().click()
     const close = page.getByRole('button', { name: 'Close New project' })
     await expect(close).toBeVisible()
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))) // it slides in from the right: measure where it has settled
     const b = (await close.boundingBox())!
     const topmost = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('aria-label'), { x: b.x + b.width / 2, y: b.y + b.height / 2 })
     expect(topmost).toBe('Close New project')
