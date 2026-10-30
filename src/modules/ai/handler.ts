@@ -140,6 +140,8 @@ export async function handleAi(request: Request, env: AiEnv, deps: AiDeps = { fe
     content = answer.choices?.[0]?.message?.content
     if (typeof content !== 'string') return fail('bad-answer')
     content = JSON.parse(content)
+    // For the operator: the shape of the answer (key names and kinds of value), never the values or the brief.
+    if (typeof content === 'object' && content !== null) console.info(`ai: answer shape ${Object.entries(content).map(([k, v]) => `${k.slice(0, 30)}:${Array.isArray(v) ? `array(${v.length}:${typeof v[0]})` : typeof v}`).join(' ')}`)
   } catch {
     return fail('bad-answer')
   }
