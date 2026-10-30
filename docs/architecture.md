@@ -1,6 +1,6 @@
 # Architecture
 
-React 19 + TypeScript (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) + Vite + Tailwind CSS v4 + React Router. No backend.
+React 19 + TypeScript (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) + Vite + Tailwind CSS v4 + React Router. No backend and no database; the one server-side piece is `api/ai.ts`, a stateless function that forwards a brief to Groq (`ai-assist.md`).
 
 ## Modules (`src/modules/*`)
 

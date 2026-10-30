@@ -44,7 +44,7 @@ export function HowItWorksPage() {
       <section aria-labelledby="data-h" className="border-t border-line bg-sheet">
         <Container className="py-14 md:py-20">
           <h2 id="data-h" className="text-3xl font-extrabold">What happens to your work</h2>
-          <p className="mt-4 max-w-2xl text-lg">Projects autosave to this browser. Nothing is uploaded; there is no server to upload to. Because storage is local, clearing site data deletes projects, so export a project file for anything you want to keep. Deleting offers a backup first, a project saved by an older version keeps its original when it is upgraded, and a damaged one can be partly recovered into a new project. See the <TextLink to="/faq">FAQ</TextLink> and the <TextLink to="/privacy">privacy notice</TextLink>.</p>
+          <p className="mt-4 max-w-2xl text-lg">Projects autosave to this browser. Your project is never uploaded; there is no server copy of it. Because storage is local, clearing site data deletes projects, so export a project file for anything you want to keep. Deleting offers a backup first, a project saved by an older version keeps its original when it is upgraded, and a damaged one can be partly recovered into a new project. See the <TextLink to="/faq">FAQ</TextLink> and the <TextLink to="/privacy">privacy notice</TextLink>.</p>
         </Container>
       </section>
     </>

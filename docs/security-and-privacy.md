@@ -1,6 +1,6 @@
 # Security and privacy
 
-Tynovo has no server, account or database, so its attack surface is the browser page itself and the files people import and export. This document records the controls, how each is tested, and what is not covered.
+Tynovo has no account or database, and one stateless server function (`api/ai.ts`, see `ai-assist.md`), so its attack surface is the browser page, the files people import and export, and that function. This document records the controls, how each is tested, and what is not covered.
 
 ## Untrusted input
 
@@ -35,7 +35,7 @@ Tested in `e2e/hardening.spec.ts`: the headers are present on the website and th
 ## Third parties, tracking and transmission
 
 - No analytics, tracking scripts, cookies, fingerprinting or advertising. No third-party script, font, image or stylesheet is loaded; all 24 catalog fonts and the interface font are served from the same origin.
-- A project is never transmitted. Tested: after a full session (create, edit, build and download a font) the browser holds no cookie, no `localStorage` or `sessionStorage` entry, no Cache Storage, no service worker, and exactly one IndexedDB database. The one exception is two display preferences, each written only when the person uses it and each a single short value in `localStorage`: collapsing the sample project (`tynovo.sampleCollapsed`) and choosing Light or Dark (`tynovo.theme`; choosing System removes it). Tested: those are the only keys, nothing is sent, there are still no cookies; every request the page made was a plain `GET`/`HEAD` to its own origin (`e2e/hardening.spec.ts`, "what the privacy notice says is true").
+- A project is never transmitted. Tested: after a full session (create, edit, build and download a font) the browser holds no cookie, no `localStorage` or `sessionStorage` entry, no Cache Storage, no service worker, and exactly one IndexedDB database. The one exception is two display preferences, each written only when the person uses it and each a single short value in `localStorage`: collapsing the sample project (`tynovo.sampleCollapsed`) and choosing Light or Dark (`tynovo.theme`; choosing System removes it). Tested: those are the only keys, nothing is sent, there are still no cookies; every request the page made was a plain `GET`/`HEAD` to its own origin (`e2e/hardening.spec.ts`, "what the privacy notice says is true"). The AI suggestion boxes are the one exception: a `POST /api/ai` with only the brief the person typed, and only when they press the button (`e2e/ai.spec.ts` checks the body and that nothing is sent otherwise).
 - The only data anyone receives is what any web host sees for a request (IP address, time, address requested, browser). That is held by the host (Vercel), not by Tynovo. The user-facing statement is the [Privacy page](../src/modules/marketing/PrivacyPage.tsx); if behaviour changes, change that page in the same commit.
 
 ## Secrets

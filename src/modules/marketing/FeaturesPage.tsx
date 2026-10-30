@@ -49,7 +49,7 @@ export function FeaturesPage() {
             ))}
             <li className="py-5">
               <h3 className="text-lg font-bold">Principles</h3>
-              <p className="mt-1">No account, no server, no AI service. An export is either a real file or it does not exist: Tynovo never fakes a font, a quality score or a licence. See <TextLink to="/licensing">licensing</TextLink> and the <TextLink to="/faq">FAQ</TextLink>.</p>
+              <p className="mt-1">No account and no database; an AI model is used only if you press the button of an optional suggestion box. An export is either a real file or it does not exist: Tynovo never fakes a font, a quality score or a licence. See <TextLink to="/licensing">licensing</TextLink> and the <TextLink to="/faq">FAQ</TextLink>.</p>
             </li>
           </ul>
         </Container>

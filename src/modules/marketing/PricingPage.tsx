@@ -24,7 +24,7 @@ export function PricingPage() {
             <div className="bg-paper p-6 md:p-8">
               <h2 className="text-2xl font-extrabold">Paid, maybe later</h2>
               <p className="mt-1 text-4xl font-extrabold text-ink-soft">Undecided</p>
-              <p className="mt-6">Tynovo is built to run without a server, which keeps it free to operate. If a paid option is ever introduced, it would be for something that costs money to provide, such as storing projects on a server. Nothing like that exists, and nothing in the free app has been designated to move behind a paywall.</p>
+              <p className="mt-6">Tynovo stores nothing on a server, which keeps it free to operate; its only server code is one small function for the optional AI suggestions. If a paid option is ever introduced, it would be for something that costs money to provide, such as storing projects on a server. Nothing like that exists, and nothing in the free app has been designated to move behind a paywall.</p>
               <p className="mt-4">What a plan includes is kept as configuration in one place in the code, checked by tests, and the interface asks about features, not plan names. That configuration refuses to restrict exporting, importing, upgrading or recovering your own projects, and refuses to take away what is listed as free. There is no checkout, no account and no plan to switch on.</p>
             </div>
           </div>

@@ -50,7 +50,7 @@ test('the free experience is complete without payment or registration', async ({
   const plan = page.getByTestId('plan')
   await expect(plan).toContainText('Free. Everything in this version of Tynovo is included.')
   await expect(plan).toContainText('There is no payment system in Tynovo')
-  await expect(page.getByText('None. There is no sign-in and no server.')).toBeVisible()
+  await expect(page.getByText('None. There is no sign-in. The only server code is one small function for the optional AI suggestions.')).toBeVisible()
   await page.getByText('What the Free plan covers').click()
   await expect(page.locator('[data-feature][data-allowed="false"]')).toHaveCount(0)
   expect([...origins]).toEqual([new URL(page.url()).origin]) // no payment, account or analytics service was contacted
