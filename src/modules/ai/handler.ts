@@ -1,5 +1,5 @@
-import { buildMessages } from './prompts.ts'
-import { aiRequestSchema, sanitizeBrand, sanitizeTypeface, type AiError, type AiResponse } from './schemas.ts'
+import { buildMessages } from './prompts.js'
+import { aiRequestSchema, sanitizeBrand, sanitizeTypeface, type AiError, type AiResponse } from './schemas.js'
 
 /**
  * The server side of the AI assist, as a plain function from a Request to a Response so it can be tested without a
