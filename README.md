@@ -9,7 +9,7 @@ A free, browser-based studio with two connected modes:
 
 There is no account, server, database, tracking or AI service. Projects live in your browser (IndexedDB) and move as files. Licensed **GPL-3.0-only** (see [Licence](#licence)).
 
-> **Status.** Feature-complete through the planned phases 0 to 6, and Phase 7 (production hardening) is implemented and verified as far as the automated tooling goes: see [Verification](#verification). Production readiness is **not** claimed: the manual steps in [docs/release-checklist.md](docs/release-checklist.md) (design-tool testing, screen-reader pass, live-host checks, legal review) have not been done. Many capabilities are labelled **Early version** on the website; [docs/known-limitations.md](docs/known-limitations.md) lists exactly what is missing.
+> **Status.** Feature-complete through the planned phases 0 to 6, Phase 7 (production hardening) and Phase 8 (the "Early version" gaps: all 95 ASCII characters, curve editing, a PDF specimen, WOFF and WOFF2, 52 fonts, a printed-document preview) are implemented and verified as far as the automated tooling goes: see [Verification](#verification). Production readiness is **not** claimed: the manual steps in [docs/release-checklist.md](docs/release-checklist.md) (design-tool testing, Safari and Firefox, a screen-reader pass, live-host checks, legal review) have not been done. Two capabilities are still labelled **Early version** on the website (brand direction, and roles and pairing, whose suggestions are fixed rules rather than an AI model); [docs/known-limitations.md](docs/known-limitations.md) lists exactly what is missing.
 
 ## Local setup
 

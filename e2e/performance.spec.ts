@@ -1,9 +1,5 @@
-import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import { expect, test, type Page } from '@playwright/test'
 import { createProject, readProjects, writeProjects } from './helpers'
-
-/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
-const N = CATALOG_DATA.length
 
 /**
  * Runtime performance. Ceilings are generous on purpose (a shared CI machine is slower than a laptop): they catch work that
