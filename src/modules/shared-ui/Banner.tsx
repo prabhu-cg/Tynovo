@@ -24,14 +24,14 @@ const marks: Record<Tone, { icon: ReactNode; label: string; visible: boolean }> 
 export function Banner({ tone = 'info', children, actions }: { tone?: Tone; children: ReactNode; actions?: ReactNode }) {
   return (
     <div role={tone === 'error' || tone === 'warn' ? 'alert' : 'status'} className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border px-4 py-3 text-sm ${tones[tone]}`}>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 basis-72">
         <span className={marks[tone].visible ? 'mr-2 inline-flex items-center gap-1.5 align-middle font-bold' : 'sr-only'}>
           {marks[tone].visible ? marks[tone].icon : null}
           {marks[tone].label}{marks[tone].visible ? '' : ': '}
         </span>
         {children}
       </div>
-      {actions ? <div className="flex gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
   )
 }

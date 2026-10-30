@@ -1,11 +1,14 @@
-import { useState, type KeyboardEvent } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useState, type KeyboardEvent } from 'react'
+import { Link, useLocation } from 'react-router'
 import { analyzeTypeface } from '@/modules/font-validation/coverage'
 import { workflowSteps } from '@/modules/brand-system/workflow'
-import { AlertIcon, Button, CheckIcon, Chip, inputClass, RangeField } from '@/modules/shared-ui'
+import { AlertIcon, arriveAt, ArrowRightIcon, Button, CheckIcon, Chip, inputClass, RangeField } from '@/modules/shared-ui'
 import { TONES, USE_CASES } from '@/modules/brand-projects/schema'
 import { PRIORITY_LABEL, TONE_LABEL, USE_CASE_LABEL } from '@/modules/brand-system/brand'
 import { BrandBriefAssist } from './ai/BrandBriefAssist'
+import { Progress } from './workflow/Progress'
+import { StepLink } from './workflow/StepLink'
+import { nextStep } from '@/modules/brand-system/workflow'
 import { EditGroup } from './EditGroup'
 import { useContentRevision } from './useRevision'
 import { computeScale } from '@/modules/typography-system/scale'
@@ -15,6 +18,11 @@ const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle:
 
 export function OverviewPage() {
   const { draft, editor } = useProject()
+  const { hash } = useLocation()
+  // Arriving from another screen at /#brand: this page loads lazily, so land on the section once it has rendered.
+  useEffect(() => {
+    if (hash) arriveAt(decodeURIComponent(hash.slice(1)))
+  }, [hash])
   const [trait, setTrait] = useState('')
   const personality = draft.brand.personality
 
@@ -40,13 +48,21 @@ export function OverviewPage() {
       <section aria-labelledby="flow-h" className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[12rem_minmax(0,1fr)]">
         <div>
           <h2 id="flow-h" className="text-lg font-bold">Brand workflow</h2>
-          <p className="mt-1 text-sm text-ink-soft">One project, both modes. Work top to bottom, or jump in anywhere.</p>
+          <p className="mt-1 text-sm text-ink-soft">One project, both modes. Work top to bottom, or jump in anywhere. Every row opens its step.</p>
         </div>
-        <ol aria-label="Brand workflow" className="divide-y divide-line border-y border-line">
+        <div className="grid min-w-0 gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <Progress steps={steps_} />
+          {(() => {
+            const next = nextStep(steps_)
+            return next ? <StepLink to={next.to} data-testid="overview-next" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-3.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover md:min-h-9">Continue with {next.short.toLowerCase()}<ArrowRightIcon /></StepLink> : null
+          })()}
+        </div>
+        <ol aria-label="Brand workflow" className="stagger divide-y divide-line border-y border-line">
           {steps_.map((s, i) => (
             // Below xl the row stacks (number and title, then status and detail, then the link). From xl it is five columns with
             // a fixed-width status column, so every status and every description starts at the same x and sits on one centre line.
-            <li key={s.id} data-step={s.id} data-state={s.state} className="grid gap-1 py-3 xl:grid-cols-[2rem_12rem_9.5rem_minmax(0,1fr)_auto] xl:items-center xl:gap-x-3">
+            <li key={s.id} data-step={s.id} data-state={s.state} style={{ ['--i' as string]: i }} className="group/row relative grid gap-1 py-3 transition-colors duration-150 hover:bg-sheet has-[a:focus-visible]:bg-sheet xl:grid-cols-[2rem_12rem_9.5rem_minmax(0,1fr)_auto] xl:items-center xl:gap-x-3">
               <div className="flex items-baseline gap-3 xl:contents">
                 <span className="tnum w-5 shrink-0 text-sm text-ink-soft xl:w-auto" aria-hidden="true">{i + 1}</span>
                 <span className="font-semibold text-ink-strong">{s.title}</span>
@@ -58,13 +74,15 @@ export function OverviewPage() {
                 </span>
                 <span data-part="detail" className="min-w-0 text-sm">{s.detail}</span>
               </div>
-              <Link to={s.to} className="inline-flex min-h-8 items-center pl-8 text-sm font-semibold text-accent-strong underline underline-offset-4 xl:pl-0">Open<span className="sr-only"> {s.title}</span></Link>
+              {/* The whole row is the target: the link's box is stretched over it, so a click anywhere on the row opens the step. */}
+              <StepLink to={s.to} className="inline-flex min-h-8 items-center gap-1 pl-8 text-sm font-semibold text-accent-strong underline underline-offset-4 after:absolute after:inset-0 xl:pl-0">Open<span className="sr-only"> {s.title}</span><span className="transition-transform duration-200 ease-[var(--ease-out-expo)] group-hover/row:translate-x-0.5"><ArrowRightIcon /></span></StepLink>
             </li>
           ))}
         </ol>
+        </div>
       </section>
 
-      <section aria-labelledby="brand-h" className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[12rem_minmax(0,1fr)]">
+      <section id="brand" aria-labelledby="brand-h" className="-m-3 grid grid-cols-[minmax(0,1fr)] gap-6 rounded-xl p-3 md:grid-cols-[12rem_minmax(0,1fr)]">
         <div>
           <h2 id="brand-h" className="text-lg font-bold">Brand direction</h2>
           <p className="mt-1 text-sm text-ink-soft">Who the brand is and what its type must do. The font catalog uses this to order and filter fonts, with fixed rules you can read. The suggestion box below is optional and uses an AI model; the ordering never does.</p>

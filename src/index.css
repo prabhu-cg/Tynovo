@@ -19,6 +19,8 @@
   :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 2px; }
   input, textarea, select { caret-color: var(--color-accent); }
   .tnum { font-variant-numeric: tabular-nums; }
+  /* The sticky top bar (3.5rem) and the workflow bar under it (3rem) cover the top of the page, so anything scrolled or focused into view stops below them: a focused control is never hidden behind a sticky bar (WCAG 2.4.11). */
+  html:has([data-testid='workflow-bar']) { scroll-padding-top: 7.75rem; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--color-line-strong); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
   /*
@@ -56,6 +58,25 @@
 }
 @keyframes modal-in { from { transform: translateY(10px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes modal-out { from { transform: none; opacity: 1; } to { transform: translateY(4px) scale(0.99); opacity: 0; } }
+/*
+ * Workflow and navigation motion. One authored moment: arriving at a step, where the section you jumped to is washed
+ * in the accent and fades back (focus moves to its heading as well). The rest explains state: the progress bar fills
+ * from the left when the project opens and eases to new values, a step's tick is drawn when it becomes done, the
+ * side-panel list appears as a list (short, capped stagger), and a tab's content fades in rather than snapping.
+ * Under reduced motion nothing here moves; the wash becomes a plain fade (arrive.ts marks it data-fade).
+ */
+@keyframes arrive-wash { from { background-color: var(--color-accent-wash); } to { background-color: transparent; } }
+@keyframes bar-fill { from { transform: scaleX(0); } }
+@keyframes step-pop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes rise { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Opacity only: a transform on this wrapper would move everything inside it while it plays, and make it the containing block of the fixed panels and popovers within (measuring or aiming at them mid-play would miss). */
+@keyframes route-in { from { opacity: 0; } to { opacity: 1; } }
+[data-arrive] { animation: arrive-wash 1700ms ease-out both; }
+.progress-fill { animation: bar-fill 800ms var(--ease-out-expo) both 120ms; transition: transform 700ms var(--ease-out-expo); }
+.step-pop { animation: step-pop 380ms var(--ease-out-expo) both; }
+.stagger > li { animation: rise 320ms var(--ease-out-expo) both; animation-delay: calc(min(var(--i, 0), 8) * 28ms + 80ms); }
+/* `backwards`, not `both`: an opacity animation that keeps filling afterwards leaves a stacking context behind, which would trap the page's popovers and panels (z-30) under the sticky bars. */
+.route-enter { animation: route-in 180ms ease-out backwards; }
 @keyframes drift { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-0.5rem) rotate(3deg); } }
 
 /*

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigationType } from 'react-router'
+import { arriveAt } from './arrive'
 
 /**
  * A new page opens at its top, or at its #anchor. Back and forward are left to the browser, which restores the
@@ -12,7 +13,7 @@ export function ScrollToTop() {
   useEffect(() => {
     if (type === 'POP') return
     if (hash) {
-      document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' })
+      arriveAt(decodeURIComponent(hash.slice(1)))
       return
     }
     window.scrollTo(0, 0)

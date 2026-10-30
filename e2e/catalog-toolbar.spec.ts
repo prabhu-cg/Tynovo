@@ -56,6 +56,7 @@ test.describe('the filter panel', () => {
     await filterButton(page).click()
     await expect(filterButton(page)).toHaveAttribute('aria-expanded', 'true')
     for (const group of ['Category', 'Tone (studio tags)', 'Use (studio tags)']) await expect(panel(page).getByRole('group', { name: group })).toBeVisible()
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)))) // let the panel finish dropping in before clicking inside it
     await panel(page).getByRole('checkbox', { name: 'Serif', exact: true }).check({ force: true })
     await panel(page).getByRole('checkbox', { name: 'Elegant' }).check({ force: true })
     await expect(filterButton(page)).toContainText('2')
