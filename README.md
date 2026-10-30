@@ -58,7 +58,7 @@ src/
     glyph-editor/     outline geometry, undo, canvas, text layout
     font-export/      Font Flux adapter (TTF, OTF), read-back, download
     font-validation/  glyph, typeface and binary checks, quality report
-    font-catalog/     24 bundled OFL fonts, bounded loader, recommendations
+    font-catalog/     52 bundled OFL fonts, bounded loader, recommendations
     brand-system/     roles, fit checks, preview text, workflow, revision
     typography-system/ type scale, fluid sizes
     export-centre/    CSS, tokens, specification, specimen, manifest, zip
@@ -98,7 +98,7 @@ Not covered by that run: other browsers, design-tool testing, screen readers, th
 
 ## Limitations
 
-The short version: all 95 target ASCII characters, Latin only by decision (no accents, no other scripts); point editing with no Bézier curves; TTF and OTF font export only (no WOFF/WOFF2), plus a generated PDF specimen; a fixed catalog of 24 fonts; storage is per-browser; tested in Chromium only; no screen-reader testing; legal pages not reviewed by a lawyer. The full list is [docs/known-limitations.md](docs/known-limitations.md).
+The short version: all 95 target ASCII characters, Latin only by decision (no accents, no other scripts); point editing with no Bézier curves; TTF and OTF font export only (no WOFF/WOFF2), plus a generated PDF specimen; a fixed catalog of 52 fonts; storage is per-browser; tested in Chromium only; no screen-reader testing; legal pages not reviewed by a lawyer. The full list is [docs/known-limitations.md](docs/known-limitations.md).
 
 ## Licence
 

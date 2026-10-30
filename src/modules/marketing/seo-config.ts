@@ -3,6 +3,7 @@
  * post-build script (Node) and the client (Seo component) share exactly one source of truth.
  */
 import { PRODUCT_NAME, TAGLINE } from '../identity/identity.ts'
+import { CATALOG_SIZE } from './content.ts'
 
 export const SITE_NAME = PRODUCT_NAME
 export { TAGLINE }
@@ -30,7 +31,7 @@ export const PUBLIC_PAGES: readonly PageMeta[] = [
     path: '/features',
     title: 'Features',
     description:
-      'What Tynovo does today and what is not built yet: brand direction, a 24-font licensed catalog, roles, a fluid type scale, previews, a typeface generator with glyph editing, and real exports.',
+      `What Tynovo does today and what is not built yet: brand direction, a ${CATALOG_SIZE}-font licensed catalog, roles, a fluid type scale, previews, a typeface generator with glyph editing, and real exports.`,
     indexable: true,
   },
   {
@@ -54,7 +55,7 @@ export const PUBLIC_PAGES: readonly PageMeta[] = [
   {
     path: '/licensing',
     title: 'Licensing',
-    description: 'How licensing works: the software, the 24 bundled fonts, the fonts you choose and the fonts you generate are licensed separately, with the licence and copyright of each bundled font.',
+    description: `How licensing works: the software, the ${CATALOG_SIZE} bundled fonts, the fonts you choose and the fonts you generate are licensed separately, with the licence and copyright of each bundled font.`,
     indexable: true,
   },
   {

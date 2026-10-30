@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { CATALOG } from '@/modules/font-catalog/catalog'
+import { CATALOG_SIZE } from './content'
 import { SOFTWARE } from './LicensingPage'
 
 const pkg = (name: string) => JSON.parse(readFileSync(`node_modules/${name}/package.json`, 'utf8')) as { license: string }
@@ -30,6 +31,10 @@ describe('the licensing page states what is really bundled', () => {
     expect((JSON.parse(readFileSync('package.json', 'utf8')) as { license: string }).license).toBe('GPL-3.0-only')
     expect(SOFTWARE.find((s) => s.name === 'Font Flux JS')!.license).toBe('GPL-3.0-only')
     expect(readFileSync('LICENSE', 'utf8')).toContain('GNU GENERAL PUBLIC LICENSE')
+  })
+
+  it('the catalog size the site states is the size of the generated catalog', () => {
+    expect(CATALOG_SIZE).toBe(CATALOG.length)
   })
 
   it('every bundled font in the table is OFL-1.1 with a copyright line', () => {

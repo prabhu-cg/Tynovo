@@ -5,11 +5,18 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
 const IDS = [
+  // Sans serif
   'inter', 'manrope', 'dm-sans', 'work-sans', 'ibm-plex-sans', 'source-sans-3', 'nunito-sans', 'public-sans', 'space-grotesk',
+  'montserrat', 'poppins', 'raleway', 'open-sans', 'lato', 'rubik', 'karla', 'outfit', 'plus-jakarta-sans', 'figtree', 'jost', 'lexend',
+  // Serif
   'fraunces', 'playfair-display', 'lora', 'merriweather', 'source-serif-4', 'ibm-plex-serif', 'libre-baskerville', 'eb-garamond', 'dm-serif-display',
-  'ibm-plex-mono', 'jetbrains-mono', 'space-mono',
-  'bebas-neue', 'abril-fatface',
-  'caveat',
+  'cormorant-garamond', 'crimson-pro', 'spectral', 'bitter', 'noto-serif', 'pt-serif', 'newsreader',
+  // Monospace
+  'ibm-plex-mono', 'jetbrains-mono', 'space-mono', 'fira-code', 'inconsolata', 'dm-mono',
+  // Display
+  'bebas-neue', 'abril-fatface', 'oswald', 'anton', 'archivo-black', 'syne',
+  // Handwriting
+  'caveat', 'dancing-script', 'pacifico',
 ]
 /** Weights Tynovo bundles (latin subset, upright), where the family has them. Regular italic is bundled where it exists. */
 const WEIGHTS = [300, 400, 500, 600, 700, 800, 900]

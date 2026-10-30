@@ -1,6 +1,10 @@
+import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import { expect, test, type Page } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { cardAction, createProject, readProjects, saved, writeProjects } from './helpers'
+
+/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
+const N = CATALOG_DATA.length
 
 const SAMPLE = '/app/projects/sample-fieldnote'
 const card = (page: Page, name: string) => page.locator(`li[data-project="${name}"]`)
@@ -138,9 +142,9 @@ test.describe('the sample project', () => {
 
     // Font catalog: browse and filter freely, add nothing.
     await tab(page, 'Font catalog').click()
-    await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
+    await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
     await page.getByLabel('Search by family name').fill('plex')
-    await expect(page.getByTestId('catalog-count')).toHaveText('3 of 24 fonts match.')
+    await expect(page.getByTestId('catalog-count')).toHaveText(`3 of ${N} fonts match.`)
     await expect(page.getByRole('button', { name: 'Add to project: IBM Plex Sans' })).toBeDisabled()
     await page.getByRole('button', { name: 'Details of IBM Plex Sans' }).click()
     await expect(page.getByRole('button', { name: 'Use as primary font' })).toBeDisabled()
