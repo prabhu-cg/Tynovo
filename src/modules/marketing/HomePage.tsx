@@ -14,7 +14,7 @@ const PROMISES: Array<{ title: string; body: string; status: Status }> = [
   { title: 'Build a brand typography system from licensed fonts.', body: `Describe the brand, browse ${CATALOG_SIZE} licensed fonts with their sources, set roles and a pairing, and tune a fluid type scale. A licence note is kept for every font. The catalog is small and fixed; a font you name is checked, never assumed.`, status: 'early' },
   { title: 'Create and refine an original typeface.', body: 'Pick a construction family and adjust its parameters, and every glyph redraws. Edit outline points in the glyph editor, explore seeded variations and run quality checks. Three families draw the 95 printable ASCII characters (Latin script only); the glyph editor works with points and quadratic curves.', status: 'available' },
   { title: 'Use your typeface inside the system.', body: 'Assign your generated typeface to display, heading, body or interface roles when its characters and readability suit them. When they do not, you are told why, with the numbers.', status: 'available' },
-  { title: 'Preview, check and export.', body: 'See the system on a website, an editorial page, a product screen, a poster and a printed page, light or dark. Export a specification, CSS, tokens, a specimen, a licence manifest and real TrueType or OpenType files.', status: 'available' },
+  { title: 'Preview, check and export.', body: 'See the system on a website, an editorial page, a product screen, a poster and a printed page, light or dark. Export a specification, CSS, tokens, an HTML and a PDF specimen, a licence manifest and real TrueType, OpenType, WOFF or WOFF2 files.', status: 'available' },
 ]
 
 const STEPS = [
