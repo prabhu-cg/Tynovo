@@ -107,7 +107,7 @@ test('one project carries a custom typeface from design to preview to export', a
 
   const manifest = await download(page, 'Download Sources and licences')
   expect(manifest.text).toMatch(/Manrope \| Body \| Existing font, bundled \| SIL Open Font License 1.1/)
-  expect(manifest.text).toMatch(/No file of a font made by someone else is included/)
+  expect(manifest.text).toMatch(/No font file made by someone else is included in this export, with one exception: the PDF specimen embeds/)
 
   const font = await download(page, 'Download Custom font file (TTF)')
   expect(font.filename).toBe('NorthwindSans-Regular.ttf')

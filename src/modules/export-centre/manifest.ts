@@ -57,7 +57,7 @@ export function buildManifest(input: ExportInput, files: readonly ManifestFile[]
   const existing = uses.filter((u) => u.font.origin !== 'custom')
   if (existing.length > 0) {
     L.push('## Existing fonts: not redistributed here', '')
-    L.push('No file of a font made by someone else is included in this export. Obtain each from its publisher under its own licence and add it where the CSS expects it.', '')
+    L.push('No font file made by someone else is included in this export, with one exception: the PDF specimen embeds the bundled fonts it draws (the Latin file Tynovo ships for each), which the SIL Open Font License allows in a document. Obtain each font from its publisher under its own licence and add it where the CSS expects it.', '')
     for (const u of existing) {
       const cat = u.font.source?.kind === 'catalog' ? catalogFontFor(u.font.source.family) : undefined
       L.push(`- **${mdInline(u.font.family)}**: ${cat ? `distributed as ${cat.distribution} (version ${cat.distributionVersion}), upstream version ${cat.version}; published at ${cat.upstream}; package page ${cat.page}. Copyright: ${mdInline(cat.license.copyright)}. The licence is the one the package metadata declares.` : 'named in the project; Tynovo has no record of where it comes from.'}${u.font.license?.url ? ` Licence text: ${u.font.license.url}` : ''}`)

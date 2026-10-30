@@ -85,6 +85,11 @@ export function ExportPage() {
                       <strong>Font files for {external.map((u) => u.font.family).join(', ')} are not included.</strong> The CSS names {external.length === 1 ? 'this font' : 'these fonts'}; the file may need to be supplied separately (or installed where the page runs). The CSS says where each comes from, and the sources and licences file records its licence.
                     </p>
                   ) : null}
+                  {f.id === 'pdf' && external.some((u) => u.font.origin !== 'catalog') ? (
+                    <p data-testid="pdf-font-note" className="rounded-md bg-sheet px-3 py-2 text-sm">
+                      <strong>{external.filter((u) => u.font.origin !== 'catalog').map((u) => u.font.family).join(', ')}: drawn in Helvetica.</strong> Tynovo has no file for {external.filter((u) => u.font.origin !== 'catalog').length === 1 ? 'this font' : 'these fonts'}, so the PDF cannot embed {external.filter((u) => u.font.origin !== 'catalog').length === 1 ? 'it' : 'them'}. Each sample says so.
+                    </p>
+                  ) : null}
                 </FileRow>
               ))}
               {view('font').visible ? <FileRow file={file('font')!} disabled={!canDownload} locked={view('font').message} onDownload={download} /> : null}

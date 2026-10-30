@@ -532,6 +532,13 @@ test('a complete system is built end to end and every export carries the saved s
   const manifest = (await download(page, 'Download Sources and licences')).text
   const specimen = (await download(page, 'Download HTML specimen')).text
   const project = JSON.parse((await download(page, 'Download Project file (backup)')).text).project
+  // The PDF is built in the browser from the same saved project, with the bundled fonts the roles use embedded.
+  const [pdfDownload] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download PDF specimen', exact: true }).click()])
+  expect(pdfDownload.suggestedFilename()).toBe('specimen.pdf')
+  const pdf = readFileSync(await pdfDownload.path()).toString('latin1')
+  expect(pdf.startsWith('%PDF-')).toBe(true)
+  expect(pdf).toMatch(/\/BaseFont\s*\/[A-Z]{6}\+Lora/)
+  expect(pdf).toMatch(/\/BaseFont\s*\/[A-Z]{6}\+Inter/)
   for (const text of [css, spec, manifest, specimen]) expect(text).toContain(revision)
   expect(tokens.$extensions['com.tynovo'].revision).toBe(revision)
   // They agree with each other and with the saved project.

@@ -146,6 +146,10 @@ export class FontLoader {
 const files = import.meta.glob('/node_modules/@fontsource/*/files/*-latin-{300,400,500,600,700,800,900}-normal.woff2', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
 const italics = import.meta.glob('/node_modules/@fontsource/*/files/*-latin-400-italic.woff2', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
 
+// The same fonts as WOFF (zlib-compressed sfnt), used only by the PDF specimen: a WOFF file can be turned back into a font
+// file with the browser's own decompressor, which WOFF2 (brotli) cannot. Nothing here is fetched unless a PDF is built.
+const woffFiles = import.meta.glob('/node_modules/@fontsource/*/files/*-latin-{300,400,500,600,700,800,900}-normal.woff', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+
 export const bundledFileKey = (s: FontSpec) => `/node_modules/@fontsource/${s.id}/files/${s.id}-latin-${s.weight}-${s.style}.woff2`
 
 const browserEnv: LoaderEnv = {
@@ -161,6 +165,13 @@ const browserEnv: LoaderEnv = {
     document.fonts.add(face)
     return { remove: () => void document.fonts.delete(face) }
   },
+}
+
+/** URL of a bundled upright WOFF file, for code that needs the bytes (the PDF specimen). Rejects when there is no such file. */
+export async function bundledWoffUrl(id: string, weight: number): Promise<string> {
+  const load = woffFiles[`/node_modules/@fontsource/${id}/files/${id}-latin-${weight}-normal.woff`]
+  if (!load) throw new Error(`Tynovo has no ${weight} file for this font.`)
+  return load()
 }
 
 /** The one loader the app uses. */

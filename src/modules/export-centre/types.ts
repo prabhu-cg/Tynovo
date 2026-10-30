@@ -24,7 +24,7 @@ export interface ExportInput {
   fontBlocked: boolean
 }
 
-export type ExportFileId = 'spec' | 'tokens' | 'css' | 'specimen' | 'manifest' | 'project' | 'font' | 'package'
+export type ExportFileId = 'spec' | 'tokens' | 'css' | 'specimen' | 'pdf' | 'manifest' | 'project' | 'font' | 'package'
 
 export interface ExportFile {
   id: ExportFileId
