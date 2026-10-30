@@ -166,6 +166,20 @@ describe('the function', () => {
     expect(tried).toEqual([FALLBACK_MODELS[0]])
   })
 
+  it('gives a reasoning model room to think and asks it to think briefly, and sends neither to other models', async () => {
+    const bodies: Array<{ model: string; max_tokens: number; reasoning_effort?: string }> = []
+    const f = (async (_u: string, init: RequestInit) => {
+      const b = JSON.parse(init.body as string)
+      bodies.push(b)
+      return b.model === 'llama-3.1-8b-instant' ? groqSays({ personality: ['warm'] })('', init) : new Response('{}', { status: 404 })
+    }) as AiDeps['fetch']
+    await handleAi(post(BRIEF), env, deps(f))
+    const gpt = bodies.find((b) => b.model.startsWith('openai/gpt-oss'))!
+    expect(gpt.reasoning_effort).toBe('low')
+    expect(gpt.max_tokens).toBeGreaterThanOrEqual(2000)
+    expect(bodies.find((b) => b.model === 'llama-3.1-8b-instant')!.reasoning_effort).toBeUndefined()
+  })
+
   it('is unavailable, not crashing, when no model exists for the key', async () => {
     const res = await handleAi(post(BRIEF), env, deps((async () => new Response(JSON.stringify({ error: { type: 'invalid_request_error', code: 'model_not_found' } }), { status: 404 })) as AiDeps['fetch']))
     expect(res.status).toBe(503)
