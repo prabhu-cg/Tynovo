@@ -12,6 +12,7 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 async function violations(page: Page, where: string) {
   // A drawer fades in; axe reads colours as drawn, so a half-faded panel would report a contrast that nobody sees.
   await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity)) // endless decorative loops (the 404 mark) never finish
+  await page.evaluate(() => scrollTo(0, 0)) // rows scrolled under the sticky workflow bar count as obscured to axe; that is what scrolling is
   const r = await new AxeBuilder({ page }).withTags(TAGS).analyze()
   return r.violations.map((v) => `${where}: [${v.impact}] ${v.id} - ${v.help}: ${v.nodes.slice(0, 4).map((n) => n.target.join(' ')).join(' | ')}`)
 }
