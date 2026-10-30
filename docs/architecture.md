@@ -11,7 +11,7 @@ Domain modules are plain TypeScript with no React imports. UI modules depend on 
 | `brand-projects` | domain | Versioned project schema (Zod), validation + migration (`parseProject`), pure operations (create/duplicate/rename), project file format, `ProjectService` use-cases |
 | `persistence` | domain | `ProjectRepository` port; IndexedDB adapter (via `idb`) with compare-and-put conflict detection; in-memory fallback |
 | `typography-system` | domain | Type-scale maths including fluid sizes (`sizeAt`/`cssSize`), the shared `typeStyles` description used by previews and exports, and value validation |
-| `font-catalog` | domain | The bundled catalog generated from font-package metadata (24 OFL-1.1 fonts), studio tags, on-demand bounded loader, installed-font detection, search/filter, rule-based recommendations. See `brand-typography-system.md` |
+| `font-catalog` | domain | The bundled catalog generated from font-package metadata (52 OFL-1.1 fonts), studio tags, on-demand bounded loader, installed-font detection, search/filter, rule-based recommendations. See `brand-typography-system.md` |
 | `brand-system` | domain | The link between the two modes: role-font resolution, custom-typeface fit, project operations, preview text and missing characters, readiness checks, workflow status, content revision, text escaping. See `integrated-workflow.md` |
 | `export-centre` | domain | Pure generators for CSS, tokens, specification, specimen, manifest, zip, and `buildBundle` |
 | `typeface-engine` | domain | Design DNA, construction kit, glyph recipes, generation, overrides/variants/restore-point operations. See `typeface-engine.md` |

@@ -1,5 +1,9 @@
+import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import { expect, test, type Page } from '@playwright/test'
 import { createProject, readProjects, writeProjects } from './helpers'
+
+/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
+const N = CATALOG_DATA.length
 
 /**
  * Runtime performance. Ceilings are generous on purpose (a shared CI machine is slower than a laptop): they catch work that
@@ -62,7 +66,7 @@ test.describe('what is downloaded, and when', () => {
       await page.waitForTimeout(60)
     }
     await page.waitForLoadState('networkidle')
-    // The catalog has 24 families with several weights and styles each (150+ files). A visit may not fetch them all.
+    // The catalog has many families with several weights and styles each (hundreds of files). A visit may not fetch them all.
     expect(net.count(/\.woff2$/)).toBeLessThanOrEqual(40)
   })
 })

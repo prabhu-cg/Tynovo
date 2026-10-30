@@ -1,12 +1,16 @@
+import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { createProject } from './helpers'
+
+/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
+const N = CATALOG_DATA.length
 
 /** The catalog's search and filters: one compact row, a Filter panel, a Sort menu, applied filters as chips. */
 async function openCatalog(page: Page) {
   await createProject(page, 'Toolbar')
   await page.getByRole('navigation', { name: 'Project sections' }).getByRole('link', { name: 'Font catalog' }).click()
-  await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
 }
 const filterButton = (page: Page) => page.getByRole('button', { name: /^Filter/ })
 const panel = (page: Page) => page.getByRole('dialog', { name: 'Filter fonts' })
@@ -123,7 +127,7 @@ test.describe('applied filters and sorting', () => {
     await expect(chips).not.toContainText('Elegant')
     await expect(filterButton(page).getByLabel('1 applied')).toBeVisible()
     await chips.getByRole('button', { name: 'Clear filters' }).click()
-    await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
+    await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
     await expect(page.getByLabel('Search by family name')).toHaveValue('')
     await expect(chips).toHaveCount(0)
   })

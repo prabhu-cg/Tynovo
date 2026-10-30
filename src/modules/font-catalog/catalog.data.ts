@@ -25,6 +25,50 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "page": "https://fontsource.org/fonts/abril-fatface"
   },
   {
+    "id": "anton",
+    "family": "Anton",
+    "category": "sans-serif",
+    "weights": [
+      400
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/AntonFont.git)"
+    },
+    "version": "v27",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/anton",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/anton"
+  },
+  {
+    "id": "archivo-black",
+    "family": "Archivo Black",
+    "category": "sans-serif",
+    "weights": [
+      400
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2017 The Archivo Black Project Authors (https://github.com/Omnibus-Type/ArchivoBlack)"
+    },
+    "version": "v23",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/archivo-black",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/archivo-black"
+  },
+  {
     "id": "bebas-neue",
     "family": "Bebas Neue",
     "category": "sans-serif",
@@ -45,6 +89,35 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/bebas-neue",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/bebas-neue"
+  },
+  {
+    "id": "bitter",
+    "family": "Bitter",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2011 The Bitter Project Authors (https://github.com/solmatas/BitterPro)"
+    },
+    "version": "v42",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/bitter",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/bitter"
   },
   {
     "id": "caveat",
@@ -70,6 +143,112 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/caveat",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/caveat"
+  },
+  {
+    "id": "cormorant-garamond",
+    "family": "Cormorant Garamond",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2015 The Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)"
+    },
+    "version": "v21",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/cormorant-garamond",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/cormorant-garamond"
+  },
+  {
+    "id": "crimson-pro",
+    "family": "Crimson Pro",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2018 The Crimson Pro Project Authors (https://github.com/Fonthausen/CrimsonPro)"
+    },
+    "version": "v28",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/crimson-pro",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/crimson-pro"
+  },
+  {
+    "id": "dancing-script",
+    "family": "Dancing Script",
+    "category": "handwriting",
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2016 The Dancing Script Project Authors (https://github.com/googlefonts/DancingScript), with Reserved Font Name 'Dancing Script'."
+    },
+    "version": "v29",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/dancing-script",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/dancing-script"
+  },
+  {
+    "id": "dm-mono",
+    "family": "DM Mono",
+    "category": "monospace",
+    "weights": [
+      300,
+      400,
+      500
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The DM Mono Project Authors (https://www.github.com/googlefonts/dm-mono)"
+    },
+    "version": "v16",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/dm-mono",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/dm-mono"
   },
   {
     "id": "dm-sans",
@@ -149,6 +328,61 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/eb-garamond",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/eb-garamond"
+  },
+  {
+    "id": "figtree",
+    "family": "Figtree",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)"
+    },
+    "version": "v9",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/figtree",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/figtree"
+  },
+  {
+    "id": "fira-code",
+    "family": "Fira Code",
+    "category": "monospace",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2014-2020 The Fira Code Project Authors (https://github.com/tonsky/FiraCode)"
+    },
+    "version": "v27",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/fira-code",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/fira-code"
   },
   {
     "id": "fraunces",
@@ -261,6 +495,34 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "page": "https://fontsource.org/fonts/ibm-plex-serif"
   },
   {
+    "id": "inconsolata",
+    "family": "Inconsolata",
+    "category": "monospace",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2006 The Inconsolata Project Authors (https://github.com/cyrealtype/Inconsolata)"
+    },
+    "version": "v37",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/inconsolata",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/inconsolata"
+  },
+  {
     "id": "inter",
     "family": "Inter",
     "category": "sans-serif",
@@ -316,6 +578,117 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/jetbrains-mono",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/jetbrains-mono"
+  },
+  {
+    "id": "jost",
+    "family": "Jost",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type/Jost)"
+    },
+    "version": "v20",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/jost",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/jost"
+  },
+  {
+    "id": "karla",
+    "family": "Karla",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2019 The Karla Project Authors (https://github.com/googlefonts/karla)"
+    },
+    "version": "v33",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/karla",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/karla"
+  },
+  {
+    "id": "lato",
+    "family": "Lato",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      700,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1."
+    },
+    "version": "v25",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/lato",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/lato"
+  },
+  {
+    "id": "lexend",
+    "family": "Lexend",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2019 The Lexend Project Authors (https://github.com/googlefonts/lexend)"
+    },
+    "version": "v26",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/lexend",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/lexend"
   },
   {
     "id": "libre-baskerville",
@@ -426,6 +799,92 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "page": "https://fontsource.org/fonts/merriweather"
   },
   {
+    "id": "montserrat",
+    "family": "Montserrat",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)"
+    },
+    "version": "v31",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/montserrat",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/montserrat"
+  },
+  {
+    "id": "newsreader",
+    "family": "Newsreader",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)"
+    },
+    "version": "v26",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/newsreader",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/newsreader"
+  },
+  {
+    "id": "noto-serif",
+    "family": "Noto Serif",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    },
+    "version": "v33",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/noto-serif",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/noto-serif"
+  },
+  {
     "id": "nunito-sans",
     "family": "Nunito Sans",
     "category": "sans-serif",
@@ -453,6 +912,110 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/nunito-sans",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/nunito-sans"
+  },
+  {
+    "id": "open-sans",
+    "family": "Open Sans",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)"
+    },
+    "version": "v44",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/open-sans",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/open-sans"
+  },
+  {
+    "id": "oswald",
+    "family": "Oswald",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2016 The Oswald Project Authors (https://github.com/googlefonts/OswaldFont)"
+    },
+    "version": "v57",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/oswald",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/oswald"
+  },
+  {
+    "id": "outfit",
+    "family": "Outfit",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2021 The Outfit Project Authors (https://github.com/Outfitio/Outfit-Fonts)"
+    },
+    "version": "v15",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/outfit",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/outfit"
+  },
+  {
+    "id": "pacifico",
+    "family": "Pacifico",
+    "category": "handwriting",
+    "weights": [
+      400
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2018 The Pacifico Project Authors (https://github.com/googlefonts/Pacifico)"
+    },
+    "version": "v23",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/pacifico",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/pacifico"
   },
   {
     "id": "playfair-display",
@@ -483,6 +1046,87 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "page": "https://fontsource.org/fonts/playfair-display"
   },
   {
+    "id": "plus-jakarta-sans",
+    "family": "Plus Jakarta Sans",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)"
+    },
+    "version": "v12",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/plus-jakarta-sans",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/plus-jakarta-sans"
+  },
+  {
+    "id": "poppins",
+    "family": "Poppins",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)"
+    },
+    "version": "v24",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/poppins",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/poppins"
+  },
+  {
+    "id": "pt-serif",
+    "family": "PT Serif",
+    "category": "serif",
+    "weights": [
+      400,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright © 2010 ParaType Ltd. All rights reserved."
+    },
+    "version": "v19",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/pt-serif",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/pt-serif"
+  },
+  {
     "id": "public-sans",
     "family": "Public Sans",
     "category": "sans-serif",
@@ -510,6 +1154,64 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/public-sans",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/public-sans"
+  },
+  {
+    "id": "raleway",
+    "family": "Raleway",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2010 The Raleway Project Authors (impallari@gmail.com), with Reserved Font Name \"Raleway\"."
+    },
+    "version": "v37",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/raleway",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/raleway"
+  },
+  {
+    "id": "rubik",
+    "family": "Rubik",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2015 The Rubik Project Authors (https://github.com/googlefonts/rubik)"
+    },
+    "version": "v31",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/rubik",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/rubik"
   },
   {
     "id": "source-sans-3",
@@ -618,6 +1320,60 @@ export const CATALOG_DATA: readonly CatalogEntry[] = [
     "distribution": "@fontsource/space-mono",
     "distributionVersion": "5.3.0",
     "page": "https://fontsource.org/fonts/space-mono"
+  },
+  {
+    "id": "spectral",
+    "family": "Spectral",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "italic": true,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2017 The Spectral Project Authors (https://github.com/productiontype/Spectral)"
+    },
+    "version": "v15",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/spectral",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/spectral"
+  },
+  {
+    "id": "syne",
+    "family": "Syne",
+    "category": "sans-serif",
+    "weights": [
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "normal"
+    ],
+    "italic": false,
+    "license": {
+      "spdx": "OFL-1.1",
+      "url": "https://openfontlicense.org/open-font-license-official-text/",
+      "copyright": "Copyright 2019 The Syne Project Authors (https://gitlab.com/bonjour-monde/fonderie/syne-typeface)"
+    },
+    "version": "v24",
+    "upstream": "https://github.com/google/fonts",
+    "distribution": "@fontsource/syne",
+    "distributionVersion": "5.3.0",
+    "page": "https://fontsource.org/fonts/syne"
   },
   {
     "id": "work-sans",

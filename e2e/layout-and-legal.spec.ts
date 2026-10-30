@@ -1,5 +1,9 @@
+import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { createProject } from './helpers'
+
+/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
+const N = CATALOG_DATA.length
 
 const bg = (l: Locator) => l.evaluate((e) => getComputedStyle(e).backgroundColor)
 const box = async (l: Locator) => (await l.boundingBox())!
@@ -25,7 +29,7 @@ test.describe('FAQ accordions are centred', () => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/faq')
     const groups = page.locator('main section[aria-labelledby^="g-"]')
-    expect(await groups.count()).toBe(3)
+    await expect(groups).toHaveCount(3) // waits for the page to render before measuring
     for (let i = 0; i < 3; i++) expect(await centred(page, groups.nth(i))).toBeLessThan(2)
     await expect(groups.first().locator('details').first()).toBeVisible()
     await groups.first().locator('summary').first().click()
@@ -136,7 +140,7 @@ test.describe('legal pages are complete', () => {
   test('the licensing page lists all bundled fonts with their licence and copyright, and the software it is built with', async ({ page }) => {
     await page.goto('/licensing')
     const rows = page.getByRole('region', { name: 'Fonts bundled with Tynovo' }).locator('tbody tr')
-    await expect(rows).toHaveCount(24)
+    await expect(rows).toHaveCount(N)
     for (const r of await rows.all()) {
       await expect(r.locator('td').first()).toHaveText('OFL-1.1')
       expect((await r.locator('td').nth(1).innerText()).length).toBeGreaterThan(3)

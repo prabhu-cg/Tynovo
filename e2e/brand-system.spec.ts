@@ -1,6 +1,10 @@
+import { CATALOG_DATA } from '../src/modules/font-catalog/catalog.data'
 import { expect, test, type Page } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { createProject, readProjects, saved, writeProjects } from './helpers'
+
+/** Size of the bundled catalog, read from the generated data so a test never hard-codes it. */
+const N = CATALOG_DATA.length
 
 const fontOf = (page: Page, role: string) => page.getByLabel(`Font of ${role}`, { exact: true })
 const tab = (page: Page, name: string) => page.getByRole('link', { name, exact: true }).first()
@@ -62,17 +66,17 @@ async function filterChip(page: Page, label: string) {
 test('the catalog searches, filters and shows weights, styles, source and licence', async ({ page }) => {
   await createProject(page, 'Catalog')
   await tab(page, 'Font catalog').click()
-  await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
   await page.getByLabel('Search by family name').fill('plex')
-  await expect(page.getByTestId('catalog-count')).toHaveText('3 of 24 fonts match.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`3 of ${N} fonts match.`)
   await expect(page.getByRole('list', { name: 'Fonts' }).getByRole('listitem')).toHaveCount(3)
   await filterChip(page, 'Monospace')
-  await expect(page.getByTestId('catalog-count')).toHaveText('1 of 24 fonts match.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`1 of ${N} fonts match.`)
   await expect(page.getByRole('list', { name: 'Fonts' })).toContainText('IBM Plex Mono')
   await page.getByLabel('Search by family name').fill('zzzz')
   await expect(page.getByRole('heading', { name: 'No font matches' })).toBeVisible()
   await page.getByRole('button', { name: 'Clear filters' }).first().click()
-  await expect(page.getByTestId('catalog-count')).toHaveText('24 of 24 fonts.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`${N} of ${N} fonts.`)
 
   // Category and tag filters narrow the list, and every row obeys them.
   await filterChip(page, 'Display')
@@ -83,7 +87,7 @@ test('the catalog searches, filters and shows weights, styles, source and licenc
   await filterChip(page, 'Drawn for text')
   const n = await rows.count()
   expect(n).toBeGreaterThan(5)
-  expect(n).toBeLessThan(24)
+  expect(n).toBeLessThan(N)
 
   await page.getByRole('button', { name: 'Clear filters' }).first().click()
   await page.getByRole('button', { name: 'Details of Lora' }).click()
@@ -135,7 +139,7 @@ test('a font file that cannot be loaded is reported, not shown as available, and
   expect(await faces(page, 'Inter')).toEqual([])
   // The rest of Tynovo keeps working while the file is unavailable.
   await page.getByLabel('Search by family name').fill('inter')
-  await expect(page.getByTestId('catalog-count')).toHaveText('1 of 24 fonts match.')
+  await expect(page.getByTestId('catalog-count')).toHaveText(`1 of ${N} fonts match.`)
   await page.unroute('**/*.woff2')
   await page.getByRole('button', { name: 'Try again' }).click()
   await expect(sample).toHaveAttribute('data-state', 'loaded')
@@ -293,7 +297,7 @@ test('role suggestions and catalog ordering show their reasons, and ask for a br
   await page.getByRole('button', { name: 'Use my brand’s tone and use cases' }).click()
   await expect(page.getByRole('checkbox', { name: 'Technical' })).toBeChecked()
   const n = await page.getByRole('list', { name: 'Fonts' }).getByRole('listitem').count()
-  expect(n).toBeLessThan(24)
+  expect(n).toBeLessThan(N)
   await page.getByRole('button', { name: 'Details of Inter' }).click()
   await expect(page.getByRole('region', { name: 'Fit for your brand' })).toContainText('+2 Tagged for a technical tone')
 })
