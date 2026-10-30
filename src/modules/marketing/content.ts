@@ -41,7 +41,7 @@ export const CAPABILITIES: readonly Capability[] = [
     mode: 'system',
     title: 'Brand direction',
     body: 'Record the brand’s name, description, personality, primary use cases (SaaS, editorial, consumer, campaigns, corporate), tone and how much it needs readability and display use. These order the catalog and the font suggestions with fixed, readable rules, shown point by point. Separately, an optional box can suggest a brand direction from a short brief using an AI model; nothing changes until you apply it.',
-    status: 'early',
+    status: 'available',
   },
   {
     id: 'catalog',
